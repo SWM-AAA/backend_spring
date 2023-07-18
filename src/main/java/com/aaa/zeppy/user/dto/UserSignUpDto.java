@@ -6,7 +6,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
 public class UserSignUpDto {
+
     private String email;
-    private String userName;
+    private String password;
+    private String nickname;
     private int age;
+    private String city;
 }

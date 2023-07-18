@@ -1,11 +1,15 @@
 package com.aaa.zeppy.common.jwt.filter;
 
 import com.aaa.zeppy.common.jwt.service.JwtService;
+import com.aaa.zeppy.common.jwt.util.PasswordUtil;
 import com.aaa.zeppy.user.entity.User;
 import com.aaa.zeppy.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
@@ -119,6 +123,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                 .ifPresent(accessToken -> jwtService.extractEmail(accessToken)
                         .ifPresent(email -> userRepository.findByEmail(email)
                                 .ifPresent(this::saveAuthentication)));
+        log.info("checkAccessTokenAndAuthentication() 종료");
 
         filterChain.doFilter(request, response);
     }
@@ -139,9 +144,14 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
      * setAuthentication()을 이용하여 위에서 만든 Authentication 객체에 대한 인증 허가 처리
      */
     public void saveAuthentication(User myUser) {
+        String password = myUser.getPassword();
+        if (password == null) { // 소셜 로그인 유저의 비밀번호 임의로 설정 하여 소셜 로그인 유저도 인증 되도록 설정
+            password = PasswordUtil.generateRandomPassword();
+        }
 
         UserDetails userDetailsUser = org.springframework.security.core.userdetails.User.builder()
                 .username(myUser.getEmail())
+                .password(password)
                 .roles(myUser.getRole().name())
                 .build();
 

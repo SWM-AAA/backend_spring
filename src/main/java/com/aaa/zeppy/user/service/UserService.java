@@ -1,37 +1,47 @@
 package com.aaa.zeppy.user.service;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
+import com.aaa.zeppy.user.dto.UserSignUpDto;
 import com.aaa.zeppy.user.entity.Role;
 import com.aaa.zeppy.user.entity.User;
 import com.aaa.zeppy.user.repository.UserRepository;
-import com.aaa.zeppy.user.dto.UserSignUpDto;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import lombok.extern.slf4j.Slf4j;
 
+import jakarta.transaction.Transactional;
 
-@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public void signUp(UserSignUpDto userSignUpDto) throws Exception {
 
         if (userRepository.findByEmail(userSignUpDto.getEmail()).isPresent()) {
-            log.info("이미 존재하는 이메일입니다.");
             throw new Exception("이미 존재하는 이메일입니다.");
+        }
+
+        if (userRepository.findByNickname(userSignUpDto.getNickname()).isPresent()) {
+            throw new Exception("이미 존재하는 닉네임입니다.");
         }
 
         User user = User.builder()
                 .email(userSignUpDto.getEmail())
+                .password(userSignUpDto.getPassword())
+                .nickname(userSignUpDto.getNickname())
                 .age(userSignUpDto.getAge())
-                .userName(userSignUpDto.getUserName())
+                .city(userSignUpDto.getCity())
                 .role(Role.USER)
                 .build();
 
+        user.passwordEncode(passwordEncoder);
         userRepository.save(user);
     }
 }
+
+
+
+
