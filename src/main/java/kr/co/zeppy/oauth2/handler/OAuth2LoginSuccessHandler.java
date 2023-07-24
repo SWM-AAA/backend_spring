@@ -36,35 +36,17 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
                 String accessToken = jwtService.createAccessToken(oAuth2User.getEmail());
                 response.addHeader(jwtService.getAccessHeader(), "Bearer " + accessToken);
                 response.sendRedirect("com.aaa://"); // 프론트의 회원가입 추가 정보 입력 폼으로 리다이렉트
-                log.info("OAuth2 Login 22222222222222");
 
                 jwtService.sendAccessAndRefreshToken(response, accessToken, null);
                 User findUser = userRepository.findByEmail(oAuth2User.getEmail())
                                .orElseThrow(() -> new IllegalArgumentException("이메일에 해당하는 유저가 없습니다."));
 
-                log.info("oAuth2User : {}", oAuth2User);
-                log.info("findUser: {}", findUser);
                 findUser.authorizeUser();
             } else {
-                log.info("OAuth2 Login 3333333333333333");
                 loginSuccess(response, oAuth2User); // 로그인에 성공한 경우 access, refresh 토큰 생성
             }
-            // response.setStatus(HttpServletResponse.SC_OK);
-            // String url = UriComponentsBuilder.fromUriString("com.aaa://")
-            //         .queryParam("test", "accc")
-            //         .queryParam("test", "resss")
-            //         .toUriString();
-            // log.info("url: {}", url);
-            // log.info("request: {}", request);
-            log.info("OAuth2 Login 4444444444444444444444");
-            log.info("Request URL: {}", request.getRequestURL());
-            // log.info("response: {}", response);
             String url = request.getRequestURL().toString();
-            log.info("url: {}", url);
-            log.info("response: {}", response.getHeader(url));
-            log.info("response: {}", response.getHeader("Location"));
         } catch (Exception e) {
-            log.info("55555555555555555555");
             throw e;
         }
     }

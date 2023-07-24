@@ -16,7 +16,6 @@ import jakarta.transaction.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
 
     public void signUp(UserSignUpDto userSignUpDto) throws Exception {
 
@@ -30,14 +29,10 @@ public class UserService {
 
         User user = User.builder()
                 .email(userSignUpDto.getEmail())
-                .password(userSignUpDto.getPassword())
                 .nickname(userSignUpDto.getNickname())
-                .age(userSignUpDto.getAge())
-                .city(userSignUpDto.getCity())
                 .role(Role.USER)
                 .build();
 
-        user.passwordEncode(passwordEncoder);
         userRepository.save(user);
     }
 }
