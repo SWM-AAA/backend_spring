@@ -1,7 +1,19 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.1.1'
+	id 'org.springframework.boot' version '3.0.1'
 	id 'io.spring.dependency-management' version '1.1.0'
+}
+
+// profile의 기본값 local로 설정
+ext.profile = (!project.hasProperty('profile') || !profile) ? 'local' : profile
+
+// 리소스 디렉토리 추가
+sourceSets {
+    main {
+        resources {
+            srcDirs "src/main/resources-env/${profile}"
+        }
+    }
 }
 
 group = 'com.aaa'
@@ -33,16 +45,8 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'io.projectreactor:reactor-test'
 	testImplementation 'org.springframework.security:spring-security-test'
-	// json google library
-	implementation 'com.google.code.gson:gson:2.8.8'
-
 	// JWT dependencies
 	implementation 'com.auth0:java-jwt:4.2.1'
-
-	// json phaser library
-	implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
-	implementation 'com.fasterxml.jackson.core:jackson-core:2.13.0'
-	implementation 'com.fasterxml.jackson.core:jackson-annotations:2.13.0'
 
 	// spring boot oauth2 library
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
