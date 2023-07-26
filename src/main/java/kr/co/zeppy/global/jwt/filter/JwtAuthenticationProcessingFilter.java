@@ -21,6 +21,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Optional;
 
 
 @RequiredArgsConstructor
@@ -45,26 +46,25 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                 .filter(jwtService::isTokenValid)
                 .orElse(null);
 
-        // refresh token이 있으면 refresh token으로 access token 재발급 후 다음 인증 생략
         if (refreshToken != null) {
-            checkRefreshTokenAndReIssueAccessToken(response, refreshToken);
-            return;
+            checkRefreshTokenAndReIssueAccessToken(request, response, refreshToken, filterChain);
         }
-
-        // refresh token이 없으면 access token으로 인증 처리, access token으로 인증 실패하면 403 ERROR
+        
         if (refreshToken == null) {
             checkAccessTokenAndAuthentication(request, response, filterChain);
         }
     }
 
 
-    public void checkRefreshTokenAndReIssueAccessToken(HttpServletResponse response, String refreshToken) {
+    public void checkRefreshTokenAndReIssueAccessToken(HttpServletRequest request, HttpServletResponse response, String refreshToken,
+                                                         FilterChain filterChain) throws ServletException, IOException {
         userRepository.findByRefreshToken(refreshToken)
                 .ifPresent(user -> {
                     String reIssuedRefreshToken = reIssueRefreshToken(user);
                     jwtService.sendAccessAndRefreshToken(response, jwtService.createAccessToken(user.getEmail(), user.getNickname()),
                             reIssuedRefreshToken);
                 });
+        filterChain.doFilter(request, response);
     }
 
 
@@ -76,18 +76,57 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     }
 
 
-    public void checkAccessTokenAndAuthentication(HttpServletRequest request, HttpServletResponse response,
-                                                  FilterChain filterChain) throws ServletException, IOException {
-        log.info("checkAccessTokenAndAuthentication() 호출");
-        jwtService.extractAccessToken(request)
-                .filter(jwtService::isTokenValid)
-                .ifPresent(accessToken -> jwtService.extractEmail(accessToken)
-                        .ifPresent(email -> userRepository.findByEmail(email)
-                                .ifPresent(this::saveAuthentication)));
-        log.info("checkAccessTokenAndAuthentication() 종료");
+    // public void checkAccessTokenAndAuthentication(HttpServletRequest request, HttpServletResponse response,
+    //                                               FilterChain filterChain) throws ServletException, IOException {
+    //     log.info("checkAccessTokenAndAuthentication() 호출");
+    //     jwtService.extractAccessToken(request)
+    //             .filter(jwtService::isTokenValid)
+    //             .ifPresent(accessToken -> jwtService.extractEmail(accessToken)
+    //                     .ifPresent(email -> userRepository.findByEmail(email)
+    //                             .ifPresent(this::saveAuthentication)));
+    //     log.info("checkAccessTokenAndAuthentication() 종료");
 
-        filterChain.doFilter(request, response);
+    //     filterChain.doFilter(request, response);
+    // }
+
+    public void checkAccessTokenAndAuthentication(HttpServletRequest request, HttpServletResponse response,
+                                              FilterChain filterChain) throws ServletException, IOException {
+    log.info("checkAccessTokenAndAuthentication() 호출");
+
+    Optional<String> accessTokenOptional = jwtService.extractAccessToken(request);
+
+    log.info("accessTokenOptional : " + accessTokenOptional);
+    if (accessTokenOptional.isPresent()) {
+        String accessToken = accessTokenOptional.get();
+        boolean isTokenValid = jwtService.isTokenValid(accessToken);
+
+        if (isTokenValid) {
+            log.info("Access Token이 유효합니다. Access Token: {}");
+            jwtService.extractEmail(accessToken).ifPresent(email -> {
+                Optional<User> userOptional = userRepository.findByEmail(email);
+                log.info("이메일로 사용자 정보를 조회합니다. 이메일: {}", email);
+
+                if (userOptional.isPresent()) {
+                    // 5. 사용자 정보가 있으면 인증 처리
+                    log.info("사용자 정보를 조회했습니다. 이메일: {}", email);
+                    User user = userOptional.get();
+                    saveAuthentication(user);
+                } else {
+                    log.warn("사용자 정보가 없습니다. 이메일: {}", email);
+                }
+            });
+        } else {
+            log.warn("유효하지 않은 Access Token입니다. Access Token: {}", accessToken);
+        }
+    } else {
+        log.warn("Access Token이 요청에 없습니다.");
     }
+
+    log.info("checkAccessTokenAndAuthentication() 종료");
+
+    filterChain.doFilter(request, response);
+}
+
 
     /**
      * [인증 허가 메소드]
@@ -105,16 +144,22 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
      * setAuthentication()을 이용하여 위에서 만든 Authentication 객체에 대한 인증 허가 처리
      */
     public void saveAuthentication(User myUser) {
+        log.info("saveAuthentication() 호출");
+        String password = PasswordUtil.generateRandomPassword();
 
         UserDetails userDetailsUser = org.springframework.security.core.userdetails.User.builder()
                 .username(myUser.getEmail())
-                .password(null)
+                .password(password)
                 .roles(myUser.getRole().name())
                 .build();
+
+        log.info("userDetailsUser : 호출");
 
         Authentication authentication =
                 new UsernamePasswordAuthenticationToken(userDetailsUser, null,
                 authoritiesMapper.mapAuthorities(userDetailsUser.getAuthorities()));
+        
+        log.info(authentication.isAuthenticated() + " : 인증 여부@@@@@@@@@@@");
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }

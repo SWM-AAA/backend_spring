@@ -50,7 +50,12 @@ dependencies {
 
 	// spring boot oauth2 library
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+	implementation 'org.springdoc:springdoc-openapi-ui:1.6.11'
+
+	implementation 'org.hibernate.validator:hibernate-validator:7.0.2.Final'
 }
+
 
 tasks.named('test') {
 	useJUnitPlatform()

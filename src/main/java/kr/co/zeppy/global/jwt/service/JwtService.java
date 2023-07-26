@@ -16,7 +16,11 @@ import org.springframework.stereotype.Service;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +42,12 @@ public class JwtService {
 
     @Value("${jwt.refresh.header}")
     private String refreshHeader;
+
+    @Value("${jwt.access.accesstoken_name}")
+    private String accessTokenName;
+
+    @Value("${jwt.refresh.refreshtoken_name}")
+    private String refreshTokenName;
 
     private static final String ACCESS_TOKEN_SUBJECT = "AccessToken";
     private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
@@ -72,26 +82,50 @@ public class JwtService {
     }
 
 
+    // 재발급
     public void sendAccessToken(HttpServletResponse response, String accessToken) {
         response.setStatus(HttpServletResponse.SC_OK);
-
         response.setHeader(accessHeader, accessToken);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+    
+        Map<String, String> tokenMap = new HashMap<>();
+        tokenMap.put(accessTokenName, accessToken);
+
+        try {
+            String jsonToken = new ObjectMapper().writeValueAsString(tokenMap);
+            response.getWriter().write(jsonToken);
+            log.info("body에 담아서 보낸 jsontoken : {}", jsonToken);
+        } catch (Exception e) {
+            log.error("Access Token을 Response Body에 담아서 보내는데 실패했습니다. {}", e.getMessage());
+        }
+    
         log.info("재발급된 Access Token : {}", accessToken);
     }
 
-
+    
     public void sendAccessAndRefreshToken(HttpServletResponse response, String accessToken, String refreshToken) {
         response.setStatus(HttpServletResponse.SC_OK);
 
         setAccessTokenHeader(response, accessToken);
         setRefreshTokenHeader(response, refreshToken);
         log.info("Access Token, Refresh Token 헤더 설정 완료");
+
+        setAccessTokenBody(response, accessToken);
+        setRefreshTokenBody(response, refreshToken);
+        log.info("Access Token, Refresh Token Body 설정 완료");
+
     }
 
 
     public Optional<String> extractRefreshToken(HttpServletRequest request) {
         String refreshTokenHeaderValue = request.getHeader(refreshHeader);
-        Boolean isStartBearer = refreshTokenHeaderValue.startsWith(BEARER);
+        Boolean isStartBearer;
+        if (refreshTokenHeaderValue == null) {
+            isStartBearer = false;
+        } else {
+            isStartBearer = refreshTokenHeaderValue.startsWith(BEARER);
+        }
         Optional<String> refreshToken;
 
         if (refreshTokenHeaderValue != null && isStartBearer) {
@@ -105,7 +139,12 @@ public class JwtService {
 
     public Optional<String> extractAccessToken(HttpServletRequest request) {
         String accessTokenHeaderValue = request.getHeader(accessHeader);
-        Boolean isStartBearer = accessTokenHeaderValue.startsWith(BEARER);
+        Boolean isStartBearer;
+        if (accessTokenHeaderValue == null) {
+            isStartBearer = false;
+        } else {
+            isStartBearer = accessTokenHeaderValue.startsWith(BEARER);
+        }
         Optional<String> accessToken;
 
         if (accessTokenHeaderValue != null && isStartBearer) {
@@ -137,9 +176,47 @@ public class JwtService {
         response.setHeader(accessHeader, accessToken);
     }
 
+    // access token을 response body에 담아서 보냄
+    public void setAccessTokenBody(HttpServletResponse response, String accessToken) {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+    
+        Map<String, String> tokenMap = new HashMap<>();
+        tokenMap.put(accessTokenName, accessToken);
+
+        try {
+            String jsonToken = new ObjectMapper().writeValueAsString(tokenMap);
+            response.getWriter().write(jsonToken);
+            log.info("body에 담아서 보낸 jsontoken : {}", jsonToken);
+        } catch (Exception e) {
+            log.error("Access Token을 Response Body에 담아서 보내는데 실패했습니다. {}", e.getMessage());
+        }
+    }
+
+    
+    public void setAccessTokenURL(HttpServletResponse response, String accessToken) {
+    }
+
 
     public void setRefreshTokenHeader(HttpServletResponse response, String refreshToken) {
         response.setHeader(refreshHeader, refreshToken);
+    }
+
+
+    public void setRefreshTokenBody(HttpServletResponse response, String refreshToken) {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        Map<String, String> tokenMap = new HashMap<>();
+        tokenMap.put(refreshTokenName, refreshToken);
+
+        try {
+            String jsonToken = new ObjectMapper().writeValueAsString(tokenMap);
+            response.getWriter().write(jsonToken);
+            log.info("body에 담아서 보낸 jsontoken : {}", jsonToken);
+        } catch (Exception e) {
+            log.error("refresh Token을 Response Body에 담아서 보내는데 실패했습니다. {}", e.getMessage());
+        }
     }
 
 
@@ -158,6 +235,7 @@ public class JwtService {
             log.error("유효하지 않은 토큰입니다. {}", e.getMessage());
             isTokenValid = false;
         }
+        log.info("isTokenValid : {}", isTokenValid);
         return isTokenValid;
     }
 }

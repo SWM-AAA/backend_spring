@@ -13,8 +13,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 
 import java.util.LinkedHashSet;
+import java.util.Set;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
 
@@ -27,14 +29,13 @@ import jakarta.persistence.EnumType;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "user_id")
     private Long id;
 
     private String email;
     private String nickname;
     private String imageUrl;
-    private LinkedHashSet<String> group;
 
     @Enumerated(EnumType.STRING)
     private Role role;
