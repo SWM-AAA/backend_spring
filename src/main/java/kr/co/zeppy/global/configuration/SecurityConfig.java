@@ -72,6 +72,8 @@ public class SecurityConfig {
                 .successHandler(oAuth2LoginSuccessHandler)
                 .failureHandler(oAuth2LoginFailureHandler)
                 .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint.userService(customOAuth2UserService)));
+            // .exceptionHandling(exceptionHandling -> exceptionHandling
+            //     .accessDeniedPage("/my-error-page"));
 
         http.addFilterAfter(jwtAuthenticationProcessingFilter(), LogoutFilter.class);
        
