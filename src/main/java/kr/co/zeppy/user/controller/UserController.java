@@ -7,7 +7,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
+import lombok.extern.slf4j.Slf4j;
 
+
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class UserController {
@@ -22,6 +25,7 @@ public class UserController {
 
     @GetMapping("/jwt-test")
     public String jwtTest() {
+        log.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         return "jwtTest 요청 성공";
     }
 }

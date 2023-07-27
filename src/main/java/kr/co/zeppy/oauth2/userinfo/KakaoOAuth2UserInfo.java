@@ -1,7 +1,9 @@
 package kr.co.zeppy.oauth2.userinfo;
 
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class KakaoOAuth2UserInfo extends OAuth2UserInfo {
 
     public KakaoOAuth2UserInfo(Map<String, Object> attributes) {
@@ -16,6 +18,7 @@ public class KakaoOAuth2UserInfo extends OAuth2UserInfo {
     @Override
     public String getEmail() {
         Map<String, Object> account = (Map<String, Object>) attributes.get("kakao_account");
+        log.info("account : " + account);
 
         if (account == null) {
             return null;
