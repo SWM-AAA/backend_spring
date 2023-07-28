@@ -2,25 +2,28 @@ package kr.co.zeppy.crew.entity;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-
+import lombok.Builder;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import kr.co.zeppy.user.entity.User;
+import kr.co.zeppy.user.entity.UserCrew;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 
-import java.util.Set;
 import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "CREWS")
 @AllArgsConstructor
+@Builder
 public class Crew {
 
     @Id
@@ -30,18 +33,15 @@ public class Crew {
 
     private String crewName;
 
-    @ManyToMany(mappedBy = "crews")
-    private Set<User> users = new LinkedHashSet<>();
+    @Builder.Default
+    @OneToMany(mappedBy = "crew")
+    private Set<UserCrew> userCrews = new LinkedHashSet<>();
 
-    public Crew(String crewName) {
-        this.crewName = crewName;
+    public void addUser(UserCrew user) {
+        userCrews.add(user);
     }
 
-    public void addUser(User user) {
-        users.add(user);
-    }
-
-    public void removeUser(User user) {
-        users.remove(user);
+    public void removeUser(UserCrew user) {
+        userCrews.remove(user);
     }
 }
