@@ -9,6 +9,4 @@ public interface CrewRepository extends JpaRepository<Crew, Long> {
 
     Optional<Crew> findById(Long id);
 
-    Optional<Crew> findByEmail(String email);
-
 }
