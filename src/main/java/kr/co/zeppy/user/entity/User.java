@@ -7,8 +7,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import kr.co.zeppy.crew.entity.Crew;
+import kr.co.zeppy.user.entity.UserCrew;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 
@@ -16,7 +19,6 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
 
@@ -29,13 +31,17 @@ import jakarta.persistence.EnumType;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private Long id;
 
     private String email;
     private String nickname;
     private String imageUrl;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "user")
+    private Set<UserCrew> userCrews = new LinkedHashSet<>();
 
     @Enumerated(EnumType.STRING)
     private Role role;
@@ -61,5 +67,9 @@ public class User {
 
     public void updateImageUrl(String updateImageUrl) {
         this.imageUrl = updateImageUrl;
+    }
+
+    public void leaveCrew(UserCrew crew) {
+        userCrews.remove(crew);
     }
 }
