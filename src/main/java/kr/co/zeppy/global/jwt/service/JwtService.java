@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -103,6 +104,13 @@ public class JwtService {
         log.info("재발급된 Access Token : {}", accessToken);
     }
 
+    public String setAccessTokenAndRefreshTokenURLParam(String url, String accessToken, String refreshToken) {
+        String urlWithToken = UriComponentsBuilder.fromUriString(url)
+                .queryParam(accessTokenName, accessToken)
+                .queryParam(refreshTokenName, refreshToken)
+                .build().toUriString();
+        return urlWithToken;
+    }
     
     public void sendAccessAndRefreshToken(HttpServletResponse response, String accessToken, String refreshToken) {
         response.setStatus(HttpServletResponse.SC_OK);
@@ -191,10 +199,6 @@ public class JwtService {
         } catch (Exception e) {
             log.error("Access Token을 Response Body에 담아서 보내는데 실패했습니다. {}", e.getMessage());
         }
-    }
-
-    
-    public void setAccessTokenURL(HttpServletResponse response, String accessToken) {
     }
 
 
