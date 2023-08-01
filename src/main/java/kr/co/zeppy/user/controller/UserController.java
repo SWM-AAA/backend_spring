@@ -1,12 +1,13 @@
 package kr.co.zeppy.user.controller;
 
-import kr.co.zeppy.user.dto.UserSignUpDto;
-import kr.co.zeppy.user.service.UserService;
+import kr.co.zeppy.global.redis.dto.LocationAndBatteryRequest;
+import kr.co.zeppy.global.redis.service.RedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,17 +18,28 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api")
 public class UserController {
 
-    private final UserService userService;
-
-    @PostMapping("/sign-up")
-    public String signUp(@RequestBody UserSignUpDto userSignUpDto) throws Exception {
-        userService.signUp(userSignUpDto);
-        return "회원가입 성공";
-    }
+    private final RedisService redisService;
 
     @GetMapping("/jwt-test")
     public String jwtTest() {
-        log.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         return "jwtTest 요청 성공";
+    }
+
+    @PostMapping("/v1/users/location-and-battery")
+    public ResponseEntity<Void> updateLocationAndBattery(@RequestBody LocationAndBatteryRequest locationAndBatteryRequest) throws Exception {
+        redisService.updateLocationAndBattery(locationAndBatteryRequest);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/v1/users/friend-location-and-battery")
+    public ResponseEntity<Void> getFriendLocationAndBattery() throws Exception {
+
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/v1/users/my-location-and-battery")
+    public ResponseEntity<Void> getMyLocationAndBattery() throws Exception {
+
+        return ResponseEntity.ok().build();
     }
 }
