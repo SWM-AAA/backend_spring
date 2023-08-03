@@ -2,10 +2,48 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.0.1'
 	id 'io.spring.dependency-management' version '1.1.0'
+	// spring rest docs
+	id "org.asciidoctor.jvm.convert" version "3.3.2"
 }
 
 // profile의 기본값 local로 설정
 ext.profile = (!project.hasProperty('profile') || !profile) ? 'local' : profile
+
+ext {
+  snippetsDir = file('build/generated-snippets')
+}
+
+test {
+  outputs.dir snippetsDir
+  useJUnitPlatform()
+}
+
+asciidoctor.doFirst {
+	delete file("src/main/resources/static/docs")
+}
+
+task CreateDocument(type: Copy) {
+	dependsOn asciidoctor
+	from file("build/docs/asciidoc")
+	into file("src/main/resources/static/docs")
+}
+
+bootJar {
+  dependsOn CreateDocument
+  from("${asciidoctor.outputDir}") {
+	into 'static/docs'}
+}
+
+build {
+	dependsOn CreateDocument
+}
+
+asciidoctor {
+  inputs.dir snippetsDir
+  configurations 'asciidoctorExt'
+  baseDirFollowsSourceFile()
+  dependsOn test
+}
 
 // 리소스 디렉토리 추가
 sourceSets {
@@ -24,6 +62,8 @@ java {
 }
 
 configurations {
+	// spring rest docs
+	asciidoctorExt
 	compileOnly {
 		extendsFrom annotationProcessor
 	}
@@ -42,11 +82,20 @@ dependencies {
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'org.postgresql:postgresql'
 	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation ('org.springframework.boot:spring-boot-starter-test') {
+		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+	}
+	testImplementation 'org.junit.platform:junit-platform-launcher'
+	implementation 'org.checkerframework:checker-qual:3.11.0'
+
 	testImplementation 'io.projectreactor:reactor-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	// JWT dependencies
 	implementation 'com.auth0:java-jwt:4.2.1'
+
+	// spring rest docs
+	asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
+	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
 
 	// spring boot oauth2 library
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
@@ -54,9 +103,4 @@ dependencies {
 	implementation 'org.springdoc:springdoc-openapi-ui:1.6.11'
 
 	implementation 'org.hibernate.validator:hibernate-validator:7.0.2.Final'
-}
-
-
-tasks.named('test') {
-	useJUnitPlatform()
 }

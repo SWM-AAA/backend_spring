@@ -41,6 +41,7 @@ public class SecurityConfig {
             // "/webjars/**",
             // "/login",
 
+            "/docs/**",
             "/error",
             "/v2/api-docs",
             "/swagger-resources",
@@ -67,7 +68,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(request -> request
                 // .requestMatchers("/**").permitAll()
                 .requestMatchers(AUTH_WHITELIST).permitAll()
-                .anyRequest().authenticated())
+            .anyRequest().authenticated())
             .oauth2Login(oauth2Login -> oauth2Login
                 .successHandler(oAuth2LoginSuccessHandler)
                 .failureHandler(oAuth2LoginFailureHandler)
