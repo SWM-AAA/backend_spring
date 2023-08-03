@@ -3,7 +3,9 @@ package kr.co.zeppy.global.redis.service;
 import org.springframework.data.redis.core.RedisTemplate;
 import kr.co.zeppy.global.redis.dto.LocationAndBatteryRequest;
 import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 public class RedisService {
 
