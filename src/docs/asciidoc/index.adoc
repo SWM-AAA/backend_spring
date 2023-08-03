@@ -1,0 +1,51 @@
+ifndef::snippets[]
+:snippets: ./build/generated-snippets
+endif::[]
+= Zeppy API 문서
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs // 코드 하이라이트
+:toc: left // 목차를 왼쪽에 배목
+:toclevels: 4 // 목차 레벨 설정
+:author: Team_AAA
+:sectnums: // 분류별 자동으로 숫자를 달아줌
+
+== Common Responses
+=== Common Status Codes
+```java
+# 성공
+status code: 200
+```
+
+=== Common Exceptions
+
+```java
+# 클라이언트 입력 예외
+status code: 400
+
+# 인증 예외
+status code: 401
+
+# 권한 예외
+status code: 403
+
+# NotFound 예외
+status code: 404
+
+# 서버 내부 예외
+status code: 500
+```
+
+== 기능
+
+=== User 관련 기능
+==== User 위치 정보, 배터리 정보 등록
+----
+/api/v1/users/location-and-battery
+----
+===== 성공
+.Request
+include::{snippets}/updateLocationAndBattery/http-request.adoc[]
+
+.Response
+include::{snippets}/updateLocationAndBattery/http-response.adoc[]
