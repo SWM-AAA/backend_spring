@@ -31,6 +31,7 @@ public class UserController {
     public ResponseEntity<Void> updateLocationAndBattery(@RequestBody LocationAndBatteryRequest locationAndBatteryRequest) throws Exception {
         redisService.updateLocationAndBattery(locationAndBatteryRequest);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.info("@@@@@@@@@@@@@@@@@@@authentication: {}", authentication);
         String userId = authentication.getName();
         log.info("@@@@@@@@@@@@@@@@@@@userId: {}", userId);
         return ResponseEntity.ok().build();

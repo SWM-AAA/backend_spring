@@ -76,7 +76,7 @@ public class SecurityConfig {
             // .exceptionHandling(exceptionHandling -> exceptionHandling
             //     .accessDeniedPage("/my-error-page"));
 
-        http.addFilterAfter(jwtAuthenticationProcessingFilter(), LogoutFilter.class);
+        http.addFilterBefore(jwtAuthenticationProcessingFilter(), LogoutFilter.class);
        
         return http.build();
     }
