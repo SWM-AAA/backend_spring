@@ -30,7 +30,10 @@ public class UserController {
 
     @PostMapping("/v1/users/location-and-battery")
     public ResponseEntity<Void> updateLocationAndBattery(@RequestBody LocationAndBatteryRequest locationAndBatteryRequest) {
-        boolean isSuccess = redisService.updateLocationAndBattery(locationAndBatteryRequest);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userId = authentication.getName();
+
+        boolean isSuccess = redisService.updateLocationAndBattery(userId, locationAndBatteryRequest);
         if (isSuccess) {
             return ResponseEntity.ok().build();
         } else {
