@@ -32,7 +32,6 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserRepository userRepository;
-
     private GrantedAuthoritiesMapper authoritiesMapper = new NullAuthoritiesMapper();
 
     @Override
@@ -48,6 +47,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
         if (refreshToken != null) {
             checkRefreshTokenAndReIssueAccessToken(request, response, refreshToken, filterChain);
+            return;
         }
         
         if (refreshToken == null) {
@@ -58,12 +58,22 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     public void checkRefreshTokenAndReIssueAccessToken(HttpServletRequest request, HttpServletResponse response, String refreshToken,
                                                          FilterChain filterChain) throws ServletException, IOException {
-        userRepository.findByRefreshToken(refreshToken)
-                .ifPresent(user -> {
-                    String reIssuedRefreshToken = reIssueRefreshToken(user);
-                    jwtService.sendAccessAndRefreshToken(response, jwtService.createAccessToken(user.getEmail(), user.getNickname()),
-                            reIssuedRefreshToken);
-                });
+        // userRepository.findByRefreshToken(refreshToken)
+        //         .ifPresent(user -> {
+        //             String reIssuedRefreshToken = reIssueRefreshToken(user);
+        //             jwtService.sendAccessAndRefreshToken(response, jwtService.createAccessToken(user.getEmail(), user.getNickname()),
+        //                     reIssuedRefreshToken);
+        //         });
+        
+        Optional<User> userOptional = userRepository.findByRefreshToken(refreshToken);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            String reIssuedRefreshToken = reIssueRefreshToken(user);
+            jwtService.sendAccessAndRefreshToken(response, jwtService.createAccessToken(user.getEmail(), user.getNickname()),
+                    reIssuedRefreshToken);
+            saveAuthentication(user);
+        }
         filterChain.doFilter(request, response);
     }
 
@@ -91,41 +101,41 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     public void checkAccessTokenAndAuthentication(HttpServletRequest request, HttpServletResponse response,
                                               FilterChain filterChain) throws ServletException, IOException {
-    log.info("checkAccessTokenAndAuthentication() 호출");
+        log.info("checkAccessTokenAndAuthentication() 호출");
 
-    Optional<String> accessTokenOptional = jwtService.extractAccessToken(request);
+        Optional<String> accessTokenOptional = jwtService.extractAccessToken(request);
 
-    log.info("accessTokenOptional : " + accessTokenOptional);
-    if (accessTokenOptional.isPresent()) {
-        String accessToken = accessTokenOptional.get();
-        boolean isTokenValid = jwtService.isTokenValid(accessToken);
+        log.info("accessTokenOptional : " + accessTokenOptional);
+        if (accessTokenOptional.isPresent()) {
+            String accessToken = accessTokenOptional.get();
+            boolean isTokenValid = jwtService.isTokenValid(accessToken);
 
-        if (isTokenValid) {
-            log.info("Access Token이 유효합니다. Access Token: {}");
-            jwtService.extractEmail(accessToken).ifPresent(email -> {
-                Optional<User> userOptional = userRepository.findByEmail(email);
-                log.info("이메일로 사용자 정보를 조회합니다. 이메일: {}", email);
+            if (isTokenValid) {
+                log.info("Access Token이 유효합니다. Access Token: {}");
+                jwtService.extractEmail(accessToken).ifPresent(email -> {
+                    Optional<User> userOptional = userRepository.findByEmail(email);
+                    log.info("이메일로 사용자 정보를 조회합니다. 이메일: {}", email);
 
-                if (userOptional.isPresent()) {
-                    // 5. 사용자 정보가 있으면 인증 처리
-                    log.info("사용자 정보를 조회했습니다. 이메일: {}", email);
-                    User user = userOptional.get();
-                    saveAuthentication(user);
-                } else {
-                    log.warn("사용자 정보가 없습니다. 이메일: {}", email);
-                }
-            });
+                    if (userOptional.isPresent()) {
+                        // 5. 사용자 정보가 있으면 인증 처리
+                        log.info("사용자 정보를 조회했습니다. 이메일: {}", email);
+                        User user = userOptional.get();
+                        saveAuthentication(user);
+                    } else {
+                        log.warn("사용자 정보가 없습니다. 이메일: {}", email);
+                    }
+                });
+            } else {
+                log.warn("유효하지 않은 Access Token입니다. Access Token: {}", accessToken);
+            }
         } else {
-            log.warn("유효하지 않은 Access Token입니다. Access Token: {}", accessToken);
+            log.warn("Access Token이 요청에 없습니다.");
         }
-    } else {
-        log.warn("Access Token이 요청에 없습니다.");
+
+        log.info("checkAccessTokenAndAuthentication() 종료");
+
+        filterChain.doFilter(request, response);
     }
-
-    log.info("checkAccessTokenAndAuthentication() 종료");
-
-    filterChain.doFilter(request, response);
-}
 
 
     /**
@@ -159,7 +169,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                 new UsernamePasswordAuthenticationToken(userDetailsUser, null,
                 authoritiesMapper.mapAuthorities(userDetailsUser.getAuthorities()));
         
-        log.info(authentication.isAuthenticated() + " : 인증 여부@@@@@@@@@@@");
+        log.info(authentication.isAuthenticated() + " : 인증 여부");
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }

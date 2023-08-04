@@ -10,7 +10,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import kr.co.zeppy.user.entity.User;
 import kr.co.zeppy.user.entity.UserCrew;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

@@ -9,12 +9,10 @@ import kr.co.zeppy.oauth2.entity.CustomOAuth2User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.checkerframework.checker.units.qual.C;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -41,32 +39,33 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         log.info("OAuth2 Login 성공!");
         try {
             CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
-            String accessToken = jwtService.createAccessToken(oAuth2User.getEmail(), oAuth2User.getNickname());
-            String refreshToken = jwtService.createRefreshToken();
-            User findUser = userRepository.findByEmail(oAuth2User.getEmail())
-                            .orElseThrow(() -> new IllegalArgumentException("이메일에 해당하는 유저가 없습니다."));
-            if(oAuth2User.getRole() == Role.GUEST) {
-                findUser.authorizeUser();
+            if (oAuth2User.getRole() == Role.GUEST) {
+                String accessToken = jwtService.createAccessToken(oAuth2User.getEmail(), oAuth2User.getNickname());
+                String refreshToken = jwtService.createRefreshToken();
+                User findUser = userRepository.findByEmail(oAuth2User.getEmail())
+                                .orElseThrow(() -> new IllegalArgumentException("이메일에 해당하는 유저가 없습니다."));
+                findUser.updateRefreshToken(refreshToken);
+                userRepository.saveAndFlush(findUser);
+                String url = jwtService.setAccessTokenAndRefreshTokenURLParam(CALLBACK_URL, accessToken, refreshToken);
+                log.info("accessToken : 엑세스 토큰 : " + accessToken);
+                log.info("refreshToken : 리프레시 토큰 : " + refreshToken);
+                response.sendRedirect(url);
             }
-            findUser.updateRefreshToken(refreshToken);
-            userRepository.saveAndFlush(findUser);
-
-            String url = jwtService.setAccessTokenAndRefreshTokenURLParam(CALLBACK_URL, accessToken, refreshToken);
-            response.sendRedirect(url);
-
+            else {
+                loginSuccess(response, oAuth2User);
+            }
         } catch (Exception e) {
             throw e;
         }
     }
 
-    // TODO : 소셜 로그인 시에도 무조건 토큰 생성하지 말고 JWT 인증 필터처럼 RefreshToken 유/무에 따라 다르게 처리해보기
     private void loginSuccess(HttpServletResponse response, CustomOAuth2User oAuth2User) throws IOException {
         String accessToken = jwtService.createAccessToken(oAuth2User.getEmail(), oAuth2User.getNickname());
         String refreshToken = jwtService.createRefreshToken();
-        response.addHeader(jwtService.getAccessHeader(), "Bearer " + accessToken);
-        response.addHeader(jwtService.getRefreshHeader(), "Bearer " + refreshToken);
+        log.info("accessToken : 엑세스 토큰 : " + accessToken);
+        log.info("refreshToken : 리프레시 토큰 : " + refreshToken);
 
-        jwtService.sendAccessAndRefreshToken(response, accessToken, refreshToken);
         jwtService.updateRefreshToken(oAuth2User.getEmail(), refreshToken);
+        jwtService.sendAccessAndRefreshToken(response, accessToken, refreshToken);
     }
 }
