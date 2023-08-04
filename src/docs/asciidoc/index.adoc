@@ -43,9 +43,16 @@ status code: 500
 ----
 /api/v1/users/location-and-battery
 ----
-===== 성공
+===== Success
 .Request
-include::{snippets}/updateLocationAndBattery/http-request.adoc[]
+include::{snippets}/update-Location-And-Battery-Success/http-request.adoc[]
 
 .Response
-include::{snippets}/updateLocationAndBattery/http-response.adoc[]
+include::{snippets}/update-Location-And-Battery-Success/http-response.adoc[]
+
+===== Failure
+.Request
+include::{snippets}/update-Location-And-Battery-Failure/http-request.adoc[]
+
+.Response
+include::{snippets}/update-Location-And-Battery-Failure/http-response.adoc[]
