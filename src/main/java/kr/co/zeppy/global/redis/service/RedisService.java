@@ -13,10 +13,15 @@ public class RedisService {
         this.redisTemplate = redisTemplate;
     }
     
-    public void updateLocationAndBattery(LocationAndBatteryRequest locationAndBatteryRequest) throws Exception {
-        redisTemplate.opsForValue().set("latitude", locationAndBatteryRequest.getLatitude());
-        redisTemplate.opsForValue().set("longitude", locationAndBatteryRequest.getLongitude());
-        redisTemplate.opsForValue().set("battery", locationAndBatteryRequest.getBattery());
-        redisTemplate.opsForValue().set("isCharging", locationAndBatteryRequest.getIsCharging().toString());
+    public boolean updateLocationAndBattery(LocationAndBatteryRequest locationAndBatteryRequest) {
+        try {
+            redisTemplate.opsForValue().set("latitude", locationAndBatteryRequest.getLatitude());
+            redisTemplate.opsForValue().set("longitude", locationAndBatteryRequest.getLongitude());
+            redisTemplate.opsForValue().set("battery", locationAndBatteryRequest.getBattery());
+            redisTemplate.opsForValue().set("isCharging", locationAndBatteryRequest.getIsCharging().toString());
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

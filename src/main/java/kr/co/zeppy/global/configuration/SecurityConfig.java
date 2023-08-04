@@ -20,9 +20,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 
-/**
- * JwtAuthenticationProcessingFilter는 AccessToken, RefreshToken 재발급
- */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -95,7 +92,6 @@ public class SecurityConfig {
         provider.setUserDetailsService(loginService);
         return new ProviderManager(provider);
     }
-
 
     @Bean
     public JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter() {
