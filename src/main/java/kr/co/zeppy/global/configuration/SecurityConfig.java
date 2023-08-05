@@ -1,6 +1,7 @@
 package kr.co.zeppy.global.configuration;
 
 import kr.co.zeppy.global.jwt.service.JwtService;
+import kr.co.zeppy.global.filter.ExceptionHandlerFilter;
 import kr.co.zeppy.global.jwt.filter.JwtAuthenticationProcessingFilter;
 import kr.co.zeppy.user.repository.UserRepository;
 import kr.co.zeppy.oauth2.handler.OAuth2LoginFailureHandler;
@@ -19,6 +20,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
 @EnableWebSecurity
@@ -80,5 +83,10 @@ public class SecurityConfig {
     @Bean
     public JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter() {
         return new JwtAuthenticationProcessingFilter(jwtService, userRepository);
+    }
+
+    @Bean
+    public ExceptionHandlerFilter exceptionHandlerFilter(ObjectMapper objectMapper) {
+        return new ExceptionHandlerFilter(objectMapper);
     }
 }
