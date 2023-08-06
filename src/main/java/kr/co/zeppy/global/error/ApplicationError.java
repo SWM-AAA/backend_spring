@@ -7,9 +7,10 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum ZeppyError {
-    INVALID_JWT_TOKEN(HttpStatus.BAD_REQUEST, "COMMON_001", "token이 유효하지 않습니다."),
-    EXPIRED_JWT_TOKEN(HttpStatus.BAD_REQUEST, "COMMON_002", "token 유효기간이 만료되었습니다."),
+public enum ApplicationError {
+    // 401
+    INVALID_JWT_TOKEN(HttpStatus.UNAUTHORIZED, "COMMON_001", "token이 유효하지 않습니다 다시 로그인 해주세요."),
+    EXPIRED_JWT_TOKEN(HttpStatus.UNAUTHORIZED, "COMMON_002", "token 유효기간이 만료되었습니다 다시 로그인 해주세요."),
 
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SERVER_001", "서버 내부 에러가 발생하였습니다.");
 
