@@ -61,25 +61,21 @@ public class JwtService {
 
     public String createAccessToken(String email, String nickname) {
         Date now = new Date();
-        String jwt = JWT.create()
+        return JWT.create()
                 .withSubject(ACCESS_TOKEN_SUBJECT)
                 .withExpiresAt(new Date(now.getTime() + accessTokenExpirationPeriod))
                 .withClaim(EMAIL_CLAIM, email)
                 .withClaim(NICKNAME_CLAIM, nickname)
                 .sign(Algorithm.HMAC512(secretKey));
-    
-        return jwt;
     }
 
 
     public String createRefreshToken() {
         Date now = new Date();
-        String jwt = JWT.create()
+        return JWT.create()
                 .withSubject(REFRESH_TOKEN_SUBJECT)
                 .withExpiresAt(new Date(now.getTime() + refreshTokenExpirationPeriod))
                 .sign(Algorithm.HMAC512(secretKey));
-
-        return jwt;
     }
 
 
@@ -105,11 +101,10 @@ public class JwtService {
     }
 
     public String setAccessTokenAndRefreshTokenURLParam(String url, String accessToken, String refreshToken) {
-        String urlWithToken = UriComponentsBuilder.fromUriString(url)
+        return UriComponentsBuilder.fromUriString(url)
                 .queryParam(accessTokenName, accessToken)
                 .queryParam(refreshTokenName, refreshToken)
                 .build().toUriString();
-        return urlWithToken;
     }
     
     public void sendAccessAndRefreshToken(HttpServletResponse response, String accessToken, String refreshToken) {

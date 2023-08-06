@@ -460,7 +460,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel3">
 <li><a href="#_user_위치_정보_배터리_정보_등록">2.1.1. User 위치 정보, 배터리 정보 등록</a>
 <ul class="sectlevel4">
-<li><a href="#_성공">성공</a></li>
+<li><a href="#_success">Success</a></li>
+<li><a href="#_failure">Failure</a></li>
 </ul>
 </li>
 </ul>
@@ -519,7 +520,7 @@ status code: 500</code></pre>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_성공">성공</h5>
+<h5 id="_success">Success</h5>
 <div class="listingblock">
 <div class="title">Request</div>
 <div class="content">
@@ -543,6 +544,31 @@ Host: zeppy.co.kr
 </div>
 </div>
 </div>
+<div class="sect4">
+<h5 id="_failure">Failure</h5>
+<div class="listingblock">
+<div class="title">Request</div>
+<div class="content">
+<pre class="highlight nowrap"><code class="language-http" data-lang="http">POST /api/v1/users/location-and-battery HTTP/1.1
+Content-Type: application/json;charset=UTF-8
+Content-Length: 109
+Host: zeppy.co.kr
+
+{
+  "latitude" : "37.123456",
+  "longitude" : "127.123456",
+  "battery" : "90",
+  "isCharging" : false
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Response</div>
+<div class="content">
+<pre class="highlight nowrap"><code class="language-http" data-lang="http">HTTP/1.1 400 Bad Request</code></pre>
+</div>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -551,7 +577,7 @@ Host: zeppy.co.kr
 <div id="footer">
 <div id="footer-text">
 Version 0.0.1-SNAPSHOT<br>
-Last updated 2023-08-03 16:14:58 +0900
+Last updated 2023-08-04 18:27:26 +0900
 </div>
 </div>
 </body>

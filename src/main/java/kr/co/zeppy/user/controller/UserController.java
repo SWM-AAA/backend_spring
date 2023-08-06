@@ -28,12 +28,16 @@ public class UserController {
     }
 
     @PostMapping("/v1/users/location-and-battery")
-    public ResponseEntity<Void> updateLocationAndBattery(@RequestBody LocationAndBatteryRequest locationAndBatteryRequest) throws Exception {
-        redisService.updateLocationAndBattery(locationAndBatteryRequest);
+    public ResponseEntity<Void> updateLocationAndBattery(@RequestBody LocationAndBatteryRequest locationAndBatteryRequest) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userId = authentication.getName();
-        log.info("userId: {}", userId);
-        return ResponseEntity.ok().build();
+
+        boolean isSuccess = redisService.updateLocationAndBattery(userId, locationAndBatteryRequest);
+        if (isSuccess) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @GetMapping("/v1/users/friend-location-and-battery")

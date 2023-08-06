@@ -1,6 +1,7 @@
 package kr.co.zeppy.global.configuration;
 
 import kr.co.zeppy.global.jwt.service.JwtService;
+import kr.co.zeppy.global.filter.ExceptionHandlerFilter;
 import kr.co.zeppy.global.jwt.filter.JwtAuthenticationProcessingFilter;
 import kr.co.zeppy.user.repository.UserRepository;
 import kr.co.zeppy.oauth2.handler.OAuth2LoginFailureHandler;
@@ -20,9 +21,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 
-/**
- * JwtAuthenticationProcessingFilter는 AccessToken, RefreshToken 재발급
- */
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -31,28 +31,13 @@ public class SecurityConfig {
     private final LoginService loginService;
     private final JwtService jwtService;
     private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
     private final CustomOAuth2UserService customOAuth2UserService;
 
     private static final String[] AUTH_WHITELIST = {
-            // "/auth/**",
-            // "/h2-console/**",
-            // "/webjars/**",
-            // "/login",
-
-            "/docs/**",
-            "/error",
-            "/v2/api-docs",
-            "/swagger-resources",
-            "/swagger-resources/**",
-            "/configuration/ui",
-            "/configuration/security",
-            "/swagger-ui.html",
-            "/webjars/**",
-            // -- Swagger UI v3 (OpenAPI)
-            "/v3/api-docs/**",
-            "/swagger-ui/**",
+            "/login",
     };
 
     @Bean
@@ -77,6 +62,7 @@ public class SecurityConfig {
             //     .accessDeniedPage("/my-error-page"));
 
         http.addFilterBefore(jwtAuthenticationProcessingFilter(), LogoutFilter.class);
+        http.addFilterBefore(exceptionHandlerFilter(), JwtAuthenticationProcessingFilter.class);
        
         return http.build();
     }
@@ -96,10 +82,13 @@ public class SecurityConfig {
         return new ProviderManager(provider);
     }
 
-
     @Bean
     public JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter() {
-        JwtAuthenticationProcessingFilter jwtAuthenticationFilter = new JwtAuthenticationProcessingFilter(jwtService, userRepository);
-        return jwtAuthenticationFilter;
+        return new JwtAuthenticationProcessingFilter(jwtService, userRepository);
+    }
+
+    @Bean
+    public ExceptionHandlerFilter exceptionHandlerFilter() {
+        return new ExceptionHandlerFilter(objectMapper);
     }
 }

@@ -158,12 +158,10 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
         String password = PasswordUtil.generateRandomPassword();
 
         UserDetails userDetailsUser = org.springframework.security.core.userdetails.User.builder()
-                .username(myUser.getEmail())
+                .username(myUser.getId().toString())
                 .password(password)
                 .roles(myUser.getRole().name())
                 .build();
-
-        log.info("userDetailsUser : 호출");
 
         Authentication authentication =
                 new UsernamePasswordAuthenticationToken(userDetailsUser, null,
