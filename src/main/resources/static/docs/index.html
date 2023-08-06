@@ -565,7 +565,14 @@ Host: zeppy.co.kr
 <div class="listingblock">
 <div class="title">Response</div>
 <div class="content">
-<pre class="highlight nowrap"><code class="language-http" data-lang="http">HTTP/1.1 400 Bad Request</code></pre>
+<pre class="highlight nowrap"><code class="language-http" data-lang="http">HTTP/1.1 503 Service Unavailable
+Content-Type: application/json;charset=UTF-8
+Content-Length: 92
+
+{
+  "message" : "Redis 서버가 연결되지 않았습니다.",
+  "code" : "REDIS_001"
+}</code></pre>
 </div>
 </div>
 </div>
