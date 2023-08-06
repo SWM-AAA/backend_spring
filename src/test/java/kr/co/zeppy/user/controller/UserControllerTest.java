@@ -2,6 +2,8 @@ package kr.co.zeppy.user.controller;
 
 import kr.co.zeppy.ApiDocument;
 import kr.co.zeppy.SecurityConfigTest;
+import kr.co.zeppy.global.error.ApplicationError;
+import kr.co.zeppy.global.error.ApplicationException;
 import kr.co.zeppy.global.redis.dto.LocationAndBatteryRequest;
 import kr.co.zeppy.global.redis.service.RedisService;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +41,9 @@ public class UserControllerTest extends ApiDocument {
 
     private LocationAndBatteryRequest locationAndBatteryRequest;
 
+    private ApplicationException redisUserLocationUpdateException;
+    
+
     @BeforeEach
     void setUp() {
         locationAndBatteryRequest = LocationAndBatteryRequest.builder()
@@ -47,12 +52,14 @@ public class UserControllerTest extends ApiDocument {
                 .battery(BATTERY)
                 .isCharging(IS_CHARGING)
                 .build();
+        
+        redisUserLocationUpdateException = new ApplicationException(ApplicationError.REDIS_SERVER_UNAVAILABLE);
     }
 
     @Test
     void test_Update_Location_And_Battery_Success() throws Exception {
         // given
-        willReturn(true).given(redisService).updateLocationAndBattery(anyString(), any(LocationAndBatteryRequest.class));
+        willDoNothing().given(redisService).updateLocationAndBattery(anyString(), any(LocationAndBatteryRequest.class));
 
         // when
         ResultActions resultActions = update_Location_And_Battery_Request();
@@ -64,7 +71,7 @@ public class UserControllerTest extends ApiDocument {
     @Test
     void test_Update_Location_And_Battery_Failure() throws Exception {
         // given
-        willReturn(false).given(redisService).updateLocationAndBattery(anyString(), any(LocationAndBatteryRequest.class));
+        willThrow(redisUserLocationUpdateException).given(redisService).updateLocationAndBattery(anyString(), any(LocationAndBatteryRequest.class));
 
         // when
         ResultActions resultActions = update_Location_And_Battery_Request();
@@ -85,7 +92,7 @@ public class UserControllerTest extends ApiDocument {
     }
 
     private void update_Location_And_Battery_Request_Failure(ResultActions resultActions) throws Exception {
-        printAndMakeSnippet(resultActions.andExpect(status().isBadRequest()), "update-Location-And-Battery-Failure");
+        printAndMakeSnippet(resultActions.andExpect(status().isServiceUnavailable()), "update-Location-And-Battery-Failure");
         verify(redisService, times(1)).updateLocationAndBattery(anyString(), any(LocationAndBatteryRequest.class));
     }
 }

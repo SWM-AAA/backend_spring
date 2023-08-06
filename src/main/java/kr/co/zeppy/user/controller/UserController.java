@@ -32,12 +32,9 @@ public class UserController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userId = authentication.getName();
 
-        boolean isSuccess = redisService.updateLocationAndBattery(userId, locationAndBatteryRequest);
-        if (isSuccess) {
-            return ResponseEntity.ok().build();
-        } else {
-            return ResponseEntity.badRequest().build();
-        }
+        redisService.updateLocationAndBattery(userId, locationAndBatteryRequest);
+
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/v1/users/friend-location-and-battery")
