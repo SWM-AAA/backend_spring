@@ -31,6 +31,7 @@ public class SecurityConfig {
     private final LoginService loginService;
     private final JwtService jwtService;
     private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
     private final CustomOAuth2UserService customOAuth2UserService;
@@ -61,6 +62,7 @@ public class SecurityConfig {
             //     .accessDeniedPage("/my-error-page"));
 
         http.addFilterBefore(jwtAuthenticationProcessingFilter(), LogoutFilter.class);
+        http.addFilterBefore(exceptionHandlerFilter(), JwtAuthenticationProcessingFilter.class);
        
         return http.build();
     }
@@ -86,7 +88,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public ExceptionHandlerFilter exceptionHandlerFilter(ObjectMapper objectMapper) {
+    public ExceptionHandlerFilter exceptionHandlerFilter() {
         return new ExceptionHandlerFilter(objectMapper);
     }
 }
