@@ -13,7 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import kr.co.zeppy.global.dto.ErrorResponse;
 import kr.co.zeppy.global.error.ExpiredJwtException;
 import kr.co.zeppy.global.error.InvalidJwtException;
-import kr.co.zeppy.global.error.ZeppyException;
+import kr.co.zeppy.global.error.ApplicationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,12 +36,12 @@ public class ExceptionHandlerFilter extends OncePerRequestFilter {
         }
     }
 
-    private void setErrorResponse(HttpServletResponse response, ZeppyException zeppyException) {
-        response.setStatus(zeppyException.getStatus().value());
+    private void setErrorResponse(HttpServletResponse response, ApplicationException applicationException) {
+        response.setStatus(applicationException.getStatus().value());
         response.setContentType(APPLICATION_JSON);
         response.setCharacterEncoding(UTF_8);
         try {
-            response.getWriter().write(objectMapper.writeValueAsString(ErrorResponse.of(zeppyException)));
+            response.getWriter().write(objectMapper.writeValueAsString(ErrorResponse.fromException(applicationException)));
         } catch (IOException e) {
             log.error("Error Response Write Exception", e);
         }
