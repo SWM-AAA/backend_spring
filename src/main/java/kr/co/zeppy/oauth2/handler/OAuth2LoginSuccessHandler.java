@@ -37,25 +37,21 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         log.info("OAuth2 Login 성공!");
-        try {
-            CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
-            if (oAuth2User.getRole() == Role.GUEST) {
-                String accessToken = jwtService.createAccessToken(oAuth2User.getEmail(), oAuth2User.getNickname());
-                String refreshToken = jwtService.createRefreshToken();
-                User findUser = userRepository.findByEmail(oAuth2User.getEmail())
-                                .orElseThrow(() -> new IllegalArgumentException("이메일에 해당하는 유저가 없습니다."));
-                findUser.updateRefreshToken(refreshToken);
-                userRepository.saveAndFlush(findUser);
-                String url = jwtService.setAccessTokenAndRefreshTokenURLParam(CALLBACK_URL, accessToken, refreshToken);
-                log.info("accessToken : 엑세스 토큰 : " + accessToken);
-                log.info("refreshToken : 리프레시 토큰 : " + refreshToken);
-                response.sendRedirect(url);
-            }
-            else {
-                loginSuccess(response, oAuth2User);
-            }
-        } catch (Exception e) {
-            throw e;
+        CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
+        if (oAuth2User.getRole() == Role.GUEST) {
+            String accessToken = jwtService.createAccessToken(oAuth2User.getEmail(), oAuth2User.getNickname());
+            String refreshToken = jwtService.createRefreshToken();
+            User findUser = userRepository.findByEmail(oAuth2User.getEmail())
+                            .orElseThrow(() -> new IllegalArgumentException("이메일에 해당하는 유저가 없습니다."));
+            findUser.updateRefreshToken(refreshToken);
+            userRepository.saveAndFlush(findUser);
+            String url = jwtService.setAccessTokenAndRefreshTokenURLParam(CALLBACK_URL, accessToken, refreshToken);
+            log.info("accessToken : 엑세스 토큰 : " + accessToken);
+            log.info("refreshToken : 리프레시 토큰 : " + refreshToken);
+            response.sendRedirect(url);
+        }
+        else {
+            loginSuccess(response, oAuth2User);
         }
     }
 

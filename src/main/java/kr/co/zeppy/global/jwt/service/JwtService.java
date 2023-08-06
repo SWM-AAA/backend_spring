@@ -91,7 +91,7 @@ public class JwtService {
                 .build().toUriString();
     }
     
-    
+
     public void sendAccessAndRefreshToken(HttpServletResponse response, String accessToken, String refreshToken) {
         response.setStatus(HttpServletResponse.SC_OK);
 
@@ -155,7 +155,7 @@ public class JwtService {
         }
     }
 
-
+    
     public void setAccessTokenHeader(HttpServletResponse response, String accessToken) {
         response.setHeader(accessHeader, accessToken);
     }
