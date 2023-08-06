@@ -86,57 +86,18 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     }
 
 
-    // public void checkAccessTokenAndAuthentication(HttpServletRequest request, HttpServletResponse response,
-    //                                               FilterChain filterChain) throws ServletException, IOException {
-    //     log.info("checkAccessTokenAndAuthentication() 호출");
-    //     jwtService.extractAccessToken(request)
-    //             .filter(jwtService::isTokenValid)
-    //             .ifPresent(accessToken -> jwtService.extractEmail(accessToken)
-    //                     .ifPresent(email -> userRepository.findByEmail(email)
-    //                             .ifPresent(this::saveAuthentication)));
-    //     log.info("checkAccessTokenAndAuthentication() 종료");
-
-    //     filterChain.doFilter(request, response);
-    // }
-
     public void checkAccessTokenAndAuthentication(HttpServletRequest request, HttpServletResponse response,
-                                              FilterChain filterChain) throws ServletException, IOException {
+                                                  FilterChain filterChain) throws ServletException, IOException {
         log.info("checkAccessTokenAndAuthentication() 호출");
-
-        Optional<String> accessTokenOptional = jwtService.extractAccessToken(request);
-
-        log.info("accessTokenOptional : " + accessTokenOptional);
-        if (accessTokenOptional.isPresent()) {
-            String accessToken = accessTokenOptional.get();
-            boolean isTokenValid = jwtService.isTokenValid(accessToken);
-
-            if (isTokenValid) {
-                log.info("Access Token이 유효합니다. Access Token: {}");
-                jwtService.extractEmail(accessToken).ifPresent(email -> {
-                    Optional<User> userOptional = userRepository.findByEmail(email);
-                    log.info("이메일로 사용자 정보를 조회합니다. 이메일: {}", email);
-
-                    if (userOptional.isPresent()) {
-                        // 5. 사용자 정보가 있으면 인증 처리
-                        log.info("사용자 정보를 조회했습니다. 이메일: {}", email);
-                        User user = userOptional.get();
-                        saveAuthentication(user);
-                    } else {
-                        log.warn("사용자 정보가 없습니다. 이메일: {}", email);
-                    }
-                });
-            } else {
-                log.warn("유효하지 않은 Access Token입니다. Access Token: {}", accessToken);
-            }
-        } else {
-            log.warn("Access Token이 요청에 없습니다.");
-        }
-
+        jwtService.extractAccessToken(request)
+                .filter(jwtService::isTokenValid)
+                .ifPresent(accessToken -> jwtService.extractEmail(accessToken)
+                        .ifPresent(email -> userRepository.findByEmail(email)
+                                .ifPresent(this::saveAuthentication)));
         log.info("checkAccessTokenAndAuthentication() 종료");
 
         filterChain.doFilter(request, response);
     }
-
 
     /**
      * [인증 허가 메소드]

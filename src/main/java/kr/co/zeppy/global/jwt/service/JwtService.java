@@ -4,8 +4,11 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
+import kr.co.zeppy.global.error.ApplicationError;
+import kr.co.zeppy.global.error.InvalidJwtException;
 import kr.co.zeppy.user.entity.User;
 import kr.co.zeppy.user.repository.UserRepository;
+import kr.co.zeppy.global.error.NotFoundException;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -55,6 +58,8 @@ public class JwtService {
     private static final String EMAIL_CLAIM = "email";
     private static final String NICKNAME_CLAIM = "nickname";
     private static final String BEARER = "Bearer ";
+    private static final String APPLICATION_JSON = "application/json";
+    private static final String UTF_8 = "UTF-8";
 
     private final UserRepository userRepository;
 
@@ -79,33 +84,13 @@ public class JwtService {
     }
 
 
-    // 재발급
-    public void sendAccessToken(HttpServletResponse response, String accessToken) {
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.setHeader(accessHeader, accessToken);
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-    
-        Map<String, String> tokenMap = new HashMap<>();
-        tokenMap.put(accessTokenName, accessToken);
-
-        try {
-            String jsonToken = new ObjectMapper().writeValueAsString(tokenMap);
-            response.getWriter().write(jsonToken);
-            log.info("body에 담아서 보낸 jsontoken : {}", jsonToken);
-        } catch (Exception e) {
-            log.error("Access Token을 Response Body에 담아서 보내는데 실패했습니다. {}", e.getMessage());
-        }
-    
-        log.info("재발급된 Access Token : {}", accessToken);
-    }
-
     public String setAccessTokenAndRefreshTokenURLParam(String url, String accessToken, String refreshToken) {
         return UriComponentsBuilder.fromUriString(url)
                 .queryParam(accessTokenName, accessToken)
                 .queryParam(refreshTokenName, refreshToken)
                 .build().toUriString();
     }
+    
     
     public void sendAccessAndRefreshToken(HttpServletResponse response, String accessToken, String refreshToken) {
         response.setStatus(HttpServletResponse.SC_OK);
@@ -160,18 +145,14 @@ public class JwtService {
 
 
     public Optional<String> extractEmail(String accessToken) {
-        Optional<String> email;
         try {
-            DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC512(secretKey))
+            return Optional.ofNullable(JWT.require(Algorithm.HMAC512(secretKey))
                     .build()
-                    .verify(accessToken);
-
-            email = Optional.ofNullable(decodedJWT.getClaim(EMAIL_CLAIM).asString());
+                    .verify(accessToken)
+                    .getClaim(EMAIL_CLAIM).asString());
         } catch (Exception e) {
-            log.error("액세스 토큰이 유효하지 않습니다.");
-            email = Optional.empty();
+            return Optional.empty();
         }
-        return email;
     }
 
 
@@ -181,8 +162,8 @@ public class JwtService {
 
     // access token을 response body에 담아서 보냄
     public void setAccessTokenBody(HttpServletResponse response, String accessToken) {
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
+        response.setContentType(APPLICATION_JSON);
+        response.setCharacterEncoding(UTF_8);
     
         Map<String, String> tokenMap = new HashMap<>();
         tokenMap.put(accessTokenName, accessToken);
@@ -203,8 +184,8 @@ public class JwtService {
 
 
     public void setRefreshTokenBody(HttpServletResponse response, String refreshToken) {
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
+        response.setContentType(APPLICATION_JSON);
+        response.setCharacterEncoding(UTF_8);
 
         Map<String, String> tokenMap = new HashMap<>();
         tokenMap.put(refreshTokenName, refreshToken);
@@ -221,20 +202,17 @@ public class JwtService {
 
     public void updateRefreshToken(String email, String refreshToken) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("일치하는 회원이 없습니다."));
+                .orElseThrow(() -> new NotFoundException(ApplicationError.USER_EMAIL_NOT_FOUND));
         user.updateRefreshToken(refreshToken);
     }
 
     public boolean isTokenValid(String token) {
-        Boolean isTokenValid;
         try {
             JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token);
-            isTokenValid = true;
+            return true;
         } catch (Exception e) {
             log.error("유효하지 않은 토큰입니다. {}", e.getMessage());
-            isTokenValid = false;
+            throw new InvalidJwtException(ApplicationError.INVALID_JWT_TOKEN);
         }
-        log.info("isTokenValid : {}", isTokenValid);
-        return isTokenValid;
     }
 }
