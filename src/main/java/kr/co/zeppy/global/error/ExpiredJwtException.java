@@ -1,8 +1,8 @@
 package kr.co.zeppy.global.error;
 
-public class ExpiredJwtException extends ZeppyException{
+public class ExpiredJwtException extends ApplicationException {
     
-    public ExpiredJwtException(ZeppyError error) {
+    public ExpiredJwtException(ApplicationError error) {
         super(error);
     }
 }

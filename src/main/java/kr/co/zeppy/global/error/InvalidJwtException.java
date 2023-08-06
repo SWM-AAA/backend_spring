@@ -1,8 +1,8 @@
 package kr.co.zeppy.global.error;
 
-public class InvalidJwtException extends ZeppyException {
+public class InvalidJwtException extends ApplicationException {
     
-    public InvalidJwtException(ZeppyError error) {
+    public InvalidJwtException(ApplicationError error) {
         super(error);
     }
 }
