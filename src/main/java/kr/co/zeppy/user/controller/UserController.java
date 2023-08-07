@@ -1,7 +1,9 @@
 package kr.co.zeppy.user.controller;
 
+import kr.co.zeppy.global.jwt.service.JwtService;
 import kr.co.zeppy.global.redis.dto.LocationAndBatteryRequest;
 import kr.co.zeppy.global.redis.service.RedisService;
+import kr.co.zeppy.user.dto.UserRegisterRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,11 +23,20 @@ import lombok.extern.slf4j.Slf4j;
 public class UserController {
 
     private final RedisService redisService;
+    private final JwtService jwtService;
 
     @GetMapping("/jwt-test")
     public String jwtTest() {
+        log.info("로그인 테스트");
         return "jwtTest 요청 성공";
     }
+
+    @PostMapping("/v1/users/register")
+    public ResponseEntity<Void> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
+        
+        return ResponseEntity.ok().build();
+    }
+
 
     @PostMapping("/v1/users/location-and-battery")
     public ResponseEntity<Void> updateLocationAndBattery(@RequestBody LocationAndBatteryRequest locationAndBatteryRequest) {

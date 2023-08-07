@@ -1,4 +1,4 @@
-package kr.co.zeppy.global.redis.dto;
+package kr.co.zeppy.user.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,10 +10,8 @@ import lombok.AccessLevel;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class LocationAndBatteryRequest {
+public class UserRegisterRequest {
 
-    private String latitude;
-    private String longitude;
-    private String battery;
-    private Boolean isCharging;
+    private String nickname;
+    private String profileImage;
 }

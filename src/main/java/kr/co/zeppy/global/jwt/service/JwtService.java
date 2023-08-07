@@ -55,22 +55,21 @@ public class JwtService {
 
     private static final String ACCESS_TOKEN_SUBJECT = "AccessToken";
     private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
-    private static final String EMAIL_CLAIM = "email";
-    private static final String NICKNAME_CLAIM = "nickname";
+    private static final String LOGIN_ID_CLAIM = "loginId";
     private static final String BEARER = "Bearer ";
+    private static final String IS_FIRST = "isFirst";
     private static final String APPLICATION_JSON = "application/json";
     private static final String UTF_8 = "UTF-8";
 
     private final UserRepository userRepository;
 
 
-    public String createAccessToken(String email, String nickname) {
+    public String createAccessToken(String loginId) {
         Date now = new Date();
         return JWT.create()
                 .withSubject(ACCESS_TOKEN_SUBJECT)
+                .withClaim(LOGIN_ID_CLAIM, loginId)
                 .withExpiresAt(new Date(now.getTime() + accessTokenExpirationPeriod))
-                .withClaim(EMAIL_CLAIM, email)
-                .withClaim(NICKNAME_CLAIM, nickname)
                 .sign(Algorithm.HMAC512(secretKey));
     }
 
@@ -84,13 +83,14 @@ public class JwtService {
     }
 
 
-    public String setAccessTokenAndRefreshTokenURLParam(String url, String accessToken, String refreshToken) {
+    public String setAccessTokenAndRefreshTokenURLParam(String url, String accessToken, String refreshToken, boolean isfirst) {
         return UriComponentsBuilder.fromUriString(url)
                 .queryParam(accessTokenName, accessToken)
                 .queryParam(refreshTokenName, refreshToken)
+                .queryParam(IS_FIRST, isfirst)
                 .build().toUriString();
     }
-    
+
 
     public void sendAccessAndRefreshToken(HttpServletResponse response, String accessToken, String refreshToken) {
         response.setStatus(HttpServletResponse.SC_OK);
@@ -144,12 +144,12 @@ public class JwtService {
     }
 
 
-    public Optional<String> extractEmail(String accessToken) {
+    public Optional<String> extractLoginId(String accessToken) {
         try {
             return Optional.ofNullable(JWT.require(Algorithm.HMAC512(secretKey))
                     .build()
                     .verify(accessToken)
-                    .getClaim(EMAIL_CLAIM).asString());
+                    .getClaim(LOGIN_ID_CLAIM).asString());
         } catch (Exception e) {
             return Optional.empty();
         }
@@ -200,9 +200,9 @@ public class JwtService {
     }
 
 
-    public void updateRefreshToken(String email, String refreshToken) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new NotFoundException(ApplicationError.USER_EMAIL_NOT_FOUND));
+    public void updateRefreshToken(String loginId, String refreshToken) {
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new NotFoundException(ApplicationError.USER_LOGINID_NOT_FOUND));
         user.updateRefreshToken(refreshToken);
     }
 

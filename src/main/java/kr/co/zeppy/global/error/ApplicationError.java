@@ -20,7 +20,7 @@ public enum ApplicationError {
 
     // 404
     USER_ID_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_001", "사용자 ID를 찾을 수 없습니다."),
-    USER_EMAIL_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_002", "사용자 Email을 찾을 수 없습니다."),
+    USER_LOGINID_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_002", "사용자 LoginID를 찾을 수 없습니다."),
     USER_REFRESHTOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_003", "사용자 RefreshToken을 찾을 수 없습니다.");
 
     private final HttpStatus status;
