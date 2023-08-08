@@ -13,5 +13,5 @@ import lombok.AccessLevel;
 public class UserRegisterRequest {
 
     private String nickname;
-    private String profileImage;
+    private String imageUrl;
 }

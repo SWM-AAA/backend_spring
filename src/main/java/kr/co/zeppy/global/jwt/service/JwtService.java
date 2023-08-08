@@ -2,7 +2,6 @@ package kr.co.zeppy.global.jwt.service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.interfaces.DecodedJWT;
 
 import kr.co.zeppy.global.error.ApplicationError;
 import kr.co.zeppy.global.error.InvalidJwtException;
@@ -57,7 +56,7 @@ public class JwtService {
     private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
     private static final String LOGIN_ID_CLAIM = "loginId";
     private static final String BEARER = "Bearer ";
-    private static final String IS_FIRST = "isFirst";
+    private static final String IS_FIRST = "is_first";
     private static final String APPLICATION_JSON = "application/json";
     private static final String UTF_8 = "UTF-8";
 
@@ -69,6 +68,7 @@ public class JwtService {
         return JWT.create()
                 .withSubject(ACCESS_TOKEN_SUBJECT)
                 .withClaim(LOGIN_ID_CLAIM, loginId)
+                .withIssuedAt(now)
                 .withExpiresAt(new Date(now.getTime() + accessTokenExpirationPeriod))
                 .sign(Algorithm.HMAC512(secretKey));
     }
@@ -78,6 +78,7 @@ public class JwtService {
         Date now = new Date();
         return JWT.create()
                 .withSubject(REFRESH_TOKEN_SUBJECT)
+                .withIssuedAt(now)
                 .withExpiresAt(new Date(now.getTime() + refreshTokenExpirationPeriod))
                 .sign(Algorithm.HMAC512(secretKey));
     }
