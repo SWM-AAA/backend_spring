@@ -7,7 +7,7 @@ import kr.co.zeppy.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findUserTag(String userTag);
+    Optional<User> findByUserTag(String userTag);
 
     Optional<User> findByNickname(String nickname);
 
