@@ -11,6 +11,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.util.Map;
+import java.util.UUID;
 
 
 // OAuth2 로그인을 위한 OAuthAttributes 클래스
@@ -65,7 +66,7 @@ public class OAuthAttributes {
         return User.builder()
                 .socialType(socialType)
                 .socialId(oauth2UserInfo.getId())
-                .email(oauth2UserInfo.getEmail())
+                .loginId(UUID.randomUUID().toString())
                 .nickname(oauth2UserInfo.getNickname())
                 .imageUrl(oauth2UserInfo.getImageUrl())
                 .role(Role.GUEST)

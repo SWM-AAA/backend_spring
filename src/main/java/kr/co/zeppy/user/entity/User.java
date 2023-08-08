@@ -33,13 +33,15 @@ public class User {
     @Column(name = "user_id")
     private Long id;
 
-    private String email;
     private String nickname;
     private String imageUrl;
 
     @Builder.Default
     @OneToMany(mappedBy = "user")
     private Set<UserCrew> userCrews = new LinkedHashSet<>();
+
+    @Column(unique = true)
+    private String loginId;
 
     @Enumerated(EnumType.STRING)
     private Role role;
