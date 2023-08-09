@@ -54,7 +54,7 @@ public class JwtService {
 
     private static final String ACCESS_TOKEN_SUBJECT = "AccessToken";
     private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
-    private static final String LOGIN_ID_CLAIM = "loginId";
+    private static final String LOGIN_USER_TAG = "userTag";
     private static final String BEARER = "Bearer ";
     private static final String IS_FIRST = "is_first";
     private static final String APPLICATION_JSON = "application/json";
@@ -63,11 +63,11 @@ public class JwtService {
     private final UserRepository userRepository;
 
 
-    public String createAccessToken(String loginId) {
+    public String createAccessToken(String userTag) {
         Date now = new Date();
         return JWT.create()
                 .withSubject(ACCESS_TOKEN_SUBJECT)
-                .withClaim(LOGIN_ID_CLAIM, loginId)
+                .withClaim(LOGIN_USER_TAG, userTag)
                 .withIssuedAt(now)
                 .withExpiresAt(new Date(now.getTime() + accessTokenExpirationPeriod))
                 .sign(Algorithm.HMAC512(secretKey));
@@ -145,12 +145,12 @@ public class JwtService {
     }
 
 
-    public Optional<String> extractLoginId(String accessToken) {
+    public Optional<String> extractUserTag(String accessToken) {
         try {
             return Optional.ofNullable(JWT.require(Algorithm.HMAC512(secretKey))
                     .build()
                     .verify(accessToken)
-                    .getClaim(LOGIN_ID_CLAIM).asString());
+                    .getClaim(LOGIN_USER_TAG).asString());
         } catch (Exception e) {
             return Optional.empty();
         }
@@ -201,8 +201,8 @@ public class JwtService {
     }
 
 
-    public void updateRefreshToken(String loginId, String refreshToken) {
-        User user = userRepository.findByLoginId(loginId)
+    public void updateRefreshToken(String userTag, String refreshToken) {
+        User user = userRepository.findByUserTag(userTag)
                 .orElseThrow(() -> new NotFoundException(ApplicationError.USER_LOGINID_NOT_FOUND));
         user.updateRefreshToken(refreshToken);
     }

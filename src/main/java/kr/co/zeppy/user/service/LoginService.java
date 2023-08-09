@@ -18,14 +18,14 @@ public class LoginService implements UserDetailsService {
     private final UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String loginId) throws UsernameNotFoundException {
-        User user = userRepository.findByLoginId(loginId)
+    public UserDetails loadUserByUsername(String userTag) throws UsernameNotFoundException {
+        User user = userRepository.findByUserTag(userTag)
                 .orElseThrow(() -> new UsernameNotFoundException("해당 Login ID 가 존재하지 않습니다."));
         
         String password = PasswordUtil.generateRandomPassword();
         
         return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getLoginId())
+                .username(user.getUserTag())
                 .password(password)
                 .roles(user.getRole().toString())
                 .build();

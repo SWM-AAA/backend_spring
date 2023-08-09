@@ -21,10 +21,10 @@ public class UserService {
 
     @Transactional
     public void register(String accessToken, UserRegisterRequest userRegisterRequest) {
-        String loginId = jwtService.extractLoginId(accessToken)
+        String userTag = jwtService.extractUserTag(accessToken)
                 .orElseThrow(() -> new ApplicationException(ApplicationError.USER_LOGINID_NOT_FOUND));
 
-        User user = userRepository.findByLoginId(loginId)
+        User user = userRepository.findByUserTag(userTag)
                 .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
         user.updateNickname(userRegisterRequest.getNickname());
         user.updateImageUrl(userRegisterRequest.getImageUrl());

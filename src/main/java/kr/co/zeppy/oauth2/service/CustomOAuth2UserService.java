@@ -3,9 +3,10 @@ package kr.co.zeppy.oauth2.service;
 import kr.co.zeppy.user.entity.SocialType;
 import kr.co.zeppy.user.entity.User;
 import kr.co.zeppy.user.repository.UserRepository;
+import kr.co.zeppy.user.service.NickNameService;
 import kr.co.zeppy.oauth2.entity.CustomOAuth2User;
 import kr.co.zeppy.oauth2.entity.OAuthAttributes;
-
+import kr.co.zeppy.oauth2.userinfo.OAuth2UserInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -25,6 +26,7 @@ import java.util.Map;
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
     private final UserRepository userRepository;
+    private final NickNameService nickNameService;
 
     private static final String KAKAO = "kakao";
 
@@ -62,7 +64,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 Collections.singleton(new SimpleGrantedAuthority(createdUser.getRole().getKey())),
                 attributes,
                 extractAttributes.getNameAttributeKey(),
-                createdUser.getLoginId(),
+                createdUser.getUserTag(),
                 createdUser.getRole()
         );
     }
@@ -88,12 +90,13 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         return findUser;
     }
 
-    /**
-     * OAuthAttributes의 toEntity() 메소드를 통해 빌더로 User 객체 생성 후 반환
-     * 생성된 User 객체를 DB에 저장 : socialType, socialId, email, role 값만 있는 상태
-     */
+
     private User saveUser(OAuthAttributes attributes, SocialType socialType) {
-        User createdUser = attributes.toEntity(socialType, attributes.getOauth2UserInfo());
+        OAuth2UserInfo oAuth2UserInfo = attributes.getOauth2UserInfo();
+        String nickname = oAuth2UserInfo.getNickname();
+        String userTag = nickNameService.getUserTagToNickName(nickname);
+
+        User createdUser = attributes.toEntity(socialType, oAuth2UserInfo, userTag);
         return userRepository.save(createdUser);
     }
 }

@@ -68,7 +68,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
         if (userOptional.isPresent()) {
             User user = userOptional.get();
             String reIssuedRefreshToken = reIssueRefreshToken(user);
-            jwtService.sendAccessAndRefreshToken(response, jwtService.createAccessToken(user.getLoginId()),
+            jwtService.sendAccessAndRefreshToken(response, jwtService.createAccessToken(user.getUserTag()),
                     reIssuedRefreshToken);
         }
         filterChain.doFilter(request, response);
@@ -105,9 +105,9 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
             if (isTokenValid) {
                 log.info("Access Token이 유효합니다. Access Token: {}");
-                jwtService.extractLoginId(accessToken).ifPresent(loginId -> {
-                    Optional<User> userOptional = userRepository.findByLoginId(loginId);
-                    log.info("로그인 ID로 사용자를 조회합니다. LoginId : {}", loginId);
+                jwtService.extractUserTag(accessToken).ifPresent(userTag -> {
+                    Optional<User> userOptional = userRepository.findByUserTag(userTag);
+                    log.info("userTag로 사용자를 조회합니다. userTag : {}", userTag);
 
                     if (userOptional.isPresent()) {
                         // 5. 사용자 정보가 있으면 인증 처리
@@ -133,7 +133,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
         String password = PasswordUtil.generateRandomPassword();
 
         UserDetails userDetailsUser = org.springframework.security.core.userdetails.User.builder()
-                .username(myUser.getLoginId())
+                .username(myUser.getUserTag())
                 .password(password)
                 .roles(myUser.getRole().name())
                 .build();

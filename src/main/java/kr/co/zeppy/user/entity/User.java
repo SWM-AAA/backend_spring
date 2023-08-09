@@ -34,14 +34,16 @@ public class User {
     private Long id;
 
     private String nickname;
+
     private String imageUrl;
 
     @Builder.Default
     @OneToMany(mappedBy = "user")
     private Set<UserCrew> userCrews = new LinkedHashSet<>();
 
+    // ex) 닉네임#0001
     @Column(unique = true)
-    private String loginId;
+    private String userTag;
 
     @Enumerated(EnumType.STRING)
     private Role role;
