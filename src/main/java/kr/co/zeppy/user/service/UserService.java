@@ -22,7 +22,7 @@ public class UserService {
     @Transactional
     public void register(String accessToken, UserRegisterRequest userRegisterRequest) {
         String userTag = jwtService.extractUserTag(accessToken)
-                .orElseThrow(() -> new ApplicationException(ApplicationError.USER_LOGINID_NOT_FOUND));
+                .orElseThrow(() -> new ApplicationException(ApplicationError.USER_TAG_NOT_FOUND));
 
         User user = userRepository.findByUserTag(userTag)
                 .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));

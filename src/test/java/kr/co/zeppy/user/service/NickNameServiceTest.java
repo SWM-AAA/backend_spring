@@ -42,7 +42,7 @@ public class NickNameServiceTest {
         String userTag = USER_NICK_NAME;
 
         //when
-        String nickName = nickNameService.getUserTagToNickName(userTag);
+        String nickName = nickNameService.getUserTagFromNickName(userTag);
 
         // then
         assertAll(
@@ -64,7 +64,7 @@ public class NickNameServiceTest {
         //when
         nickNameRepository.save(counter);
         Mockito.when(nickNameRepository.findByNickname(userTag)).thenReturn(Optional.of(counter));
-        String nickName = nickNameService.getUserTagToNickName(userTag);
+        String nickName = nickNameService.getUserTagFromNickName(userTag);
     
         // then
         assertAll(
@@ -86,7 +86,7 @@ public class NickNameServiceTest {
         //when
         nickNameRepository.save(counter);
         Mockito.when(nickNameRepository.findByNickname(userTag)).thenReturn(Optional.of(counter));
-        String nickName = nickNameService.getUserTagToNickName(userTag);
+        String nickName = nickNameService.getUserTagFromNickName(userTag);
 
         // then
         assertAll(

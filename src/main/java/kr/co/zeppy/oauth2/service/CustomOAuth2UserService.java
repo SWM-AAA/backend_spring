@@ -94,7 +94,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     private User saveUser(OAuthAttributes attributes, SocialType socialType) {
         OAuth2UserInfo oAuth2UserInfo = attributes.getOauth2UserInfo();
         String nickname = oAuth2UserInfo.getNickname();
-        String userTag = nickNameService.getUserTagToNickName(nickname);
+        String userTag = nickNameService.getUserTagFromNickName(nickname);
 
         User createdUser = attributes.toEntity(socialType, oAuth2UserInfo, userTag);
         return userRepository.save(createdUser);

@@ -203,7 +203,7 @@ public class JwtService {
 
     public void updateRefreshToken(String userTag, String refreshToken) {
         User user = userRepository.findByUserTag(userTag)
-                .orElseThrow(() -> new NotFoundException(ApplicationError.USER_LOGINID_NOT_FOUND));
+                .orElseThrow(() -> new NotFoundException(ApplicationError.USER_TAG_NOT_FOUND));
         user.updateRefreshToken(refreshToken);
     }
 
