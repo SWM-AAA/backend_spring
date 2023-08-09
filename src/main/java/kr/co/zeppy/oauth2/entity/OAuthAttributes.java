@@ -6,12 +6,10 @@ import kr.co.zeppy.oauth2.userinfo.OAuth2UserInfo;
 import kr.co.zeppy.user.entity.Role;
 import kr.co.zeppy.user.entity.SocialType;
 import kr.co.zeppy.user.entity.User;
-
+import kr.co.zeppy.user.service.NickNameService;
 import lombok.Builder;
 import lombok.Getter;
-
 import java.util.Map;
-import java.util.UUID;
 
 
 // OAuth2 로그인을 위한 OAuthAttributes 클래스
@@ -26,6 +24,9 @@ public class OAuthAttributes {
         this.nameAttributeKey = nameAttributeKey;
         this.oauth2UserInfo = oauth2UserInfo;
     }
+
+    private NickNameService nickNameService;
+
 
     /**
      * SocialType에 맞는 메소드 호출하여 OAuthAttributes 객체 반환
@@ -61,12 +62,13 @@ public class OAuthAttributes {
      * OAuth2UserInfo에서 socialId(식별값), nickname, imageUrl을 가져와서 build
      * role은 GUEST로 설정
      */
-    public User toEntity(SocialType socialType, OAuth2UserInfo oauth2UserInfo) {
+    public User toEntity(SocialType socialType, OAuth2UserInfo oauth2UserInfo, String userTag) {
+        // usertag 변경 로직 추가
         
         return User.builder()
                 .socialType(socialType)
                 .socialId(oauth2UserInfo.getId())
-                .loginId(UUID.randomUUID().toString())
+                .userTag(userTag)
                 .nickname(oauth2UserInfo.getNickname())
                 .imageUrl(oauth2UserInfo.getImageUrl())
                 .role(Role.GUEST)

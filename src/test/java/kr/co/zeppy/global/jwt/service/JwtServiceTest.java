@@ -25,14 +25,13 @@ public class JwtServiceTest {
 
     private static final String ACCESS_TOKEN_SUBJECT = "AccessToken";
     private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
-    private static final String LOGIN_ID_CLAIM = "loginId";
+    private static final String LOGIN_USER_TAG = "userTag";
     private static final Long LOGIN_ID = 1L;
-    private static final String secretKey = "testteststest";
 
-    // @BeaforeEach
-    // void setUp() {
+    @BeforeEach
+    void setUp() {
 
-    // }
+    }
 
     @Autowired
     private JwtService jwtService;
@@ -49,7 +48,7 @@ public class JwtServiceTest {
         assertAll(
             () -> assertNotNull(accessToken),
             () -> assertThat(JWT.decode(accessToken).getSubject()).isEqualTo(ACCESS_TOKEN_SUBJECT),
-            () -> assertThat(JWT.decode(accessToken).getClaim(LOGIN_ID_CLAIM).asString()).isEqualTo(user_Login_id),
+            () -> assertThat(JWT.decode(accessToken).getClaim(LOGIN_USER_TAG).asString()).isEqualTo(user_Login_id),
             () -> {
                 Date current = new Date();
                 Date tokenExpiry = JWT.decode(accessToken).getIssuedAt();

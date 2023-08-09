@@ -38,9 +38,9 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         log.info("OAuth2 Login 성공!");
         CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
-        String accessToken = jwtService.createAccessToken(oAuth2User.getLoginId());
+        String accessToken = jwtService.createAccessToken(oAuth2User.getUserTag());
         String refreshToken = jwtService.createRefreshToken();
-        User findUser = userRepository.findByLoginId(oAuth2User.getLoginId())
+        User findUser = userRepository.findByUserTag(oAuth2User.getUserTag())
                         .orElseThrow(() -> new IllegalArgumentException("ID 에 해당하는 유저가 없습니다."));
         findUser.updateRefreshToken(refreshToken);
         userRepository.saveAndFlush(findUser);
@@ -60,12 +60,12 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     }
 
     private void loginSuccess(HttpServletResponse response, CustomOAuth2User oAuth2User) throws IOException {
-        String accessToken = jwtService.createAccessToken(oAuth2User.getLoginId());
+        String accessToken = jwtService.createAccessToken(oAuth2User.getUserTag());
         String refreshToken = jwtService.createRefreshToken();
         log.info("accessToken : 엑세스 토큰 : " + accessToken);
         log.info("refreshToken : 리프레시 토큰 : " + refreshToken);
 
-        jwtService.updateRefreshToken(oAuth2User.getLoginId(), refreshToken);
+        jwtService.updateRefreshToken(oAuth2User.getUserTag(), refreshToken);
         jwtService.sendAccessAndRefreshToken(response, accessToken, refreshToken);
     }
 }
