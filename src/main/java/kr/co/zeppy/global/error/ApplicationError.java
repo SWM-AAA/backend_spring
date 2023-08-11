@@ -23,7 +23,9 @@ public enum ApplicationError {
     USER_TAG_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_002", "사용자 User Tag를 찾을 수 없습니다."),
     USER_REFRESHTOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_003", "사용자 RefreshToken을 찾을 수 없습니다."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_004", "사용자를 찾을 수 없습니다."),
-    USER_NICKNAME_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_005", "사용자 닉네임을 찾을 수 없습니다.");
+    USER_NICKNAME_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_005", "사용자 닉네임을 찾을 수 없습니다."),
+
+    FRIEND_REQUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "FRIEND_001", "친구 요청을 찾을 수 없습니다.");
 
     private final HttpStatus status;
     private final String code;

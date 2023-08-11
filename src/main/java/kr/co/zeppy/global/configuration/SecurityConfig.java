@@ -57,14 +57,14 @@ public class SecurityConfig {
             .oauth2Login(oauth2Login -> oauth2Login
                 .successHandler(oAuth2LoginSuccessHandler)
                 .failureHandler(oAuth2LoginFailureHandler)
-                .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint.userService(customOAuth2UserService)))
-            .exceptionHandling(exceptionHandling -> exceptionHandling
-                .accessDeniedPage("/login"));
+                .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint.userService(customOAuth2UserService)));
+            // .exceptionHandling(exceptionHandling -> exceptionHandling
+            //     .accessDeniedPage("/login"));
 
-        http.addFilterBefore(jwtAuthenticationProcessingFilter(), LogoutFilter.class);
-        http.addFilterBefore(exceptionHandlerFilter(), JwtAuthenticationProcessingFilter.class);
-       
-        return http.build();
+        return http
+                .addFilterBefore(jwtAuthenticationProcessingFilter(), LogoutFilter.class)
+                .addFilterBefore(exceptionHandlerFilter(), JwtAuthenticationProcessingFilter.class)
+                .build();
     }
 
     /**

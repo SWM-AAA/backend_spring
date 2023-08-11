@@ -144,6 +144,12 @@ public class JwtService {
         return accessToken;
     }
 
+    
+    public Optional<String> extractUserTagFromToken(String token) {
+        return Optional.of(token.replace(BEARER, "").trim())
+                .flatMap(this::extractUserTag);
+    }
+
 
     public Optional<String> extractUserTag(String accessToken) {
         try {

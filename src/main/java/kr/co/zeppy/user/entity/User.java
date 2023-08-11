@@ -13,6 +13,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -40,6 +41,10 @@ public class User {
     @Builder.Default
     @OneToMany(mappedBy = "user")
     private Set<UserCrew> userCrews = new LinkedHashSet<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "user")
+    private Set<Friendship> friends = new HashSet<>();
 
     // ex) 닉네임#0001
     @Column(unique = true)

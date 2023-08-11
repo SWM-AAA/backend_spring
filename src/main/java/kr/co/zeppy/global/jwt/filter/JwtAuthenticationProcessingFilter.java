@@ -46,7 +46,8 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                 .orElse(null);
 
         if (refreshToken != null) {
-            checkRefreshTokenAndReIssueAccessToken(request, response, refreshToken, filterChain);
+            // checkRefreshTokenAndReIssueAccessToken(request, response, refreshToken, filterChain);
+            checkAccessTokenAndAuthentication(request, response, filterChain);
             return;
         }
         
@@ -56,13 +57,6 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     public void checkRefreshTokenAndReIssueAccessToken(HttpServletRequest request, HttpServletResponse response, String refreshToken,
                                                          FilterChain filterChain) throws ServletException, IOException {
-        // userRepository.findByRefreshToken(refreshToken)
-        //         .ifPresent(user -> {
-        //             String reIssuedRefreshToken = reIssueRefreshToken(user);
-        //             jwtService.sendAccessAndRefreshToken(response, jwtService.createAccessToken(user.getEmail(), user.getNickname()),
-        //                     reIssuedRefreshToken);
-        //         });
-        
         Optional<User> userOptional = userRepository.findByRefreshToken(refreshToken);
 
         if (userOptional.isPresent()) {
@@ -71,7 +65,6 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
             jwtService.sendAccessAndRefreshToken(response, jwtService.createAccessToken(user.getUserTag()),
                     reIssuedRefreshToken);
         }
-        filterChain.doFilter(request, response);
     }
 
 
@@ -82,52 +75,20 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
         return reIssuedRefreshToken;
     }
 
-
-    public void checkAccessTokenAndAuthentication(HttpServletRequest request, HttpServletResponse response,
-                                                  FilterChain filterChain) throws ServletException, IOException {
-        // log.info("checkAccessTokenAndAuthentication() 호출");
-        // jwtService.extractAccessToken(request)
-        //         .filter(jwtService::isTokenValid)
-        //         .ifPresent(accessToken -> jwtService.extractEmail(accessToken)
-        //                 .ifPresent(email -> userRepository.findByEmail(email)
-        //                         .ifPresent(this::saveAuthentication)));
-        // log.info("checkAccessTokenAndAuthentication() 종료");
-
-        // filterChain.doFilter(request, response);
+    public void checkAccessTokenAndAuthentication(HttpServletRequest request,
+            HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
         log.info("checkAccessTokenAndAuthentication() 호출");
+        jwtService.extractAccessToken(request)
+                .filter(jwtService::isTokenValid)
+                .ifPresent(accessToken -> jwtService.extractUserTag(accessToken)
+                        .ifPresent(userTag -> userRepository.findByUserTag(userTag)
+                                .ifPresent(this::saveAuthentication)));
 
-        Optional<String> accessTokenOptional = jwtService.extractAccessToken(request);
-
-        log.info("accessTokenOptional : " + accessTokenOptional);
-        if (accessTokenOptional.isPresent()) {
-            String accessToken = accessTokenOptional.get();
-            boolean isTokenValid = jwtService.isTokenValid(accessToken);
-
-            if (isTokenValid) {
-                log.info("Access Token이 유효합니다. Access Token: {}");
-                jwtService.extractUserTag(accessToken).ifPresent(userTag -> {
-                    Optional<User> userOptional = userRepository.findByUserTag(userTag);
-                    log.info("userTag로 사용자를 조회합니다. userTag : {}", userTag);
-
-                    if (userOptional.isPresent()) {
-                        // 5. 사용자 정보가 있으면 인증 처리
-                        User user = userOptional.get();
-                        saveAuthentication(user);
-                    } else {
-                        log.warn("사용자 정보가 없습니다.");
-                    }
-                });
-            } else {
-                log.warn("유효하지 않은 Access Token입니다. Access Token: {}", accessToken);
-            }
-        } else {
-            log.warn("Access Token이 요청에 없습니다.");
-        }
-        log.info("checkAccessTokenAndAuthentication() 종료");
         filterChain.doFilter(request, response);
     }
 
-    
+
     public void saveAuthentication(User myUser) {
         log.info("saveAuthentication() 호출");
         String password = PasswordUtil.generateRandomPassword();

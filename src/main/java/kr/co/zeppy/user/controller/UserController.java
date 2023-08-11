@@ -13,9 +13,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,23 +37,32 @@ public class UserController {
     }
 
     @PostMapping("/v1/users/register")
-    public ResponseEntity<Void> userRegister(@RequestHeader("accessToken") String accessToken,
+    public ResponseEntity<Void> userRegister(@RequestHeader("Authorization") String token,
                                 @RequestBody UserRegisterRequest userRegisterRequest) {
-        userService.register(accessToken, userRegisterRequest);
+        userService.register(token, userRegisterRequest);
 
         return ResponseEntity.ok().build();
     }
 
 
     @PostMapping("/v1/users/location-and-battery")
-    public ResponseEntity<Void> updateLocationAndBattery(@RequestBody LocationAndBatteryRequest locationAndBatteryRequest) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String userId = authentication.getName();
+    public ResponseEntity<Void> updateLocationAndBattery(@RequestHeader("Authorization") String token, 
+            @RequestBody LocationAndBatteryRequest locationAndBatteryRequest) {
 
+        String userId = userService.getUserIdFromToken(token); 
         redisService.updateLocationAndBattery(userId, locationAndBatteryRequest);
 
         return ResponseEntity.ok().build();
     }
+
+
+    // test
+    @GetMapping("/v1/users/all-user-location-and-battery")
+    public ResponseEntity<Map<String, Map<String, LocationAndBatteryRequest>>> getAllUserLocationAndBattery() {
+
+        return ResponseEntity.ok().body(redisService.getAllUsersLocationAndBattery());
+    }
+    
 
     @GetMapping("/v1/users/friend-location-and-battery")
     public ResponseEntity<Void> getFriendLocationAndBattery() throws Exception {
