@@ -144,6 +144,12 @@ public class JwtService {
         return accessToken;
     }
 
+    
+    public Optional<String> extractUserTagFromToken(String token) {
+        return Optional.of(token.replace(BEARER, "").trim())
+                .flatMap(this::extractUserTag);
+    }
+
 
     public Optional<String> extractUserTag(String accessToken) {
         try {
@@ -203,7 +209,7 @@ public class JwtService {
 
     public void updateRefreshToken(String userTag, String refreshToken) {
         User user = userRepository.findByUserTag(userTag)
-                .orElseThrow(() -> new NotFoundException(ApplicationError.USER_LOGINID_NOT_FOUND));
+                .orElseThrow(() -> new NotFoundException(ApplicationError.USER_TAG_NOT_FOUND));
         user.updateRefreshToken(refreshToken);
     }
 

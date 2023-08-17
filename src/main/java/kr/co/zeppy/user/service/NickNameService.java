@@ -20,7 +20,7 @@ public class NickNameService {
 
     private final NickNameRepository nickNameRepository;
 
-    public String getUserTagToNickName(String nickname) {
+    public String getUserTagFromNickName(String nickname) {
 
         try {
             Optional<NicknameCounter> optionalNicknameCounter = nickNameRepository.findByNickname(nickname);

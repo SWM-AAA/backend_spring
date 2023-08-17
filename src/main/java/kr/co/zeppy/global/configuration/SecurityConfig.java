@@ -38,6 +38,8 @@ public class SecurityConfig {
 
     private static final String[] AUTH_WHITELIST = {
             "/login",
+            "/api/healthcheck",
+            "/api/test/**"
     };
 
     @Bean
@@ -51,20 +53,19 @@ public class SecurityConfig {
             .sessionManagement(sessionManagement -> sessionManagement
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(request -> request
-                // .requestMatchers("/**").permitAll()
                 .requestMatchers(AUTH_WHITELIST).permitAll()
             .anyRequest().authenticated())
             .oauth2Login(oauth2Login -> oauth2Login
                 .successHandler(oAuth2LoginSuccessHandler)
                 .failureHandler(oAuth2LoginFailureHandler)
-                .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint.userService(customOAuth2UserService)))
-            .exceptionHandling(exceptionHandling -> exceptionHandling
-                .accessDeniedPage("/login"));
+                .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint.userService(customOAuth2UserService)));
+            // .exceptionHandling(exceptionHandling -> exceptionHandling
+            //     .accessDeniedPage("/login"));
 
-        http.addFilterBefore(jwtAuthenticationProcessingFilter(), LogoutFilter.class);
-        http.addFilterBefore(exceptionHandlerFilter(), JwtAuthenticationProcessingFilter.class);
-       
-        return http.build();
+        return http
+                .addFilterBefore(jwtAuthenticationProcessingFilter(), LogoutFilter.class)
+                .addFilterBefore(exceptionHandlerFilter(), JwtAuthenticationProcessingFilter.class)
+                .build();
     }
 
     /**
