@@ -41,6 +41,9 @@ public class UserControllerTest extends ApiDocument {
     private static final String LONGITUDE = "127.123456";
     private static final String BATTERY = "90";
     private static final boolean IS_CHARGING = false;
+    private static final String USER_ID = "1";
+    private static final String TOKEN = "token";
+
 
     @MockBean
     private RedisService redisService;
@@ -63,47 +66,50 @@ public class UserControllerTest extends ApiDocument {
                 .isCharging(IS_CHARGING)
                 .build();
         
+        given(userService.getUserIdFromToken("Bearer " + TOKEN)).willReturn(USER_ID);
+        
         redisUserLocationUpdateException = new RedisSaveException(ApplicationError.REDIS_SERVER_UNAVAILABLE);
     }
 
     // updateLocationAndBattery test code
     @Test
-    void test_Update_Location_And_Battery_Success() throws Exception {
+    void test_Update_User_Location_And_Battery_Success() throws Exception {
         // given
         willDoNothing().given(redisService).updateLocationAndBattery(anyString(), any(LocationAndBatteryRequest.class));
 
         // when
-        ResultActions resultActions = update_Location_And_Battery_Request();
+        ResultActions resultActions = update_User_Location_And_Battery_Request();
 
         // then
-        update_Location_And_Battery_Request_Success(resultActions);
+        update_User_Location_And_Battery_Request_Success(resultActions);
     }
 
     @Test
-    void test_Update_Location_And_Battery_Failure() throws Exception {
+    void test_Update_User_Location_And_Battery_Failure() throws Exception {
         // given
         willThrow(redisUserLocationUpdateException).given(redisService).updateLocationAndBattery(anyString(), any(LocationAndBatteryRequest.class));
 
         // when
-        ResultActions resultActions = update_Location_And_Battery_Request();
+        ResultActions resultActions = update_User_Location_And_Battery_Request();
 
         // then
-        update_Location_And_Battery_Request_Failure(resultActions);
+        update_User_Location_And_Battery_Request_Failure(resultActions);
     }
 
-    private ResultActions update_Location_And_Battery_Request() throws Exception {
+    private ResultActions update_User_Location_And_Battery_Request() throws Exception {
         return mockMvc.perform(post(API_VERSION + RESOURCE_PATH + "/location-and-battery")
+                .header("Authorization", "Bearer " + TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(locationAndBatteryRequest)));
     }
 
-    private void update_Location_And_Battery_Request_Success(ResultActions resultActions) throws Exception {
+    private void update_User_Location_And_Battery_Request_Success(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isOk()), 
                         "update-Location-And-Battery-Success");
         verify(redisService, times(1)).updateLocationAndBattery(anyString(), any(LocationAndBatteryRequest.class));
     }
 
-    private void update_Location_And_Battery_Request_Failure(ResultActions resultActions) throws Exception {
+    private void update_User_Location_And_Battery_Request_Failure(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions
                         .andExpect(status().isServiceUnavailable())
                         .andExpect(content().json(toJson(ErrorResponse.fromException(redisUserLocationUpdateException)))),

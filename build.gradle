@@ -14,8 +14,10 @@ ext {
 }
 
 test {
-  outputs.dir snippetsDir
-  useJUnitPlatform()
+  if (profile == 'local') {
+	outputs.dir snippetsDir
+	useJUnitPlatform()
+  }
 }
 
 asciidoctor.doFirst {
@@ -29,13 +31,17 @@ task CreateDocument(type: Copy) {
 }
 
 bootJar {
-  dependsOn CreateDocument
+  if (profile == 'local') {
+	dependsOn CreateDocument
+  }
   from("${asciidoctor.outputDir}") {
 	into 'static/docs'}
 }
 
 build {
-	dependsOn CreateDocument
+	if (profile == 'local') {
+		dependsOn CreateDocument
+	}
 }
 
 asciidoctor {
@@ -103,4 +109,8 @@ dependencies {
 	implementation 'org.springdoc:springdoc-openapi-ui:1.6.11'
 
 	implementation 'org.hibernate.validator:hibernate-validator:7.0.2.Final'
+
+	// AWS SDK
+	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+	testImplementation 'io.findify:s3mock_2.13:0.2.6'
 }

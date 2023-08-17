@@ -38,6 +38,8 @@ public class SecurityConfig {
 
     private static final String[] AUTH_WHITELIST = {
             "/login",
+            "/api/healthcheck",
+            "/api/test/**"
     };
 
     @Bean
@@ -51,7 +53,6 @@ public class SecurityConfig {
             .sessionManagement(sessionManagement -> sessionManagement
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(request -> request
-                // .requestMatchers("/**").permitAll()
                 .requestMatchers(AUTH_WHITELIST).permitAll()
             .anyRequest().authenticated())
             .oauth2Login(oauth2Login -> oauth2Login
