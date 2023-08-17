@@ -1,10 +1,11 @@
 package kr.co.zeppy.user.controller;
 
 import kr.co.zeppy.global.aws.service.AwsS3Uploader;
+import kr.co.zeppy.global.jwt.service.JwtService;
 import kr.co.zeppy.global.redis.dto.LocationAndBatteryRequest;
 import kr.co.zeppy.global.redis.service.RedisService;
+import kr.co.zeppy.user.dto.UserPinInformationResponse;
 import kr.co.zeppy.user.dto.UserRegisterRequest;
-import kr.co.zeppy.user.dto.UserRegisterRequestTest;
 import kr.co.zeppy.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.io.IOException;
 
@@ -32,30 +36,30 @@ import lombok.extern.slf4j.Slf4j;
 public class UserController {
 
     private static final String USER_PROFILE_IMAGE_PATH = "user/profile-image";
+    private static final String ACCESSTOKEN = "access_token";
     private final RedisService redisService;
     private final UserService userService;
     private final AwsS3Uploader awsS3Uploader;
+    private final JwtService jwtService;
 
-    @GetMapping("/jwt-test")
+    @GetMapping("/test/jwt-test")
     public String jwtTest() {
         log.info("로그인 테스트");
         return "jwtTest 요청 성공";
     }
 
+
     @PostMapping("/v1/users/register")
-    public ResponseEntity<Void> userRegister(@RequestHeader("Authorization") String token,
-                                @RequestBody UserRegisterRequest userRegisterRequest) {
-        userService.register(token, userRegisterRequest);
-
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/test/users/register")
-    public ResponseEntity<Void> userRegisterTest(@ModelAttribute UserRegisterRequestTest userRegisterRequesttest) 
+    public ResponseEntity<Map<String, String>> userRegister(@RequestHeader("Authorization") String token,
+            @ModelAttribute UserRegisterRequest userRegisterRequest) 
             throws IOException {
-        userService.registerTest("token", "이도연#0001", userRegisterRequesttest);
+        String newUserTag = userService.register(token, userRegisterRequest);
+        String accessToken = jwtService.createAccessToken(newUserTag);
 
-        return ResponseEntity.ok().build();
+        Map<String, String> responseBody = new HashMap<>();
+        responseBody.put(ACCESSTOKEN, accessToken);
+
+        return ResponseEntity.ok(responseBody);
     }
 
 
@@ -71,7 +75,7 @@ public class UserController {
 
     @PostMapping("/test/image")
     public ResponseEntity<String> testImageUpload(@RequestParam("file") MultipartFile file) throws IOException {
-        String fileName = awsS3Uploader.upload(file, USER_PROFILE_IMAGE_PATH);
+        String fileName = awsS3Uploader.upload(file, USER_PROFILE_IMAGE_PATH+"/1");
         return ResponseEntity.ok().body(fileName);
     }
 
@@ -82,7 +86,16 @@ public class UserController {
 
         return ResponseEntity.ok().body(redisService.getAllUsersLocationAndBattery());
     }
-    
+
+
+    // test
+    @GetMapping("/test/users/all-user-information")
+    public ResponseEntity<List<UserPinInformationResponse>> getAllUserInformationTest() {
+        List<UserPinInformationResponse> allUserInformation = userService.getAllUserInformation();
+
+        return ResponseEntity.ok().body(allUserInformation);
+    }
+
 
     @GetMapping("/v1/users/friend-location-and-battery")
     public ResponseEntity<Void> getFriendLocationAndBattery() throws Exception {

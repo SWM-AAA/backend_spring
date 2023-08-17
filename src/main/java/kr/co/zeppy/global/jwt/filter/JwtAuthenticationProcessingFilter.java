@@ -1,5 +1,8 @@
 package kr.co.zeppy.global.jwt.filter;
 
+import kr.co.zeppy.global.error.ApplicationError;
+import kr.co.zeppy.global.error.InvalidJwtException;
+import kr.co.zeppy.global.error.ApplicationException;
 import kr.co.zeppy.global.jwt.service.JwtService;
 import kr.co.zeppy.global.jwt.util.PasswordUtil;
 import kr.co.zeppy.user.entity.User;
@@ -40,50 +43,70 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+        checkTokenAndAuthentication(request, response, filterChain);
 
-        String refreshToken = jwtService.extractRefreshToken(request)
-                .filter(jwtService::isTokenValid)
-                .orElse(null);
+        // String refreshToken = jwtService.extractRefreshToken(request)
+        //         .filter(jwtService::isTokenValid)
+        //         .orElse(null);
 
-        if (refreshToken != null) {
-            // checkRefreshTokenAndReIssueAccessToken(request, response, refreshToken, filterChain);
-            checkAccessTokenAndAuthentication(request, response, filterChain);
-            return;
-        }
+        // if (refreshToken != null) {
+        //     checkTokenAndAuthentication(request, response, filterChain);
+        //     return;
+        // }
         
-        checkAccessTokenAndAuthentication(request, response, filterChain);
+        // checkAccessTokenAndAuthentication(request, response, filterChain);
     }
 
 
-    public void checkRefreshTokenAndReIssueAccessToken(HttpServletRequest request, HttpServletResponse response, String refreshToken,
-                                                         FilterChain filterChain) throws ServletException, IOException {
-        Optional<User> userOptional = userRepository.findByRefreshToken(refreshToken);
+    // public void checkAccessTokenAndAuthentication(HttpServletRequest request,
+    //         HttpServletResponse response, FilterChain filterChain)
+    //         throws ServletException, IOException {
+    //     log.info("checkAccessTokenAndAuthentication() 호출");
+    //     jwtService.extractAccessToken(request)
+    //             .filter(jwtService::isTokenValid)
+    //             .ifPresent(accessToken -> jwtService.extractUserTag(accessToken)
+    //                     .ifPresent(userTag -> userRepository.findByUserTag(userTag)
+    //                             .ifPresent(this::saveAuthentication)));
 
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            String reIssuedRefreshToken = reIssueRefreshToken(user);
-            jwtService.sendAccessAndRefreshToken(response, jwtService.createAccessToken(user.getUserTag()),
-                    reIssuedRefreshToken);
-        }
-    }
+    //     filterChain.doFilter(request, response);
+    // }
 
 
-    private String reIssueRefreshToken(User user) {
-        String reIssuedRefreshToken = jwtService.createRefreshToken();
-        user.updateRefreshToken(reIssuedRefreshToken);
-        userRepository.saveAndFlush(user);
-        return reIssuedRefreshToken;
-    }
-
-    public void checkAccessTokenAndAuthentication(HttpServletRequest request,
-            HttpServletResponse response, FilterChain filterChain)
+    public void checkTokenAndAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        log.info("checkAccessTokenAndAuthentication() 호출");
-        jwtService.extractAccessToken(request)
-                .filter(jwtService::isTokenValid)
-                .ifPresent(accessToken -> jwtService.extractUserTag(accessToken)
-                        .ifPresent(userTag -> userRepository.findByUserTag(userTag)
-                                .ifPresent(this::saveAuthentication)));
+        log.info("checkTokenAndAuthentication() 호출");
+
+        Optional<String> accessTokenOpt = jwtService.extractAccessToken(request);
+        Optional<String> refreshTokenOpt = jwtService.extractRefreshToken(request);
+
+        if (accessTokenOpt.isPresent()) {
+            String accessToken = accessTokenOpt.get();
+            if (!jwtService.isTokenValid(accessToken)) {
+                throw new ApplicationException(ApplicationError.INVALID_JWT_TOKEN);
+            }
+            String userTag = jwtService.extractUserTag(accessToken)
+                    .orElseThrow(() -> new ApplicationException(ApplicationError.USER_TAG_NOT_FOUND));
+            User user = userRepository.findByUserTag(userTag)
+                    .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
+
+            if (jwtService.shouldReissueToken(accessToken)) {
+                String newAccessToken = jwtService.createAccessToken(userTag);
+                jwtService.setAccessTokenHeader(response, newAccessToken);
+            }
+
+            saveAuthentication(user);
+        }
+
+        if (refreshTokenOpt.isPresent()) {
+            String refreshToken = refreshTokenOpt.get();
+            if (!jwtService.isTokenValid(refreshToken)) {
+                throw new ApplicationException(ApplicationError.INVALID_JWT_TOKEN);
+            }
+            if (jwtService.shouldReissueToken(refreshToken)) {
+                String newRefreshToken = jwtService.createRefreshToken();
+                jwtService.setRefreshTokenHeader(response, newRefreshToken);
+            }
+        }
 
         filterChain.doFilter(request, response);
     }

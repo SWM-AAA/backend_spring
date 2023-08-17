@@ -12,6 +12,9 @@ public enum ApplicationError {
     INVALID_JWT_TOKEN(HttpStatus.UNAUTHORIZED, "COMMON_001", "token이 유효하지 않습니다 다시 로그인 해주세요."),
     EXPIRED_JWT_TOKEN(HttpStatus.UNAUTHORIZED, "COMMON_002", "token 유효기간이 만료되었습니다 다시 로그인 해주세요."),
 
+    // 404
+    TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMON_003", "token을 찾을 수 없습니다."),
+
     // 500
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SERVER_001", "서버 내부 에러가 발생하였습니다."),
 

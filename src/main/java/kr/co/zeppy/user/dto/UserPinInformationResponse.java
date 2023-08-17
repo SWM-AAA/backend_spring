@@ -4,17 +4,16 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.AccessLevel;
-import org.springframework.web.multipart.MultipartFile;
 
 @Getter
-@Setter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserRegisterRequestTest {
+public class UserPinInformationResponse {
 
+    private Long userId;
     private String nickname;
-    private MultipartFile profileimage;
+    private String userTag;
+    private String imageUrl;
 }

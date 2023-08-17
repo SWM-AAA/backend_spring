@@ -68,6 +68,10 @@ public class User {
         this.nickname = updateNickname;
     }
 
+    public void updateUserTag(String updateUserTag) {
+        this.userTag = updateUserTag;
+    }
+
     public void updateRefreshToken(String updateRefreshToken) {
         this.refreshToken = updateRefreshToken;
     }

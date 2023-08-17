@@ -16,7 +16,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import java.util.Optional;
-import java.util.UUID;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -25,7 +24,6 @@ import java.util.UUID;
 public class AwsS3Uploader {
 
     private final AmazonS3Client amazonS3Client;
-    private static final String DIRECTORY_SEPARATOR = "/";
 
     @Value("${cloud.aws.s3.bucket}")
     public String bucket;
@@ -38,8 +36,7 @@ public class AwsS3Uploader {
     }
 
     private String uploadS3(File uploadFile, String dirName) {
-        String fileName = dirName + DIRECTORY_SEPARATOR + UUID.randomUUID()
-                 + uploadFile.getName();
+        String fileName = dirName;
         // S3로 업로드
         String uploadImageUrl = null;
         try {
@@ -52,7 +49,7 @@ public class AwsS3Uploader {
 
     // 1. 로컬에 파일생성
     private Optional<File> convert(MultipartFile file) throws IOException {
-        File convertFile = new File(UUID.randomUUID().toString() + file.getOriginalFilename());
+        File convertFile = new File(file.getOriginalFilename());
         if (convertFile.createNewFile()) {
             try (FileOutputStream fos = new FileOutputStream(convertFile)) {
                 fos.write(file.getBytes());
