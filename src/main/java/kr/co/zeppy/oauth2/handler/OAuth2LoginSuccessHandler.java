@@ -58,14 +58,4 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             response.sendRedirect(url);
         }
     }
-
-    private void loginSuccess(HttpServletResponse response, CustomOAuth2User oAuth2User) throws IOException {
-        String accessToken = jwtService.createAccessToken(oAuth2User.getUserTag());
-        String refreshToken = jwtService.createRefreshToken();
-        log.info("accessToken : 엑세스 토큰 : " + accessToken);
-        log.info("refreshToken : 리프레시 토큰 : " + refreshToken);
-
-        jwtService.updateRefreshToken(oAuth2User.getUserTag(), refreshToken);
-        jwtService.sendAccessAndRefreshToken(response, accessToken, refreshToken);
-    }
 }

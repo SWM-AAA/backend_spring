@@ -32,6 +32,7 @@ public class RedisService {
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
     
+
     public void updateLocationAndBattery(String userId, LocationAndBatteryRequest locationAndBatteryRequest) {
         String key = USER_PREFIX + userId;
         try {
@@ -43,6 +44,7 @@ public class RedisService {
         }
     }
 
+    
     public Map<String, Map<String, LocationAndBatteryRequest>> getAllUsersLocationAndBattery() {
         List<User> allUsers = userRepository.findAll();
         log.info("allUsers: {}", allUsers);

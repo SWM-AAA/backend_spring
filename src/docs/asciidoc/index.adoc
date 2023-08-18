@@ -39,20 +39,39 @@ status code: 500
 == 기능
 
 === User 관련 기능
+==== User 초기 가입 - 닉네입, 프로필 사진 변경
+----
+/api/v1/users/register
+----
+===== Success
+.Request
+include::{snippets}/user-Register-Success/http-request.adoc[]
+
+.Response
+include::{snippets}/user-Register-Success/http-response.adoc[]
+
+===== Failure
+.Request
+include::{snippets}/user-Register-Failure/http-request.adoc[]
+
+.Response
+include::{snippets}/user-Register-Failure/http-response.adoc[]
+
+
 ==== User 위치 정보, 배터리 정보 등록
 ----
 /api/v1/users/location-and-battery
 ----
 ===== Success
 .Request
-include::{snippets}/update-User-Location-And-Battery-Success/http-request.adoc[]
+include::{snippets}/update-Location-And-Battery-Success/http-request.adoc[]
 
 .Response
-include::{snippets}/update-User-Location-And-Battery-Success/http-response.adoc[]
+include::{snippets}/update-Location-And-Battery-Success/http-response.adoc[]
 
 ===== Failure
 .Request
-include::{snippets}/update-User-Location-And-Battery-Failure/http-request.adoc[]
+include::{snippets}/update-Location-And-Battery-Failure/http-request.adoc[]
 
 .Response
-include::{snippets}/update-User-Location-And-Battery-Failure/http-response.adoc[]
+include::{snippets}/update-Location-And-Battery-Failure/http-response.adoc[]

@@ -2,6 +2,7 @@ package kr.co.zeppy.global.jwt.service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
 
 import kr.co.zeppy.global.error.ApplicationError;
 import kr.co.zeppy.global.error.InvalidJwtException;
@@ -18,6 +19,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -167,6 +169,7 @@ public class JwtService {
         response.setHeader(accessHeader, accessToken);
     }
 
+    
     // access token을 response body에 담아서 보냄
     public void setAccessTokenBody(HttpServletResponse response, String accessToken) {
         response.setContentType(APPLICATION_JSON);
@@ -213,12 +216,28 @@ public class JwtService {
         user.updateRefreshToken(refreshToken);
     }
 
+
     public boolean isTokenValid(String token) {
         try {
             JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token);
             return true;
         } catch (Exception e) {
             log.error("유효하지 않은 토큰입니다. {}", e.getMessage());
+            throw new InvalidJwtException(ApplicationError.INVALID_JWT_TOKEN);
+        }
+    }
+
+
+    public boolean shouldReissueToken(String token) {
+        try {
+            DecodedJWT jwt = JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token);
+            Date issuedAt = jwt.getIssuedAt();
+            Date expiresAt = jwt.getExpiresAt();
+            long halfExpirationTime = (expiresAt.getTime() - issuedAt.getTime()) / 2;
+            long timeUntilExpiration = expiresAt.getTime() - System.currentTimeMillis();
+
+            return timeUntilExpiration <= halfExpirationTime;
+        } catch (Exception e) {
             throw new InvalidJwtException(ApplicationError.INVALID_JWT_TOKEN);
         }
     }

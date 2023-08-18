@@ -1,6 +1,8 @@
 package kr.co.zeppy.user.service;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -10,8 +12,8 @@ import kr.co.zeppy.global.aws.service.AwsS3Uploader;
 import kr.co.zeppy.global.error.ApplicationError;
 import kr.co.zeppy.global.error.ApplicationException;
 import kr.co.zeppy.global.jwt.service.JwtService;
+import kr.co.zeppy.user.dto.UserPinInformationResponse;
 import kr.co.zeppy.user.dto.UserRegisterRequest;
-import kr.co.zeppy.user.dto.UserRegisterRequestTest;
 import kr.co.zeppy.user.entity.Friendship;
 import kr.co.zeppy.user.entity.FriendshipStatus;
 import kr.co.zeppy.user.entity.User;
@@ -32,33 +34,45 @@ public class UserService {
     private final JwtService jwtService;
     private final FriendshipRepository friendshipRepository;
     private final AwsS3Uploader awsS3Uploader;
+    private final NickNameService nickNameService;
 
-    public void register(String accessToken, UserRegisterRequest userRegisterRequest) {
-        String userTag = jwtService.extractUserTag(accessToken)
+
+    // test
+    public List<UserPinInformationResponse> getAllUserInformation() {
+        return userRepository.findAll().stream()
+            .map(this::toUserPinInformationResponse)
+            .collect(Collectors.toList());
+    }
+
+    // test
+    public UserPinInformationResponse toUserPinInformationResponse(User user) {
+        return UserPinInformationResponse.builder()
+            .userId(user.getId())
+            .userTag(user.getUserTag())
+            .nickname(user.getNickname())
+            .imageUrl(user.getImageUrl())
+            .build();
+    }
+
+    public String register(String Token, UserRegisterRequest userRegisterRequest) 
+            throws IOException {
+        String userTag = jwtService.extractUserTagFromToken(Token)
                 .orElseThrow(() -> new ApplicationException(ApplicationError.USER_TAG_NOT_FOUND));
 
         User user = userRepository.findByUserTag(userTag)
                 .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
-        user.updateNickname(userRegisterRequest.getNickname());
-        user.updateImageUrl(userRegisterRequest.getImageUrl());
-    }
-
-
-    public void registerTest(String accessToken, String temp, UserRegisterRequestTest userRegisterRequestTest) 
-            throws IOException {
-        // String userTag = jwtService.extractUserTag(accessToken)
-        //         .orElseThrow(() -> new ApplicationException(ApplicationError.USER_TAG_NOT_FOUND));
-
-        User user = userRepository.findByUserTag(temp)
-                .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
-
-        MultipartFile file = userRegisterRequestTest.getProfileimage();
+        
+        MultipartFile file = userRegisterRequest.getProfileimage();
+        String newUserTag = nickNameService.getUserTagFromNickName(userRegisterRequest.getNickname());
 
         String fileName = awsS3Uploader.upload(file
                 ,S3_USER_PROFILE_PATH + user.getId());
         
-        user.updateNickname(userRegisterRequestTest.getNickname());
+        user.updateUserTag(newUserTag);
+        user.updateNickname(userRegisterRequest.getNickname());
         user.updateImageUrl(fileName);
+
+        return newUserTag;
     }
 
     
@@ -70,7 +84,6 @@ public class UserService {
     }
 
 
-    @Transactional
     public void sendFriendRequest(Long userId, Long friendId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
@@ -87,7 +100,7 @@ public class UserService {
         friendshipRepository.save(friendship);
     }
 
-    @Transactional
+
     public void acceptFriendRequest(Long userId, Long friendId) {
         Friendship friendship = friendshipRepository.findByUserIdAndFriendId(userId, friendId)
             .orElseThrow(() -> new ApplicationException(ApplicationError.FRIEND_REQUEST_NOT_FOUND));
@@ -95,7 +108,7 @@ public class UserService {
         friendship.acceptRequest();
     }
 
-    @Transactional
+
     public void declineFriendRequest(Long userId, Long friendId) {
         Friendship friendship = friendshipRepository.findByUserIdAndFriendId(userId, friendId)
             .orElseThrow(() -> new ApplicationException(ApplicationError.FRIEND_REQUEST_NOT_FOUND));
