@@ -87,19 +87,4 @@ public class User {
     public void leaveCrew(UserCrew crew) {
         userCrews.remove(crew);
     }
-
-    public Set<User> getFriends() {
-        Set<User> friends = new HashSet<>();
-        for (Friendship friendship : sentFriendships) {
-            if (friendship.getStatus() == FriendshipStatus.ACCEPTED) {
-                friends.add(friendship.getFriend());
-            }
-        }
-        for (Friendship friendship : receivedFriendships) {
-            if (friendship.getStatus() == FriendshipStatus.ACCEPTED) {
-                friends.add(friendship.getUser());
-            }
-        }
-        return friends;
-    }
 }
