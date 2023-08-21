@@ -5,6 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
 import kr.co.zeppy.global.error.ApplicationError;
+import kr.co.zeppy.global.error.ApplicationException;
 import kr.co.zeppy.global.error.InvalidJwtException;
 import kr.co.zeppy.user.entity.User;
 import kr.co.zeppy.user.repository.UserRepository;
@@ -240,5 +241,18 @@ public class JwtService {
         } catch (Exception e) {
             throw new InvalidJwtException(ApplicationError.INVALID_JWT_TOKEN);
         }
+    }
+
+    public String getStringUserIdFromToken(String token) {
+        return extractUserTagFromToken(token)
+            .flatMap(userRepository::findIdByUserTag)
+            .orElseThrow(() -> new ApplicationException(ApplicationError.USER_ID_NOT_FOUND))
+            .toString();
+    }
+
+    public Long getLongUserIdFromToken(String token) {
+        return extractUserTagFromToken(token)
+            .flatMap(userRepository::findIdByUserTag)
+            .orElseThrow(() -> new ApplicationException(ApplicationError.USER_ID_NOT_FOUND));
     }
 }
