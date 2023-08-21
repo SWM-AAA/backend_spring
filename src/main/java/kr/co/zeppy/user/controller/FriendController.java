@@ -18,7 +18,7 @@ public class FriendController {
 
     private final FriendService friendService;
     
-        // 친구 추가 요청 post
+    // 친구 추가 요청 post
     @PostMapping("/v1/friends/requests")
     public ResponseEntity<Void> sendFriendRequest(@RequestHeader("Authorization") String token,
             @RequestBody FriendshipRequest friendshipRequest) {
@@ -27,4 +27,6 @@ public class FriendController {
 
         return ResponseEntity.ok().build();
     }
+
+    //친구 
 }

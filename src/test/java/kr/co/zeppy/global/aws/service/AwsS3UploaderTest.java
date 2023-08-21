@@ -17,6 +17,11 @@ import kr.co.zeppy.global.configuration.AwsS3MockConfig;
 @SpringBootTest
 class AwsS3UploaderTest {
 
+    private static final String USER_PROFILE_IMAGE_PATH = "user/profile-image/";
+    private static final String CONTENTTYPE = "image/png";
+    private static final String USER_ID = "1";
+    private static final String FILE_NAME = "test";
+
     @Autowired
     private S3Mock s3Mock;
     @Autowired
@@ -30,17 +35,14 @@ class AwsS3UploaderTest {
     @Test
     void upload() throws IOException {
         // given
-        String path = "test.png";
-        String contentType = "image/png";
-        String dirName = "test";
-
-        MockMultipartFile file = new MockMultipartFile("test", path, contentType, "test".getBytes());
+        MockMultipartFile file = new MockMultipartFile("file", 
+                    FILE_NAME, CONTENTTYPE, "test".getBytes());
 
         // when
-        String urlPath = awsS3Uploader.upload(file, dirName);
+        String urlPath = awsS3Uploader.upload(file, USER_PROFILE_IMAGE_PATH + USER_ID);
 
         // then
-        assertThat(urlPath).contains(path);
-        assertThat(urlPath).contains(dirName);
+        assertThat(urlPath).contains(USER_PROFILE_IMAGE_PATH + USER_ID);
+        assertThat(urlPath).contains(FILE_NAME);
     }
 }

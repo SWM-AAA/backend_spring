@@ -2,16 +2,12 @@ package kr.co.zeppy.user.controller;
 
 import kr.co.zeppy.ApiDocument;
 import kr.co.zeppy.SecurityConfigTest;
-import kr.co.zeppy.global.aws.service.AwsS3Uploader;
 import kr.co.zeppy.global.dto.ErrorResponse;
 import kr.co.zeppy.global.error.ApplicationError;
 import kr.co.zeppy.global.error.ApplicationException;
-import kr.co.zeppy.global.error.RedisSaveException;
 import kr.co.zeppy.global.jwt.service.JwtService;
-import kr.co.zeppy.global.redis.dto.LocationAndBatteryRequest;
 import kr.co.zeppy.global.redis.service.RedisService;
 import kr.co.zeppy.user.dto.FriendshipRequest;
-import kr.co.zeppy.user.dto.UserRegisterRequest;
 import kr.co.zeppy.user.entity.Role;
 import kr.co.zeppy.user.entity.SocialType;
 import kr.co.zeppy.user.entity.User;
@@ -19,16 +15,13 @@ import kr.co.zeppy.user.repository.UserRepository;
 import kr.co.zeppy.user.service.FriendService;
 import kr.co.zeppy.user.service.UserService;
 
-import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -41,17 +34,10 @@ import static org.mockito.Mockito.when;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
-import javax.naming.spi.DirStateFactory.Result;
-
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+
+import java.util.Optional;
 import org.springframework.security.test.context.support.WithMockUser;
-import static org.hamcrest.CoreMatchers.is;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 
 @WithMockUser(username = "test", roles = "USER")
@@ -132,7 +118,7 @@ public class FriendControllerTest extends ApiDocument{
     }
 
     /////////////////////////////////////////////////////////////////
-    // sendFriendRequest (Method : Post) test code
+    // sendFriendRequest (Method : Post) test code || (url : sendFriendRequest)
     /////////////////////////////////////////////////////////////////
     @Test
     void test_Send_Friend_Request_Success() throws Exception {
@@ -174,7 +160,8 @@ public class FriendControllerTest extends ApiDocument{
     }
 
     private void send_Friend_Request_Failure(ResultActions resultActions) throws Exception {
-        printAndMakeSnippet(resultActions.andExpect(status().isNotFound()),
-                "send-Friends-Request-Failure");
+        printAndMakeSnippet(resultActions.andExpect(status().isNotFound())
+                        .andExpect(content().json(toJson(ErrorResponse.fromException(userIdNotFoundException)))),
+                        "send-Friends-Request-Failure");
     }
 }

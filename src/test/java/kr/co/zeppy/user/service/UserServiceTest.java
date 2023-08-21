@@ -1,8 +1,5 @@
 package kr.co.zeppy.user.service;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -10,19 +7,13 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
 import kr.co.zeppy.global.aws.service.AwsS3Uploader;
 import kr.co.zeppy.global.jwt.service.JwtService;
 import kr.co.zeppy.user.dto.UserRegisterRequest;
-import kr.co.zeppy.user.entity.NicknameCounter;
 import kr.co.zeppy.user.entity.User;
-import kr.co.zeppy.user.repository.NickNameRepository;
 import kr.co.zeppy.user.repository.UserRepository;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -30,8 +21,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -53,7 +42,7 @@ public class UserServiceTest {
     private AwsS3Uploader awsS3Uploader;
 
     private static final String S3_USER_PROFILE_PATH = "user/profile-image/";
-    private static final String ACCESS_TOKEN = "testAccessToken";
+    private static final String TOKEN = "testToken";
     private static final String USER_TAG = "testUserTag";
     private static final String NEW_USER_TAG = "newUserTag";
     private static final String NICKNAME = "newNickname";
@@ -83,13 +72,13 @@ public class UserServiceTest {
     @Test
     void register() throws IOException {
         // Given
-        when(jwtService.extractUserTag(ACCESS_TOKEN)).thenReturn(Optional.of(USER_TAG));
+        when(jwtService.extractUserTagFromToken(TOKEN)).thenReturn(Optional.of(USER_TAG));
         when(userRepository.findByUserTag(USER_TAG)).thenReturn(Optional.of(user));
         when(nickNameService.getUserTagFromNickName(NICKNAME)).thenReturn(NEW_USER_TAG);
         when(awsS3Uploader.upload(file, S3_USER_PROFILE_PATH + USER_ID)).thenReturn(IMAGE_URL);
 
         // When
-        userService.register(ACCESS_TOKEN, userRegisterRequest);
+        userService.register(TOKEN, userRegisterRequest);
 
         // Then
         verify(user).updateUserTag(NEW_USER_TAG);
