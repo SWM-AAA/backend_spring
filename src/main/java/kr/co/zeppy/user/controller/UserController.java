@@ -77,6 +77,7 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+    // test
     @PostMapping("/test/image")
     public ResponseEntity<String> testImageUpload(@RequestParam("file") MultipartFile file) throws IOException {
         String fileName = awsS3Uploader.upload(file, USER_PROFILE_IMAGE_PATH+"/1");
