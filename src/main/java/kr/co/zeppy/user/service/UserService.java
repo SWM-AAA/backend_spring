@@ -14,20 +14,13 @@ import kr.co.zeppy.global.error.ApplicationException;
 import kr.co.zeppy.global.jwt.service.JwtService;
 import kr.co.zeppy.user.dto.UserPinInformationResponse;
 import kr.co.zeppy.user.dto.UserRegisterRequest;
-import kr.co.zeppy.user.dto.FriendshipRequest;
-import kr.co.zeppy.user.dto.FriendshipResponse;
-import kr.co.zeppy.user.entity.Friendship;
-import kr.co.zeppy.user.entity.FriendshipStatus;
 import kr.co.zeppy.user.entity.User;
-import kr.co.zeppy.user.repository.FriendshipRepository;
 import kr.co.zeppy.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
-@Slf4j
 public class UserService {
 
     private static final String S3_USER_PROFILE_PATH = "user/profile-image/";

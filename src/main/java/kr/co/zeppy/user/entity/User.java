@@ -87,4 +87,20 @@ public class User {
     public void leaveCrew(UserCrew crew) {
         userCrews.remove(crew);
     }
+
+    public void addSentFriendships(Friendship friendship) {
+        this.sentFriendships.add(friendship);
+    }
+
+    public void removeSentFriendships(Friendship friendship) {
+        this.sentFriendships.remove(friendship);
+    }
+
+    public void addReceivedFriendships(Friendship friendship) {
+        this.receivedFriendships.add(friendship);
+    }
+
+    public void removeReceivedFriendships(Friendship friendship) {
+        this.receivedFriendships.remove(friendship);
+    }
 }

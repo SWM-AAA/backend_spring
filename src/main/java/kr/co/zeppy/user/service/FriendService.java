@@ -36,7 +36,7 @@ public class FriendService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
-
+        
         User friend = userRepository.findById(friendId)
                 .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
         
@@ -46,10 +46,13 @@ public class FriendService {
                 .status(FriendshipStatus.PENDING)
                 .build();
         
+        user.addSentFriendships(friendship);
+        friend.addReceivedFriendships(friendship);
+        
         friendshipRepository.save(friendship);
     }
 
-
+    // 나에게 친구추가 요청을 보낸 사용자 리스트를 확인
     public List<UserFriendInfoResponse> checkFriendRequestToList(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
@@ -65,6 +68,25 @@ public class FriendService {
             }
         }
     
+        return friendRequestList;
+    }
+
+    // 내가 친구추가를 보낸 사용자 리스트를 확인
+    public List<UserFriendInfoResponse> checkSentFriendRequestToList(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApplicationException(ApplicationError.USER_ID_NOT_FOUND));
+        
+        Set<Friendship> sentFriendRequests = user.getSentFriendships();
+
+        List<UserFriendInfoResponse> friendRequestList = new ArrayList<>();
+
+        for (Friendship request : sentFriendRequests) {
+            if (request.getStatus() == FriendshipStatus.PENDING) {
+                User reseiver = request.getFriend();
+                friendRequestList.add(UserFriendInfoResponse.from(reseiver));
+            }
+        }
+
         return friendRequestList;
     }
 }
