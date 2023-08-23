@@ -1,5 +1,7 @@
 package kr.co.zeppy.user.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -8,12 +10,14 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.amazonaws.Response;
 import com.nimbusds.openid.connect.sdk.rp.ApplicationType;
 
 import kr.co.zeppy.global.annotation.UserId;
 import kr.co.zeppy.global.error.ApplicationError;
 import kr.co.zeppy.global.error.ApplicationException;
 import kr.co.zeppy.user.dto.FriendshipRequest;
+import kr.co.zeppy.user.dto.UserFriendInfoResponse;
 import kr.co.zeppy.user.entity.User;
 import kr.co.zeppy.user.repository.UserRepository;
 import kr.co.zeppy.user.service.FriendService;
@@ -35,6 +39,15 @@ public class FriendController {
         friendService.sendFriendRequest(token, friendshipRequest);
 
         return ResponseEntity.ok().build();
+    }
+
+
+    // 친구 추가 요청 확인하기
+    @GetMapping("/v1/friends/requests")
+    public ResponseEntity<List<UserFriendInfoResponse>> checkFriendRequest(@UserId Long userId) {
+        List<UserFriendInfoResponse> friendRequestList = friendService.checkFriendRequestToList(userId);
+
+        return ResponseEntity.ok().body(friendRequestList);
     }
 
     @GetMapping("/v1/annotation/test")
