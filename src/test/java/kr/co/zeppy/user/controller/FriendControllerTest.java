@@ -22,7 +22,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -163,5 +166,33 @@ public class FriendControllerTest extends ApiDocument{
         printAndMakeSnippet(resultActions.andExpect(status().isNotFound())
                         .andExpect(content().json(toJson(ErrorResponse.fromException(userIdNotFoundException)))),
                         "send-Friends-Request-Failure");
+    }
+
+    /////////////////////////////////////////////////////////////////
+    // user id test code
+    /////////////////////////////////////////////////////////////////
+    @Test
+    void annotation_test() throws Exception {
+        // given
+        User user = User.builder()
+                .id(4L)
+                .nickname(FRIEND_NICKNAME)
+                .imageUrl(FRIEND_IMAGE_URL)
+                .userTag(FRIEND_TAG)
+                .role(FRIEND_ROLE)
+                .socialType(FRIEND_SOCIAL_TYPE)
+                .socialId(FRIEND_SOCIAL_ID)
+                .refreshToken(FRIEND_REFRESH_TOKEN)
+                .build();
+
+        when(jwtService.getLongUserIdFromToken("token")).thenReturn(4L);
+
+        when(userRepository.findById(4L)).thenReturn(Optional.of(user));
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/annotation/test")
+                .header("Authorization", "token")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().string("4"));
     }
 }
