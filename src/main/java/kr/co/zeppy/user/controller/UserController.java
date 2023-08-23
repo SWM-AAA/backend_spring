@@ -10,6 +10,9 @@ import kr.co.zeppy.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.amazonaws.Response;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -67,7 +70,7 @@ public class UserController {
     public ResponseEntity<Void> updateUserLocationAndBattery(@RequestHeader("Authorization") String token, 
             @RequestBody LocationAndBatteryRequest locationAndBatteryRequest) {
 
-        String userId = userService.getUserIdFromToken(token);
+        String userId = jwtService.getStringUserIdFromToken(token);
         redisService.updateLocationAndBattery(userId, locationAndBatteryRequest);
 
         return ResponseEntity.ok().build();

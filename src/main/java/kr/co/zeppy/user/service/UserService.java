@@ -32,7 +32,6 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
-    private final FriendshipRepository friendshipRepository;
     private final AwsS3Uploader awsS3Uploader;
     private final NickNameService nickNameService;
 

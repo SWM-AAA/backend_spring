@@ -99,7 +99,7 @@ public class UserControllerTest extends ApiDocument {
                 .profileimage(file)
                 .build();
         
-        given(userService.getUserIdFromToken("Bearer " + TOKEN)).willReturn(USER_ID);
+        given(jwtService.getStringUserIdFromToken("Bearer " + TOKEN)).willReturn(USER_ID);
         
         redisUserLocationUpdateException = new RedisSaveException(ApplicationError.REDIS_SERVER_UNAVAILABLE);
         internalServerException = new ApplicationException(ApplicationError.INTERNAL_SERVER_ERROR);

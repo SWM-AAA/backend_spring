@@ -33,6 +33,7 @@ public class ApiDocument {
                 .andDo(toDocument(title));
     }
 
+
     // 객체를 JSON 문자열로 직렬화하는 메서드
     protected String toJson(Object object) {
         try {

@@ -44,7 +44,11 @@ public class User {
 
     @Builder.Default
     @OneToMany(mappedBy = "user")
-    private Set<Friendship> friends = new HashSet<>();
+    private Set<Friendship> sentFriendships = new HashSet<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "friend")
+    private Set<Friendship> receivedFriendships = new HashSet<>();
 
     // ex) 닉네임#0001
     @Column(unique = true)

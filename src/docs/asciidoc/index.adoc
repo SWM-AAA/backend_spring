@@ -75,3 +75,26 @@ include::{snippets}/update-Location-And-Battery-Failure/http-request.adoc[]
 
 .Response
 include::{snippets}/update-Location-And-Battery-Failure/http-response.adoc[]
+
+
+==== User Friend 관련 API
+----
+/api/v1/friends/sendFriendRequest
+----
+==== Success
+.Request
+include::{snippets}/send-Friends-Request-Success/http-request.adoc[]
+
+.Response
+include::{snippets}/send-Friends-Request-Success/http-response.adoc[]
+
+==== Failure
+.Request
+include::{snippets}/send-Friends-Request-Failure/http-request.adoc[]
+
+.Response
+include::{snippets}/send-Friends-Request-Failure/http-response.adoc[]
+=======
+
+.Response
+include::{snippets}/update-Location-And-Battery-Failure/http-response.adoc[]
