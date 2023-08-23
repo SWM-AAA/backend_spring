@@ -1,5 +1,9 @@
 package kr.co.zeppy.user.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
@@ -13,6 +17,7 @@ import kr.co.zeppy.user.entity.User;
 import kr.co.zeppy.user.repository.FriendshipRepository;
 import kr.co.zeppy.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import kr.co.zeppy.user.dto.UserFriendInfoResponse;
 
 @Service
 @Transactional
@@ -42,5 +47,24 @@ public class FriendService {
                 .build();
         
         friendshipRepository.save(friendship);
-    } 
+    }
+
+
+    public List<UserFriendInfoResponse> checkFriendRequestToList(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
+        
+        Set<Friendship> receivedFriendRequests = user.getReceivedFriendships();
+    
+        List<UserFriendInfoResponse> friendRequestList = new ArrayList<>();
+    
+        for (Friendship request : receivedFriendRequests) {
+            if (request.getStatus() == FriendshipStatus.PENDING) {
+                User requester = request.getUser(); // 요청을 보낸 사용자
+                friendRequestList.add(UserFriendInfoResponse.from(requester));
+            }
+        }
+    
+        return friendRequestList;
+    }
 }
