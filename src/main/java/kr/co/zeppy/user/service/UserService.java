@@ -14,8 +14,6 @@ import kr.co.zeppy.global.error.ApplicationException;
 import kr.co.zeppy.global.jwt.service.JwtService;
 import kr.co.zeppy.user.dto.UserPinInformationResponse;
 import kr.co.zeppy.user.dto.UserRegisterRequest;
-import kr.co.zeppy.user.dto.FriendshipRequest;
-import kr.co.zeppy.user.dto.FriendshipResponse;
 import kr.co.zeppy.user.entity.Friendship;
 import kr.co.zeppy.user.entity.FriendshipStatus;
 import kr.co.zeppy.user.entity.User;
@@ -74,5 +72,46 @@ public class UserService {
         user.updateImageUrl(fileName);
 
         return newUserTag;
+    }
+
+    
+    public String getUserIdFromToken(String token) {
+        return jwtService.extractUserTagFromToken(token)
+            .flatMap(userRepository::findIdByUserTag)
+            .orElseThrow(() -> new ApplicationException(ApplicationError.USER_ID_NOT_FOUND))
+            .toString();
+    }
+
+
+    public void sendFriendRequest(Long userId, Long friendId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
+
+        User friend = userRepository.findById(friendId)
+            .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
+        
+        Friendship friendship = Friendship.builder()
+            .user(user)
+            .friend(friend)
+            .status(FriendshipStatus.PENDING)
+            .build();
+        
+        friendshipRepository.save(friendship);
+    }
+
+
+    public void acceptFriendRequest(Long userId, Long friendId) {
+        Friendship friendship = friendshipRepository.findByUserIdAndFriendId(userId, friendId)
+            .orElseThrow(() -> new ApplicationException(ApplicationError.FRIEND_REQUEST_NOT_FOUND));
+        
+        friendship.acceptRequest();
+    }
+
+
+    public void declineFriendRequest(Long userId, Long friendId) {
+        Friendship friendship = friendshipRepository.findByUserIdAndFriendId(userId, friendId)
+            .orElseThrow(() -> new ApplicationException(ApplicationError.FRIEND_REQUEST_NOT_FOUND));
+        
+        friendshipRepository.delete(friendship);
     }
 }
