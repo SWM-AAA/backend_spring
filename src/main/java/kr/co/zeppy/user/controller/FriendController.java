@@ -56,11 +56,18 @@ public class FriendController {
         return ResponseEntity.ok().build();
     }
 
-
     // 친구 요청 보낸 리스트 확인하기 - testcode 미작성
     @GetMapping("/v1/friends/requests/send")
     public ResponseEntity<List<UserFriendInfoResponse>> checkSentFriendRequest(@UserId Long userId) {
         List<UserFriendInfoResponse> friendRequestList = friendService.checkSentFriendRequestToList(userId);
+
+        return ResponseEntity.ok().body(friendRequestList);
+    }
+
+    // 친구 리스트 반환 - testcode 미작성
+    @GetMapping("/v1/friends")
+    public ResponseEntity<List<UserFriendInfoResponse>> myFriendList(@UserId Long userId) {
+        List<UserFriendInfoResponse> friendRequestList = friendService.giveUserFriendList(userId);
 
         return ResponseEntity.ok().body(friendRequestList);
     }

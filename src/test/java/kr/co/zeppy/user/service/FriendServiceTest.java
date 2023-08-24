@@ -10,6 +10,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,6 +60,9 @@ public class FriendServiceTest {
     private static final String TOKEN = "sample_token";
     private static final Long INIT_USERID = 1L;
     private static final Long INIT_FRIENDID = 2L;
+    private static final Long FRIENDID_3 = 3L;
+    private static final Long FRIENDID_4 = 4L;
+
     private static final Long INIT_FRIENDSHIPID = 1L;
     private static final String USER_NICKNAME = "UserNickname";
     private static final String USER_IMAGE_URL = "userImageUrl";
@@ -70,6 +74,8 @@ public class FriendServiceTest {
     private static final String FRIEND_NICKNAME = "FriendNickname";
     private static final String FRIEND_IMAGE_URL = "friendImageUrl";
     private static final String FRIEND_TAG = "Friend#0001";
+    private static final String FRIEND_TAG2 = "Friend#0002";
+    private static final String FRIEND_TAG3 = "Friend#0003";
     private static final Role FRIEND_ROLE = Role.USER;
     private static final SocialType FRIEND_SOCIAL_TYPE = SocialType.GOOGLE;
     private static final String FRIEND_SOCIAL_ID = "friendSocialId";
@@ -111,6 +117,7 @@ public class FriendServiceTest {
         when(userRepository.findById(INIT_FRIENDID)).thenReturn(Optional.of(friend));
     }
 
+
     @Test
     void test_Send_Friend_Request() {
         // when
@@ -132,7 +139,6 @@ public class FriendServiceTest {
             () -> assertEquals(FriendshipStatus.PENDING, createdFriendFriendship.getStatus())
         );
     }
-    
 
     
     @Test
@@ -156,6 +162,7 @@ public class FriendServiceTest {
         assertEquals(FRIEND_NICKNAME, result.get(0).getNickname());
     }
 
+
     @Test
     void test_Check_Sent_Friend_Request_To_List() {
         // given
@@ -176,7 +183,6 @@ public class FriendServiceTest {
         assertEquals(1, result.size());
         assertEquals(FRIEND_NICKNAME, result.get(0).getNickname());
     }
-
 
 
     @Test
@@ -203,6 +209,7 @@ public class FriendServiceTest {
         assertFalse(user.getReceivedFriendships().contains(pendingFriendship));
     }
 
+
     @Test
     void test_Confirm_Friendship_Decline() {
         // given
@@ -225,6 +232,58 @@ public class FriendServiceTest {
         assertEquals(FriendshipStatus.DECLINE, pendingFriendship.getStatus());
         assertFalse(friend.getSentFriendships().contains(pendingFriendship));
         assertFalse(user.getReceivedFriendships().contains(pendingFriendship));
+    }
+
+
+    @Test
+    void test_Give_User_Friend_List() {
+        User friend_2 = User.builder()
+                .id(FRIENDID_3) // 3
+                .nickname(FRIEND_NICKNAME)
+                .imageUrl(FRIEND_IMAGE_URL)
+                .userTag(FRIEND_TAG2)
+                .role(FRIEND_ROLE)
+                .socialType(FRIEND_SOCIAL_TYPE)
+                .socialId(FRIEND_SOCIAL_ID)
+                .refreshToken(FRIEND_REFRESH_TOKEN)
+                .build();
+        User friend_3 = User.builder()
+                .id(FRIENDID_4) // 4
+                .nickname(FRIEND_NICKNAME)
+                .imageUrl(FRIEND_IMAGE_URL)
+                .userTag(FRIEND_TAG2)
+                .role(FRIEND_ROLE)
+                .socialType(FRIEND_SOCIAL_TYPE)
+                .socialId(FRIEND_SOCIAL_ID)
+                .refreshToken(FRIEND_REFRESH_TOKEN)
+                .build(); 
+
+        Friendship friendship1 = Friendship.builder()
+                .user(user)
+                .friend(friend_2)
+                .build();
+    
+        Friendship friendship2 = Friendship.builder()
+                .user(friend_3)
+                .friend(user)
+                .build();
+        List<Friendship> friendships = Arrays.asList(friendship1, friendship2);
+
+        when(friendshipRepository.findAllFriendshipsByUserId(INIT_USERID)).thenReturn(friendships);
+
+        // When
+        List<UserFriendInfoResponse> result = friendService.giveUserFriendList(INIT_USERID);
+
+        // Then
+        assertEquals(2, result.size());
+        assertTrue(result.stream().anyMatch(friendInfo ->
+            friendInfo.getUserId().equals(friend_2.getId()) &&
+            friendInfo.getUserTag().equals(friend_2.getUserTag()) &&
+            friendInfo.getNickname().equals(friend_2.getNickname())));
+        assertTrue(result.stream().anyMatch(friendInfo ->
+            friendInfo.getUserId().equals(friend_3.getId()) &&
+            friendInfo.getUserTag().equals(friend_3.getUserTag()) &&
+            friendInfo.getNickname().equals(friend_3.getNickname())));
     }
 }
     

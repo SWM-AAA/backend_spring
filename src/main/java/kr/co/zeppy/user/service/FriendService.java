@@ -30,7 +30,6 @@ public class FriendService {
     private final UserRepository userRepository;
 
     // user 친구 추가 기능
-    // test code 미작성
     public void sendFriendRequest(String token, FriendshipRequest friendshipRequest) {
         Long userId = jwtService.getLongUserIdFromToken(token);
         Long friendId = friendshipRequest.getUserId();
@@ -129,5 +128,24 @@ public class FriendService {
     // 친구 추가 요청을 거절
     public void declineFriendship(Friendship friendship) {
         friendship.declineRequest();
+    }
+    
+    // user의 친구 리스트 반환
+    public List<UserFriendInfoResponse> giveUserFriendList(Long userId) {
+        List<UserFriendInfoResponse> userFriendList = new ArrayList<>();
+
+        List<Friendship> friendships = friendshipRepository.findAllFriendshipsByUserId(userId);
+
+        for (Friendship friendship : friendships) {
+            User friend;
+            if (friendship.getUser().getId().equals(userId)) {
+                friend = friendship.getFriend();
+            } else {
+                friend = friendship.getUser();
+            }
+            userFriendList.add(UserFriendInfoResponse.from(friend));
+        }
+
+        return userFriendList;
     }
 }

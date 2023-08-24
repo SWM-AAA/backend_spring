@@ -84,14 +84,12 @@ public class UserController {
         return ResponseEntity.ok().body(fileName);
     }
 
-
     // test
     @GetMapping("/v1/users/all-user-location-and-battery")
     public ResponseEntity<Map<String, Map<String, LocationAndBatteryRequest>>> getAllUserLocationAndBattery() {
 
         return ResponseEntity.ok().body(redisService.getAllUsersLocationAndBattery());
     }
-
 
     // test
     @GetMapping("/test/users/all-user-information")
@@ -107,6 +105,7 @@ public class UserController {
 
         return ResponseEntity.ok().build();
     }
+
 
     @GetMapping("/v1/users/my-location-and-battery")
     public ResponseEntity<Void> getMyLocationAndBattery() throws Exception {
