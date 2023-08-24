@@ -8,4 +8,5 @@ import lombok.RequiredArgsConstructor;
 public enum FriendshipStatus {
     PENDING,
     ACCEPTED,
+    DECLINE,
 }
