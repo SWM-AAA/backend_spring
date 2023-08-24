@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import kr.co.zeppy.global.annotation.UserId;
 import kr.co.zeppy.global.error.ApplicationError;
 import kr.co.zeppy.global.error.ApplicationException;
+import kr.co.zeppy.user.dto.ConfirmFriendshipRequest;
 import kr.co.zeppy.user.dto.FriendshipRequest;
 import kr.co.zeppy.user.dto.UserFriendInfoResponse;
 import kr.co.zeppy.user.entity.User;
@@ -38,13 +39,21 @@ public class FriendController {
         return ResponseEntity.ok().build();
     }
 
-
     // 친구 추가 요청 확인하기 - testcode 미작성
     @GetMapping("/v1/friends/requests")
     public ResponseEntity<List<UserFriendInfoResponse>> checkFriendRequest(@UserId Long userId) {
         List<UserFriendInfoResponse> friendRequestList = friendService.checkFriendRequestToList(userId);
 
         return ResponseEntity.ok().body(friendRequestList);
+    }
+
+    // 친구 추가 요청 수락 및 거절하기
+    @PostMapping("/v1/friends/response")
+    public ResponseEntity<Void> confirmFriendRequest(@UserId Long userId,
+            @RequestBody ConfirmFriendshipRequest confirmFriendRequest) {
+        friendService.confirmFriendship(userId, confirmFriendRequest);
+
+        return ResponseEntity.ok().build();
     }
 
 
