@@ -129,6 +129,5 @@ public class FriendService {
     // 친구 추가 요청을 거절
     public void declineFriendship(Friendship friendship) {
         friendship.declineRequest();
-
     }
 }
