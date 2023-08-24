@@ -10,6 +10,7 @@ import jakarta.transaction.Transactional;
 import kr.co.zeppy.global.error.ApplicationError;
 import kr.co.zeppy.global.error.ApplicationException;
 import kr.co.zeppy.global.jwt.service.JwtService;
+import kr.co.zeppy.user.dto.ConfirmFriendshipRequest;
 import kr.co.zeppy.user.dto.FriendshipRequest;
 import kr.co.zeppy.user.entity.Friendship;
 import kr.co.zeppy.user.entity.FriendshipStatus;
@@ -88,5 +89,40 @@ public class FriendService {
         }
 
         return friendRequestList;
+    }
+
+    // 친구 추가 요청을 수락 및 거절
+    public void confirmFriendship(Long userId, ConfirmFriendshipRequest confirmFriendshipRequest) {
+        Long friendId = confirmFriendshipRequest.getUserId();
+        boolean isAccept = confirmFriendshipRequest.isAccept();
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApplicationException(ApplicationError.USER_ID_NOT_FOUND));
+        User friend = userRepository.findById(friendId)
+                .orElseThrow(() -> new ApplicationException(ApplicationError.USER_ID_NOT_FOUND));
+        Friendship friendship = friendshipRepository.findByUserIdAndFriendId(friendId, userId)
+                .orElseThrow(() -> new ApplicationException(ApplicationError.FRIENDSHIP_NOT_FOUND));
+
+        if (isAccept) {
+            acceptFriendship(friendship);
+        } else {
+            declineFriendship(friendship);
+        }
+        friend.removeSentFriendships(friendship);
+        user.removeReceivedFriendships(friendship);
+
+        friendshipRepository.save(friendship);
+        // 알림 기능 완성 되면 알림
+    }
+
+    // 친구 추가 요청을 수락
+    public void acceptFriendship(Friendship friendship) {
+        friendship.acceptRequest();
+    }
+
+    // 친구 추가 요청을 거절
+    public void declineFriendship(Friendship friendship) {
+        friendship.declineRequest();
+
     }
 }
