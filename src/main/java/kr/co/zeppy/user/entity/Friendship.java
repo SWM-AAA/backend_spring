@@ -46,4 +46,8 @@ public class Friendship {
     public void acceptRequest() {
         this.status = FriendshipStatus.ACCEPTED;
     }
+
+    public void declineRequest() {
+        this.status = FriendshipStatus.DECLINE;
+    }
 }
