@@ -102,6 +102,12 @@ public class FriendService {
                 .orElseThrow(() -> new ApplicationException(ApplicationError.USER_ID_NOT_FOUND));
         Friendship friendship = friendshipRepository.findByUserIdAndFriendId(friendId, userId)
                 .orElseThrow(() -> new ApplicationException(ApplicationError.FRIENDSHIP_NOT_FOUND));
+        
+        if (friendship.getStatus().equals(FriendshipStatus.ACCEPTED)) {
+            throw new ApplicationException(ApplicationError.FRIENDSHIP_ALREADY_ACCEPTED);
+        } else if (friendship.getStatus().equals(FriendshipStatus.DECLINE)) {
+            throw new ApplicationException(ApplicationError.FRIENDSHIP_ALREADY_DECLINE);
+        }
 
         if (isAccept) {
             acceptFriendship(friendship);
