@@ -1,11 +1,8 @@
 package kr.co.zeppy.user.service;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -16,11 +13,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 
 import kr.co.zeppy.global.jwt.service.JwtService;
 import kr.co.zeppy.user.dto.ConfirmFriendshipRequest;
@@ -28,33 +20,32 @@ import kr.co.zeppy.user.dto.FriendshipRequest;
 import kr.co.zeppy.user.dto.UserFriendInfoResponse;
 import kr.co.zeppy.user.entity.Friendship;
 import kr.co.zeppy.user.entity.FriendshipStatus;
-import kr.co.zeppy.user.entity.NicknameCounter;
 import kr.co.zeppy.user.entity.Role;
 import kr.co.zeppy.user.entity.SocialType;
 import kr.co.zeppy.user.entity.User;
 import kr.co.zeppy.user.repository.FriendshipRepository;
-import kr.co.zeppy.user.repository.NickNameRepository;
 import kr.co.zeppy.user.repository.UserRepository;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito; 
+import org.mockito.junit.jupiter.MockitoExtension; 
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 public class FriendServiceTest {
 
-    @Autowired
+    @InjectMocks
     private FriendService friendService;
 
-    @MockBean
+    @Mock
     private JwtService jwtService;
 
-    @MockBean
+    @Mock
     private FriendshipRepository friendshipRepository;
 
-    @MockBean
+    @Mock
     private UserRepository userRepository;
 
     private static final String TOKEN = "sample_token";
@@ -63,7 +54,6 @@ public class FriendServiceTest {
     private static final Long FRIENDID_3 = 3L;
     private static final Long FRIENDID_4 = 4L;
 
-    private static final Long INIT_FRIENDSHIPID = 1L;
     private static final String USER_NICKNAME = "UserNickname";
     private static final String USER_IMAGE_URL = "userImageUrl";
     private static final String USER_TAG = "User#0001";
@@ -84,6 +74,12 @@ public class FriendServiceTest {
     private FriendshipRequest friendshipRequest;
     private User user;
     private User friend;
+    private ConfirmFriendshipRequest request;
+    private Friendship pendingFriendship;
+    private User friend_2;
+    private User friend_3;
+    private Friendship friendship1;
+    private Friendship friendship2;
 
     @BeforeEach
     public void setup() {
@@ -109,18 +105,60 @@ public class FriendServiceTest {
                 .refreshToken(FRIEND_REFRESH_TOKEN)
                 .build();
 
+        request = ConfirmFriendshipRequest.builder()
+                .userId(INIT_FRIENDID)
+                .isAccept(false)
+                .build();
+
+        pendingFriendship = Friendship.builder()
+                .user(friend)
+                .friend(user)
+                .status(FriendshipStatus.PENDING)
+                .build();
+
         friendshipRequest = FriendshipRequest.builder()
                 .userId(INIT_FRIENDID)
                 .build();
-        when(jwtService.getLongUserIdFromToken(anyString())).thenReturn(INIT_USERID);
-        when(userRepository.findById(INIT_USERID)).thenReturn(Optional.of(user));
-        when(userRepository.findById(INIT_FRIENDID)).thenReturn(Optional.of(friend));
+        
+        friend_2 = User.builder()
+                .id(FRIENDID_3) // 3
+                .nickname(FRIEND_NICKNAME)
+                .imageUrl(FRIEND_IMAGE_URL)
+                .userTag(FRIEND_TAG2)
+                .role(FRIEND_ROLE)
+                .socialType(FRIEND_SOCIAL_TYPE)
+                .socialId(FRIEND_SOCIAL_ID)
+                .refreshToken(FRIEND_REFRESH_TOKEN)
+                .build();
+        friend_3 = User.builder()
+                .id(FRIENDID_4) // 4
+                .nickname(FRIEND_NICKNAME)
+                .imageUrl(FRIEND_IMAGE_URL)
+                .userTag(FRIEND_TAG3)
+                .role(FRIEND_ROLE)
+                .socialType(FRIEND_SOCIAL_TYPE)
+                .socialId(FRIEND_SOCIAL_ID)
+                .refreshToken(FRIEND_REFRESH_TOKEN)
+                .build(); 
+
+        friendship1 = Friendship.builder()
+                .user(user)
+                .friend(friend_2)
+                .build();
+    
+        friendship2 = Friendship.builder()
+                .user(friend_3)
+                .friend(user)
+                .build();
     }
 
 
     @Test
     void test_Send_Friend_Request() {
         // when
+        when(jwtService.getLongUserIdFromToken(TOKEN)).thenReturn(INIT_USERID);
+        when(userRepository.findById(INIT_USERID)).thenReturn(Optional.of(user));
+        when(userRepository.findById(INIT_FRIENDID)).thenReturn(Optional.of(friend));
         friendService.sendFriendRequest(TOKEN, friendshipRequest);
         
         // then
@@ -151,10 +189,9 @@ public class FriendServiceTest {
                 .build();
 
         user.getReceivedFriendships().add(receivedFriendship);
-
-        when(userRepository.findById(INIT_USERID)).thenReturn(Optional.of(user));
-
+        
         // when
+        when(userRepository.findById(INIT_USERID)).thenReturn(Optional.of(user));
         List<UserFriendInfoResponse> result = friendService.checkFriendRequestToList(INIT_USERID);
 
         // then
@@ -197,10 +234,12 @@ public class FriendServiceTest {
                 .friend(user)
                 .status(FriendshipStatus.PENDING)
                 .build();
+                
+        // when
         when(friendshipRepository.findByUserIdAndFriendId(INIT_FRIENDID, INIT_USERID))
                 .thenReturn(Optional.of(pendingFriendship));
-
-        // when
+        when(userRepository.findById(INIT_USERID)).thenReturn(Optional.of(user));
+        when(userRepository.findById(INIT_FRIENDID)).thenReturn(Optional.of(friend));
         friendService.confirmFriendship(INIT_USERID, request);
 
         // then
@@ -213,17 +252,10 @@ public class FriendServiceTest {
     @Test
     void test_Confirm_Friendship_Decline() {
         // given
-        ConfirmFriendshipRequest request = ConfirmFriendshipRequest.builder()
-                .userId(INIT_FRIENDID)
-                .isAccept(false)
-                .build();
-        Friendship pendingFriendship = Friendship.builder()
-                .user(friend)
-                .friend(user)
-                .status(FriendshipStatus.PENDING)
-                .build();
         when(friendshipRepository.findByUserIdAndFriendId(INIT_FRIENDID, INIT_USERID))
                 .thenReturn(Optional.of(pendingFriendship));
+        when(userRepository.findById(INIT_USERID)).thenReturn(Optional.of(user));
+        when(userRepository.findById(INIT_FRIENDID)).thenReturn(Optional.of(friend));
 
         // when
         friendService.confirmFriendship(INIT_USERID, request);
@@ -237,36 +269,6 @@ public class FriendServiceTest {
 
     @Test
     void test_Give_User_Friend_List() {
-        User friend_2 = User.builder()
-                .id(FRIENDID_3) // 3
-                .nickname(FRIEND_NICKNAME)
-                .imageUrl(FRIEND_IMAGE_URL)
-                .userTag(FRIEND_TAG2)
-                .role(FRIEND_ROLE)
-                .socialType(FRIEND_SOCIAL_TYPE)
-                .socialId(FRIEND_SOCIAL_ID)
-                .refreshToken(FRIEND_REFRESH_TOKEN)
-                .build();
-        User friend_3 = User.builder()
-                .id(FRIENDID_4) // 4
-                .nickname(FRIEND_NICKNAME)
-                .imageUrl(FRIEND_IMAGE_URL)
-                .userTag(FRIEND_TAG2)
-                .role(FRIEND_ROLE)
-                .socialType(FRIEND_SOCIAL_TYPE)
-                .socialId(FRIEND_SOCIAL_ID)
-                .refreshToken(FRIEND_REFRESH_TOKEN)
-                .build(); 
-
-        Friendship friendship1 = Friendship.builder()
-                .user(user)
-                .friend(friend_2)
-                .build();
-    
-        Friendship friendship2 = Friendship.builder()
-                .user(friend_3)
-                .friend(user)
-                .build();
         List<Friendship> friendships = Arrays.asList(friendship1, friendship2);
 
         when(friendshipRepository.findAllFriendshipsByUserId(INIT_USERID)).thenReturn(friendships);

@@ -7,34 +7,45 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Date;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
-
 import com.auth0.jwt.JWT;
+
+import kr.co.zeppy.user.repository.UserRepository;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
-import kr.co.zeppy.SecurityConfigTest;
-import kr.co.zeppy.user.controller.UserController;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 public class JwtServiceTest {
 
     private static final String ACCESS_TOKEN_SUBJECT = "AccessToken";
-    private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
+    // private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
     private static final String LOGIN_USER_TAG = "userTag";
     private static final Long LOGIN_ID = 1L;
 
+    @InjectMocks
+    private JwtService jwtService;
+
+    @Mock
+    private UserRepository userRepository;
+
     @BeforeEach
     void setUp() {
+        jwtService = new JwtService(userRepository);
 
+        ReflectionTestUtils.setField(jwtService, "secretKey", "yourSecretKey");
+        ReflectionTestUtils.setField(jwtService, "accessTokenExpirationPeriod", 3600L); // 예: 1시간
+        ReflectionTestUtils.setField(jwtService, "refreshTokenExpirationPeriod", 7200L); // 예: 2시간
+        ReflectionTestUtils.setField(jwtService, "accessHeader", "Authorization");
+        ReflectionTestUtils.setField(jwtService, "refreshHeader", "RefreshToken");
+        ReflectionTestUtils.setField(jwtService, "accessTokenName", "access_token");
+        ReflectionTestUtils.setField(jwtService, "refreshTokenName", "refresh_token");
     }
-
-    @Autowired
-    private JwtService jwtService;
 
     @Test
     void test_Create_Access_Token() {
@@ -57,6 +68,5 @@ public class JwtServiceTest {
             }
         );
     }
-
 }
     
