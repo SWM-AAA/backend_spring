@@ -42,7 +42,9 @@ public class UserServiceTest {
     private AwsS3Uploader awsS3Uploader;
 
     private static final String S3_USER_PROFILE_PATH = "user/profile-image/";
+
     private static final String TOKEN = "testToken";
+
     private static final String USER_TAG = "testUserTag";
     private static final String NEW_USER_TAG = "newUserTag";
     private static final String NICKNAME = "newNickname";
@@ -73,6 +75,7 @@ public class UserServiceTest {
     void register() throws IOException {
         // Given
         when(jwtService.extractUserTagFromToken(TOKEN)).thenReturn(Optional.of(USER_TAG));
+
         when(userRepository.findByUserTag(USER_TAG)).thenReturn(Optional.of(user));
         when(nickNameService.getUserTagFromNickName(NICKNAME)).thenReturn(NEW_USER_TAG);
         when(awsS3Uploader.upload(file, S3_USER_PROFILE_PATH + USER_ID)).thenReturn(IMAGE_URL);

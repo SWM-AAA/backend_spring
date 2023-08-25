@@ -94,3 +94,7 @@ include::{snippets}/send-Friends-Request-Failure/http-request.adoc[]
 
 .Response
 include::{snippets}/send-Friends-Request-Failure/http-response.adoc[]
+=======
+
+.Response
+include::{snippets}/update-Location-And-Battery-Failure/http-response.adoc[]

@@ -4,7 +4,6 @@ import kr.co.zeppy.global.aws.service.AwsS3Uploader;
 import kr.co.zeppy.global.jwt.service.JwtService;
 import kr.co.zeppy.global.redis.dto.LocationAndBatteryRequest;
 import kr.co.zeppy.global.redis.service.RedisService;
-import kr.co.zeppy.user.dto.FriendshipRequest;
 import kr.co.zeppy.user.dto.UserPinInformationResponse;
 import kr.co.zeppy.user.dto.UserRegisterRequest;
 import kr.co.zeppy.user.service.UserService;
