@@ -8,6 +8,8 @@ import kr.co.zeppy.global.error.ApplicationException;
 import kr.co.zeppy.global.jwt.service.JwtService;
 import kr.co.zeppy.global.redis.service.RedisService;
 import kr.co.zeppy.user.dto.FriendshipRequest;
+import kr.co.zeppy.user.entity.Friendship;
+import kr.co.zeppy.user.entity.FriendshipStatus;
 import kr.co.zeppy.user.entity.Role;
 import kr.co.zeppy.user.entity.SocialType;
 import kr.co.zeppy.user.entity.User;
@@ -26,9 +28,11 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
@@ -53,6 +57,7 @@ public class FriendControllerTest extends ApiDocument{
     private static final String ACCESSTOKEN = "access_token";
     private static final Long INIT_USERID = 1L;
     private static final Long INIT_FRIENDID = 2L;
+    private static final Long INIT_FRIENDSHIPID = 1L;
     private static final String USER_NICKNAME = "UserNickname";
     private static final String USER_IMAGE_URL = "userImageUrl";
     private static final String USER_TAG = "User#0001";
@@ -83,7 +88,9 @@ public class FriendControllerTest extends ApiDocument{
     private ApplicationException userIdNotFoundException;
 
     private FriendshipRequest friendshipRequest;
-
+    private User user;
+    private User friend;
+    private Friendship friendship;
 
     @BeforeEach
     void setUp() {
@@ -91,7 +98,7 @@ public class FriendControllerTest extends ApiDocument{
                 .userId(INIT_USERID)
                 .build();
         
-        User user = User.builder()
+        user = User.builder()
                 .id(INIT_USERID)
                 .nickname(USER_NICKNAME)
                 .imageUrl(USER_IMAGE_URL)
@@ -102,7 +109,7 @@ public class FriendControllerTest extends ApiDocument{
                 .refreshToken(USER_REFRESH_TOKEN)
                 .build();
                 
-        User friend = User.builder()
+        friend = User.builder()
                 .id(INIT_FRIENDID)
                 .nickname(FRIEND_NICKNAME)
                 .imageUrl(FRIEND_IMAGE_URL)
@@ -111,6 +118,13 @@ public class FriendControllerTest extends ApiDocument{
                 .socialType(FRIEND_SOCIAL_TYPE)
                 .socialId(FRIEND_SOCIAL_ID)
                 .refreshToken(FRIEND_REFRESH_TOKEN)
+                .build();
+        
+        friendship = Friendship.builder()
+                .id(INIT_FRIENDSHIPID)
+                .user(user)
+                .friend(friend)
+                .status(FriendshipStatus.PENDING)
                 .build();
         
         when(jwtService.getLongUserIdFromToken(anyString())).thenReturn(INIT_USERID);
@@ -126,7 +140,12 @@ public class FriendControllerTest extends ApiDocument{
     @Test
     void test_Send_Friend_Request_Success() throws Exception {
         // given
-        willDoNothing().given(friendService).sendFriendRequest(anyString(), any(FriendshipRequest.class));
+        doAnswer(invocation -> {
+            user.addSentFriendships(friendship);
+            friend.addReceivedFriendships(friendship);
+            return null;
+        }).when(friendService).sendFriendRequest(anyString(), any(FriendshipRequest.class));
+
         String jsonRequest = toJson(friendshipRequest);
 
         // when
@@ -160,6 +179,8 @@ public class FriendControllerTest extends ApiDocument{
     private void send_Friend_Request_Success(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isOk()),
                 "send-Friends-Request-Success");
+        assertTrue(user.getSentFriendships().contains(friendship), "User should have sent friendship to friend.");
+        assertTrue(friend.getReceivedFriendships().contains(friendship), "Friend should have received friendship from user.");
     }
 
     private void send_Friend_Request_Failure(ResultActions resultActions) throws Exception {

@@ -28,7 +28,11 @@ public enum ApplicationError {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_004", "사용자를 찾을 수 없습니다."),
     USER_NICKNAME_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_005", "사용자 닉네임을 찾을 수 없습니다."),
 
-    FRIEND_REQUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "FRIEND_001", "친구 요청을 찾을 수 없습니다.");
+    FRIEND_REQUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "FRIEND_001", "친구 요청을 찾을 수 없습니다."),
+
+    FRIENDSHIP_NOT_FOUND(HttpStatus.NOT_FOUND, "FRIENDSHIP_001", "친구 요청을 찾을 수 없습니다."),
+    FRIENDSHIP_ALREADY_ACCEPTED(HttpStatus.NOT_FOUND, "FRIENDSHIP_002", "이미 수락한 요청 입니다."),
+    FRIENDSHIP_ALREADY_DECLINE(HttpStatus.NOT_FOUND, "FRIENDSHIP_003", "이미 거절한 요청 입니다.");
 
     private final HttpStatus status;
     private final String code;
