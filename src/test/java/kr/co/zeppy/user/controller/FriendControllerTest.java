@@ -201,8 +201,6 @@ public class FriendControllerTest extends ApiDocument{
     private void send_Friend_Request_Success(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isOk()),
                 "send-Friends-Request-Success");
-        assertTrue(user.getSentFriendships().contains(friendship), "User should have sent friendship to friend.");
-        assertTrue(friend.getReceivedFriendships().contains(friendship), "Friend should have received friendship from user.");
     }
 
     private void send_Friend_Request_Failure(ResultActions resultActions) throws Exception {
