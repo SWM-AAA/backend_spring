@@ -72,7 +72,6 @@ public class FriendController {
         return ResponseEntity.ok().body(friendRequestList);
     }
 
-
     // annotation api test
     @GetMapping("/v1/annotation/test")
     public ResponseEntity<Long> annotationTest(@UserId Long userId) {
