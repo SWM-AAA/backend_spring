@@ -77,24 +77,97 @@ include::{snippets}/update-Location-And-Battery-Failure/http-request.adoc[]
 include::{snippets}/update-Location-And-Battery-Failure/http-response.adoc[]
 
 
-==== User Friend 관련 API
+=== Friend 관련 기능
+==== 친구 추가 요청 보내기 Post
 ----
-/api/v1/friends/sendFriendRequest
+/api/v1/friends/requests
 ----
-==== Success
+===== Success
 .Request
 include::{snippets}/send-Friends-Request-Success/http-request.adoc[]
 
 .Response
 include::{snippets}/send-Friends-Request-Success/http-response.adoc[]
 
-==== Failure
+===== Failure
 .Request
 include::{snippets}/send-Friends-Request-Failure/http-request.adoc[]
 
 .Response
 include::{snippets}/send-Friends-Request-Failure/http-response.adoc[]
-=======
+
+
+==== 내가보낸 친구추가 요청 확인하기 GET
+----
+/api/v1/friends/requests
+----
+===== Success
+.Request
+include::{snippets}/check-Friends-Request-Success/http-request.adoc[]
 
 .Response
-include::{snippets}/update-Location-And-Battery-Failure/http-response.adoc[]
+include::{snippets}/check-Friends-Request-Success/http-response.adoc[]
+
+===== Failure
+.Request
+include::{snippets}/check-Friends-Request-Failure/http-request.adoc[]
+
+.Response
+include::{snippets}/check-Friends-Request-Failure/http-response.adoc[]
+
+
+==== 친구 추가 요청 수락 및 거절하기 GET
+----
+/api/v1/friends/response
+----
+===== Success
+.Request
+include::{snippets}/confirm-Friends-Request-Success/http-request.adoc[]
+
+.Response
+include::{snippets}/confirm-Friends-Request-Success/http-response.adoc[]
+
+===== Failure
+.Request
+include::{snippets}/confirm-Friends-Request-Failure/http-request.adoc[]
+
+.Response
+include::{snippets}/confirm-Friends-Request-Failure/http-response.adoc[]
+
+
+==== 내가 친구추가 요청 보낸 리스트 확인하기 GET
+----
+/api/v1/friends/requests/send
+----
+===== Success
+.Request
+include::{snippets}/check-Sent-Friend-Request-Success/http-request.adoc[]
+
+.Response
+include::{snippets}/check-Sent-Friend-Request-Success/http-response.adoc[]
+
+===== Failure
+.Request
+include::{snippets}/check-Sent-Friend-Request-Failure/http-request.adoc[]
+
+.Response
+include::{snippets}/check-Sent-Friend-Request-Failure/http-response.adoc[]
+
+
+==== 나의 친구 리스트 확인하기 GET
+----
+/api/v1/friends
+----
+===== Success
+.Request
+include::{snippets}/my-Friend-List-Success/http-request.adoc[]
+
+.Response
+include::{snippets}/my-Friend-List-Success/http-response.adoc[]
+
+===== Failure
+.Request
+include::{snippets}/my-Friend-List-Failure/http-request.adoc[]
+
+.Response
+include::{snippets}/my-Friend-List-Failure/http-response.adoc[]

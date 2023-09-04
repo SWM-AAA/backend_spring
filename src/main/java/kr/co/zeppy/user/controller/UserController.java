@@ -107,4 +107,7 @@ public class UserController {
 
         return ResponseEntity.ok().build();
     }
+
+
+    @PostMapping("/v1/users/")
 }

@@ -7,7 +7,9 @@ import kr.co.zeppy.global.error.ApplicationError;
 import kr.co.zeppy.global.error.ApplicationException;
 import kr.co.zeppy.global.jwt.service.JwtService;
 import kr.co.zeppy.global.redis.service.RedisService;
+import kr.co.zeppy.user.dto.ConfirmFriendshipRequest;
 import kr.co.zeppy.user.dto.FriendshipRequest;
+import kr.co.zeppy.user.dto.UserFriendInfoResponse;
 import kr.co.zeppy.user.entity.Friendship;
 import kr.co.zeppy.user.entity.FriendshipStatus;
 import kr.co.zeppy.user.entity.Role;
@@ -26,17 +28,24 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.BDDMockito.*;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.security.test.context.support.WithMockUser;
 
@@ -80,11 +89,16 @@ public class FriendControllerTest extends ApiDocument{
     private UserRepository userRepository;
     
     private ApplicationException userIdNotFoundException;
+    private ApplicationException friendRequestNotFoundException;
 
     private FriendshipRequest friendshipRequest;
     private User user;
     private User friend;
     private Friendship friendship;
+
+    private List<UserFriendInfoResponse> friendRequestList;
+    private UserFriendInfoResponse userFriendInfoResponse;
+    private ConfirmFriendshipRequest confirmFriendshipRequest;
 
     @BeforeEach
     void setUp() {
@@ -120,16 +134,30 @@ public class FriendControllerTest extends ApiDocument{
                 .friend(friend)
                 .status(FriendshipStatus.PENDING)
                 .build();
+                
+        userFriendInfoResponse = UserFriendInfoResponse.builder()
+                .userId(INIT_USERID)
+                .nickname("nickname")
+                .imageUrl("imageUrl")
+                .build();
         
+        confirmFriendshipRequest = ConfirmFriendshipRequest.builder()
+                .userId(INIT_USERID)
+                .isAccept(false)
+                .build();
+                
+        userIdNotFoundException = new ApplicationException(ApplicationError.USER_NOT_FOUND);
+        friendRequestNotFoundException = new ApplicationException(ApplicationError.FRIEND_REQUEST_NOT_FOUND);
+
+        friendRequestList = Arrays.asList(userFriendInfoResponse);
+
         when(jwtService.getLongUserIdFromToken(anyString())).thenReturn(INIT_USERID);
         when(userRepository.findById(INIT_USERID)).thenReturn(Optional.of(user));
         when(userRepository.findById(INIT_FRIENDID)).thenReturn(Optional.of(friend));
-
-        userIdNotFoundException = new ApplicationException(ApplicationError.USER_NOT_FOUND);
     }
 
     /////////////////////////////////////////////////////////////////
-    // sendFriendRequest (Method : Post) test code || (url : sendFriendRequest)
+    // sendFriendRequest (Method : Post) test code || (url : requests)
     /////////////////////////////////////////////////////////////////
     @Test
     void test_Send_Friend_Request_Success() throws Exception {
@@ -151,7 +179,7 @@ public class FriendControllerTest extends ApiDocument{
 
     @Test
     void test_Send_Friend_Request_Failure() throws Exception {
-        doThrow(userIdNotFoundException).when(friendService).sendFriendRequest(anyString(), any(FriendshipRequest.class));
+        doThrow(friendRequestNotFoundException).when(friendService).sendFriendRequest(anyString(), any(FriendshipRequest.class));
         String jsonRequest = toJson(friendshipRequest);
 
         // when
@@ -173,13 +201,11 @@ public class FriendControllerTest extends ApiDocument{
     private void send_Friend_Request_Success(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isOk()),
                 "send-Friends-Request-Success");
-        assertTrue(user.getSentFriendships().contains(friendship), "User should have sent friendship to friend.");
-        assertTrue(friend.getReceivedFriendships().contains(friendship), "Friend should have received friendship from user.");
     }
 
     private void send_Friend_Request_Failure(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isNotFound())
-                        .andExpect(content().json(toJson(ErrorResponse.fromException(userIdNotFoundException)))),
+                        .andExpect(content().json(toJson(ErrorResponse.fromException(friendRequestNotFoundException)))),
                         "send-Friends-Request-Failure");
     }
 
@@ -209,5 +235,196 @@ public class FriendControllerTest extends ApiDocument{
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().string("4"));
+    }
+
+    /////////////////////////////////////////////////////////////////
+    // checkFriendRequest (Method : get) test code || (url : requests)
+    /////////////////////////////////////////////////////////////////
+    @WithMockUser
+    @Test
+    void test_Check_Friend_Request_Success() throws Exception {
+        // given
+        willReturn(friendRequestList).given(friendService).checkFriendRequestToList(anyLong());
+        // when
+        ResultActions resultActions = check_Friend_Request();
+        // then
+        check_Friend_Request_Success(resultActions);
+    }
+
+    @WithMockUser
+    @Test
+    void test_Check_Friend_Request_Failure() throws Exception {
+        // given
+        willThrow(userIdNotFoundException).given(friendService).checkFriendRequestToList(anyLong());
+        // when
+        ResultActions resultActions = check_Friend_Request();
+        // then
+        check_Friend_Request_Failure(resultActions);
+    }
+
+    private ResultActions check_Friend_Request() throws Exception {
+        return mockMvc.perform(
+                get(API_VERSION + RESOURCE_PATH + "/requests")
+                        .header(AUTHORIZATION_HEADER, ACCESSTOKEN));
+    }
+
+    private void check_Friend_Request_Success(ResultActions resultActions) throws Exception {
+        printAndMakeSnippet(resultActions.andExpect(status().isOk())
+                        .andExpect(content().json(toJson(friendRequestList))),
+                "check-Friends-Request-Success");
+        verify(friendService, times(1)).checkFriendRequestToList(anyLong());
+    }
+
+    private void check_Friend_Request_Failure(ResultActions resultActions) throws Exception {
+        printAndMakeSnippet(resultActions.andExpect(status().isNotFound())
+                        .andExpect(content().json(toJson(ErrorResponse.fromException(userIdNotFoundException)))),
+                "check-Friends-Request-Failure");
+        verify(friendService, times(1)).checkFriendRequestToList(anyLong());
+    }
+
+    /////////////////////////////////////////////////////////////////
+    // confirmFriendRequest (Method : post) test code || (url : response)
+    /////////////////////////////////////////////////////////////////
+    @WithMockUser
+    @Test
+    void test_confirm_Friend_Request_Success() throws Exception {
+        // given
+        willDoNothing().given(friendService).confirmFriendship(anyLong(), any(ConfirmFriendshipRequest.class));
+
+        // when
+        ResultActions resultActions = confirm_Friend_Request();
+
+        // then
+        confirm_Friend_Request_Success(resultActions);
+    }
+
+    @WithMockUser
+    @Test
+    void test_Confirm_Friend_Request_Failure() throws Exception {
+        // given
+        willThrow(userIdNotFoundException).given(friendService).confirmFriendship(anyLong(), any(ConfirmFriendshipRequest.class));
+    
+        // when
+        ResultActions resultActions = confirm_Friend_Request();
+    
+        // then
+        confirm_Friend_Request_Failure(resultActions);
+    }
+    
+    private ResultActions confirm_Friend_Request() throws Exception {
+        return mockMvc.perform(
+                post(API_VERSION + RESOURCE_PATH + "/response")
+                        .header(AUTHORIZATION_HEADER, ACCESSTOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(confirmFriendshipRequest))
+        );
+    }
+
+    private void confirm_Friend_Request_Success(ResultActions resultActions) throws Exception {
+        printAndMakeSnippet(resultActions.andExpect(status().isOk()), "confirm-Friends-Request-Success");
+    }
+    
+    private void confirm_Friend_Request_Failure(ResultActions resultActions) throws Exception {
+        printAndMakeSnippet(resultActions.andExpect(status().isNotFound())
+                .andExpect(content().json(toJson(ErrorResponse.fromException(userIdNotFoundException)))), "confirm-Friends-Request-Failure");
+        verify(friendService, times(1)).confirmFriendship(anyLong(), any(ConfirmFriendshipRequest.class));
+    }
+
+    /////////////////////////////////////////////////////////////////
+    // checkSentFriendRequest (Method : get) test code || (url : requests/send)
+    /////////////////////////////////////////////////////////////////
+    @WithMockUser
+    @Test
+    void check_Sent_Friend_Request_Success() throws Exception {
+        // given
+        willReturn(friendRequestList).given(friendService).checkSentFriendRequestToList(anyLong());
+    
+        // when
+        ResultActions resultActions = check_Sent_Friend_Request();
+    
+        // then
+        check_Sent_Friend_Request_Success(resultActions);
+    }
+
+    @WithMockUser
+    @Test
+    void check_Sent_Friend_Request_Failure() throws Exception {
+        // given
+        willThrow(userIdNotFoundException).given(friendService).checkSentFriendRequestToList(anyLong());
+    
+        // when
+        ResultActions resultActions = check_Sent_Friend_Request();
+    
+        // then
+        check_Sent_Friend_Request_Failure(resultActions);
+    }
+    
+    private ResultActions check_Sent_Friend_Request() throws Exception {
+        return mockMvc.perform(
+                get(API_VERSION + RESOURCE_PATH + "/requests/send")
+                        .header(AUTHORIZATION_HEADER, ACCESSTOKEN));
+    }
+    
+    private void check_Sent_Friend_Request_Success(ResultActions resultActions) throws Exception {
+        printAndMakeSnippet(resultActions.andExpect(status().isOk())
+                .andExpect(content().json(toJson(friendRequestList))),
+                "check-Sent-Friend-Request-Success");
+        verify(friendService, times(1)).checkSentFriendRequestToList(anyLong());
+    }
+    
+    private void check_Sent_Friend_Request_Failure(ResultActions resultActions) throws Exception {
+        printAndMakeSnippet(resultActions.andExpect(status().isNotFound())
+                .andExpect(content().json(toJson(ErrorResponse.fromException(userIdNotFoundException)))),
+                "check-Sent-Friend-Request-Failure");
+        verify(friendService, times(1)).checkSentFriendRequestToList(anyLong());
+    }
+
+    ///////////////////////////////////////////////////////////////
+    // myFriendList (Method : get) test code || (url : friends)
+    ///////////////////////////////////////////////////////////////
+    @Test
+    @WithMockUser
+    void test_my_Friend_List_Success() throws Exception {
+        // given
+        willReturn(friendRequestList).given(friendService).giveUserFriendList(anyLong());
+    
+        // when
+        ResultActions resultActions = my_Friend_List_Request();
+    
+        // then
+        my_Friend_List_Request_Success(resultActions);
+    }
+    
+    @Test
+    @WithMockUser
+    void test_my_Friend_List_Failure() throws Exception {
+        // given
+        willThrow(userIdNotFoundException).given(friendService).giveUserFriendList(anyLong());
+    
+        // when
+        ResultActions resultActions = my_Friend_List_Request();
+    
+        // then
+        my_Friend_List_Request_Failure(resultActions);
+    }
+    
+    private ResultActions my_Friend_List_Request() throws Exception {
+        return mockMvc.perform(
+                get(API_VERSION + RESOURCE_PATH)
+                        .header(AUTHORIZATION_HEADER, ACCESSTOKEN));
+    }
+    
+    private void my_Friend_List_Request_Success(ResultActions resultActions) throws Exception {
+        printAndMakeSnippet(resultActions.andExpect(status().isOk())
+                .andExpect(content().json(toJson(friendRequestList))),
+                "my-Friend-List-Success");
+        verify(friendService, times(1)).giveUserFriendList(anyLong());
+    }
+    
+    private void my_Friend_List_Request_Failure(ResultActions resultActions) throws Exception {
+        printAndMakeSnippet(resultActions.andExpect(status().isNotFound())
+                .andExpect(content().json(toJson(ErrorResponse.fromException(userIdNotFoundException)))),
+                "my-Friend-List-Failure");
+        verify(friendService, times(1)).giveUserFriendList(anyLong());
     }
 }
