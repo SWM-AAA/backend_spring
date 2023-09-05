@@ -31,6 +31,9 @@ import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import org.springframework.security.test.context.support.WithMockUser;
 import static org.hamcrest.CoreMatchers.is;
@@ -49,7 +52,10 @@ public class UserControllerTest extends ApiDocument {
     private static final String LONGITUDE = "127.123456";
     private static final String BATTERY = "90";
     private static final boolean IS_CHARGING = false;
+    private static final String USERID = "userId";
     private static final String USER_ID = "1";
+    private static final String NEWUSERTAG = "newUserTag";
+    private static final String USERTAG = "userTag";
     private static final String TOKEN = "token";
     private static final String PROFILE_IMAGE_NAME = "profileimage";
     private static final String FILE_NAME = "filename.jpg";
@@ -57,7 +63,7 @@ public class UserControllerTest extends ApiDocument {
     private static final byte[] CONTENT = "image content".getBytes();
     private static final String NICKNAME = "userNickname";
     private static final String AUTHORIZATION_HEADER = "Authorization";
-    private static final String ACCESSTOKEN = "access_token";
+    private static final String ACCESSTOKEN = "accessToken";
 
     @MockBean
     private RedisService redisService;
@@ -155,8 +161,15 @@ public class UserControllerTest extends ApiDocument {
     @Test
     void test_User_Register_Success() throws Exception {
         // given
-        given(userService.register(anyString(), any(UserRegisterRequest.class))).willReturn("newUserTag");
-        given(jwtService.createAccessToken("newUserTag")).willReturn("testAccessToken");
+        Map<String, String> expectedResponse = new HashMap<>();
+        expectedResponse.put(ACCESSTOKEN, ACCESSTOKEN);
+        expectedResponse.put(USERID, USER_ID);
+        expectedResponse.put(USERTAG, NEWUSERTAG);
+
+        given(userService.register(anyString(), any(UserRegisterRequest.class))).willReturn(USERTAG);
+        given(jwtService.createAccessToken(USERTAG)).willReturn(ACCESSTOKEN);
+        given(jwtService.getStringUserIdFromToken(TOKEN)).willReturn(USER_ID);
+        given(userService.userRegisterBody(ACCESSTOKEN, USERTAG, USER_ID)).willReturn(expectedResponse);
         
         // when
         ResultActions resultActions = user_Register_Request();
@@ -180,16 +193,18 @@ public class UserControllerTest extends ApiDocument {
     
     private ResultActions user_Register_Request() throws Exception {
         return mockMvc.perform(MockMvcRequestBuilders.multipart(API_VERSION + RESOURCE_PATH + "/register")
-                .file("profileimage", userRegisterRequest.getProfileimage().getBytes())
+                .file(PROFILE_IMAGE_NAME, userRegisterRequest.getProfileimage().getBytes())
                 .header(AUTHORIZATION_HEADER, "Bearer " + TOKEN)
-                .param("nickname", userRegisterRequest.getNickname())
+                .param(NICKNAME, userRegisterRequest.getNickname())
                 .contentType(MediaType.MULTIPART_FORM_DATA));
     }
     
 
     private void user_Register_Request_Success(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isOk())
-                            .andExpect(jsonPath("$." + ACCESSTOKEN, is("testAccessToken"))),
+                            .andExpect(jsonPath("$.accessToken", is(ACCESSTOKEN)))
+                            .andExpect(jsonPath("$.userTag", is(NEWUSERTAG)))
+                            .andExpect(jsonPath("$.userId", is(USER_ID))),
                             "user-Register-Success");
         verify(userService, times(1)).register(anyString(), any(UserRegisterRequest.class));
     }
