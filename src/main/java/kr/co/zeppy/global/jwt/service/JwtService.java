@@ -55,6 +55,8 @@ public class JwtService {
     @Value("${jwt.refresh.refreshtoken_name}")
     private String refreshTokenName;
 
+    private static final String USERID = "userId";
+    private static final String USERTAG = "userTag";
     private static final String ACCESS_TOKEN_SUBJECT = "AccessToken";
     private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
     private static final String LOGIN_USER_TAG = "userTag";
@@ -87,10 +89,13 @@ public class JwtService {
     }
 
 
-    public String setAccessTokenAndRefreshTokenURLParam(String url, String accessToken, String refreshToken, boolean isfirst) {
+    public String setAccessTokenAndRefreshTokenURLParam(String url, String userId, String userTag, 
+                String accessToken, String refreshToken, boolean isfirst) {
         return UriComponentsBuilder.fromUriString(url)
                 .queryParam(accessTokenName, accessToken)
                 .queryParam(refreshTokenName, refreshToken)
+                .queryParam(USERID, userId)
+                .queryParam(USERTAG, userTag)
                 .queryParam(IS_FIRST, isfirst)
                 .build().toUriString();
     }
