@@ -64,7 +64,7 @@ public class FriendController {
         return ResponseEntity.ok().body(friendRequestList);
     }
 
-    // 친구 리스트 반환 -- 작성중인 testcode
+    
     @GetMapping("/v1/friends")
     public ResponseEntity<List<UserFriendInfoResponse>> myFriendList(@UserId Long userId) {
         List<UserFriendInfoResponse> friendRequestList = friendService.giveUserFriendList(userId);

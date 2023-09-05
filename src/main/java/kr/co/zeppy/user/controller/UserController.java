@@ -70,6 +70,14 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+
+    @PostMapping("/v1/users/search/usertag")
+    public ResponseEntity<Void> searchUserTag() {
+        
+
+        return ResponseEntity.ok().build();
+    }
+
     // test
     @PostMapping("/test/image")
     public ResponseEntity<String> testImageUpload(@RequestParam("file") MultipartFile file) throws IOException {
@@ -105,7 +113,4 @@ public class UserController {
 
         return ResponseEntity.ok().build();
     }
-
-
-    // @PostMapping("/v1/users/")
 }
