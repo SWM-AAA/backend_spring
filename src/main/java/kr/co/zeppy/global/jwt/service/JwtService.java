@@ -242,6 +242,7 @@ public class JwtService {
             throw new InvalidJwtException(ApplicationError.INVALID_JWT_TOKEN);
         }
     }
+  
 
     public String getStringUserIdFromToken(String token) {
         return extractUserTagFromToken(token)
