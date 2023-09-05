@@ -89,7 +89,7 @@ public class JwtService {
     }
 
 
-    public String setAccessTokenAndRefreshTokenURLParam(String url, String userId, String userTag, 
+    public String setTokenAndUserInfoURLParam(String url, String userId, String userTag, 
                 String accessToken, String refreshToken, boolean isfirst) {
         return UriComponentsBuilder.fromUriString(url)
                 .queryParam(accessTokenName, accessToken)
