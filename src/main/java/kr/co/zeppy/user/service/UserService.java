@@ -1,7 +1,9 @@
 package kr.co.zeppy.user.service;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -24,6 +26,9 @@ import lombok.RequiredArgsConstructor;
 public class UserService {
 
     private static final String S3_USER_PROFILE_PATH = "user/profile-image/";
+    private static final String ACCESSTOKEN = "accessToken";
+    private static final String USERTAG = "userTag";
+    private static final String USERID = "userId";
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
@@ -67,5 +72,15 @@ public class UserService {
         user.updateImageUrl(fileName);
 
         return newUserTag;
+    }
+
+    public Map<String, String> userRegisterBody(String accessToken, String userTag, String userId) {
+        Map<String, String> responseBody = new HashMap<>();
+        
+        responseBody.put(ACCESSTOKEN, accessToken);
+        responseBody.put(USERTAG, userTag);
+        responseBody.put(USERID, userId);
+
+        return responseBody;
     }
 }
