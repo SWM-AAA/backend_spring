@@ -97,7 +97,7 @@ include::{snippets}/send-Friends-Request-Failure/http-request.adoc[]
 include::{snippets}/send-Friends-Request-Failure/http-response.adoc[]
 
 
-==== 내가보낸 친구추가 요청 확인하기 GET
+==== 내가받은 친구추가 요청 확인하기 GET
 ----
 /api/v1/friends/requests
 ----
