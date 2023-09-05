@@ -35,7 +35,6 @@ import lombok.extern.slf4j.Slf4j;
 public class UserController {
 
     private static final String USER_PROFILE_IMAGE_PATH = "user/profile-image";
-    private static final String ACCESSTOKEN = "access_token";
     private final RedisService redisService;
     private final UserService userService;
     private final AwsS3Uploader awsS3Uploader;
@@ -54,9 +53,9 @@ public class UserController {
             throws IOException {
         String newUserTag = userService.register(token, userRegisterRequest);
         String accessToken = jwtService.createAccessToken(newUserTag);
+        String userId = jwtService.getStringUserIdFromToken(token);
 
-        Map<String, String> responseBody = new HashMap<>();
-        responseBody.put(ACCESSTOKEN, accessToken);
+        Map<String, String> responseBody = userService.userRegisterBody(accessToken, newUserTag, userId);
 
         return ResponseEntity.ok(responseBody);
     }
@@ -109,5 +108,5 @@ public class UserController {
     }
 
 
-    @PostMapping("/v1/users/")
+    // @PostMapping("/v1/users/")
 }
