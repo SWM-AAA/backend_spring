@@ -4,8 +4,10 @@ import kr.co.zeppy.global.aws.service.AwsS3Uploader;
 import kr.co.zeppy.global.jwt.service.JwtService;
 import kr.co.zeppy.global.redis.dto.LocationAndBatteryRequest;
 import kr.co.zeppy.global.redis.service.RedisService;
+import kr.co.zeppy.user.dto.UserInfoResponse;
 import kr.co.zeppy.user.dto.UserPinInformationResponse;
 import kr.co.zeppy.user.dto.UserRegisterRequest;
+import kr.co.zeppy.user.dto.UserTagRequest;
 import kr.co.zeppy.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.io.IOException;
@@ -35,7 +36,6 @@ import lombok.extern.slf4j.Slf4j;
 public class UserController {
 
     private static final String USER_PROFILE_IMAGE_PATH = "user/profile-image";
-    private static final String ACCESSTOKEN = "access_token";
     private final RedisService redisService;
     private final UserService userService;
     private final AwsS3Uploader awsS3Uploader;
@@ -54,9 +54,9 @@ public class UserController {
             throws IOException {
         String newUserTag = userService.register(token, userRegisterRequest);
         String accessToken = jwtService.createAccessToken(newUserTag);
+        String userId = jwtService.getStringUserIdFromToken(token);
 
-        Map<String, String> responseBody = new HashMap<>();
-        responseBody.put(ACCESSTOKEN, accessToken);
+        Map<String, String> responseBody = userService.userRegisterBody(accessToken, newUserTag, userId);
 
         return ResponseEntity.ok(responseBody);
     }
@@ -70,6 +70,14 @@ public class UserController {
         redisService.updateLocationAndBattery(userId, locationAndBatteryRequest);
 
         return ResponseEntity.ok().build();
+    }
+
+    // testcode 미작성 usertag로 사용자 검색후 반환
+    @PostMapping("/v1/users/search/usertag")
+    public ResponseEntity<UserInfoResponse> searchUserTag(@ModelAttribute UserTagRequest userTagRequest) {
+        UserInfoResponse userInfoResponse = userService.findUserTag(userTagRequest);
+    
+        return ResponseEntity.ok(userInfoResponse);
     }
 
     // test

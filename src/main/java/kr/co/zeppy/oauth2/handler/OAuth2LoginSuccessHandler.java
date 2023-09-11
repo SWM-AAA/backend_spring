@@ -3,6 +3,7 @@ package kr.co.zeppy.oauth2.handler;
 import kr.co.zeppy.user.entity.Role;
 import kr.co.zeppy.user.entity.User;
 import kr.co.zeppy.user.repository.UserRepository;
+import kr.co.zeppy.user.service.UserService;
 import kr.co.zeppy.global.jwt.service.JwtService;
 import kr.co.zeppy.oauth2.entity.CustomOAuth2User;
 
@@ -42,20 +43,26 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         String refreshToken = jwtService.createRefreshToken();
         User findUser = userRepository.findByUserTag(oAuth2User.getUserTag())
                         .orElseThrow(() -> new IllegalArgumentException("ID 에 해당하는 유저가 없습니다."));
+        String userTag = findUser.getUserTag();
+        String userId = findUser.getId().toString();
+
         findUser.updateRefreshToken(refreshToken);
         userRepository.saveAndFlush(findUser);
 
         if (oAuth2User.getRole() == Role.GUEST) {
-            String url = jwtService.setAccessTokenAndRefreshTokenURLParam(CALLBACK_URL, accessToken, refreshToken, true);
+            String url = jwtService.setTokenAndUserInfoURLParam(CALLBACK_URL, accessToken,
+                    refreshToken, userId, userTag, true);
             log.info("accessToken : 엑세스 토큰 : " + accessToken);
             log.info("refreshToken : 리프레시 토큰 : " + refreshToken);
             response.sendRedirect(url);
         }
         else {
-            String url = jwtService.setAccessTokenAndRefreshTokenURLParam(CALLBACK_URL, accessToken, refreshToken, false);
+            String url = jwtService.setTokenAndUserInfoURLParam(CALLBACK_URL, accessToken,
+                    refreshToken, userId, userTag, false);
             log.info("accessToken : 엑세스 토큰 : " + accessToken);
             log.info("refreshToken : 리프레시 토큰 : " + refreshToken);
             response.sendRedirect(url);
         }
+
     }
 }
