@@ -16,4 +16,5 @@ public class UserInfoResponse {
     private String nickname;
     private String userTag;
     private String imageUrl;
+    // private boolean isRequest;
 }
