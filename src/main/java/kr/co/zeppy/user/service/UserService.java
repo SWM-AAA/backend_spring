@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -14,8 +16,10 @@ import kr.co.zeppy.global.aws.service.AwsS3Uploader;
 import kr.co.zeppy.global.error.ApplicationError;
 import kr.co.zeppy.global.error.ApplicationException;
 import kr.co.zeppy.global.jwt.service.JwtService;
+import kr.co.zeppy.user.dto.UserInfoResponse;
 import kr.co.zeppy.user.dto.UserPinInformationResponse;
 import kr.co.zeppy.user.dto.UserRegisterRequest;
+import kr.co.zeppy.user.dto.UserTagRequest;
 import kr.co.zeppy.user.entity.User;
 import kr.co.zeppy.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -83,4 +87,31 @@ public class UserService {
 
         return responseBody;
     }
+
+    // userTag 가 제대로 된 userTag 인지 검증하는 함수
+    public boolean userTagValidation(String userTag) {
+        Pattern pattern = Pattern.compile("^[a-zA-Z]+#\\d+$");
+        Matcher matcher = pattern.matcher(userTag);
+        return matcher.matches();
+    }
+
+    // userTag로 검색 후 user정보 반환
+    public UserInfoResponse findUserTag(UserTagRequest userTagRequest) {
+        String userTag = userTagRequest.getUserTag();
+    
+        if (userTagValidation(userTag)) {
+            User user = userRepository.findByUserTag(userTag)
+                    .orElseThrow(() -> new ApplicationException(ApplicationError.USER_TAG_NOT_FOUND));
+    
+            return UserInfoResponse.builder()
+                    .userId(user.getId())
+                    .nickname(user.getNickname())
+                    .userTag(user.getUserTag())
+                    .imageUrl(user.getImageUrl())
+                    .build();
+        } else {
+            throw new ApplicationException(ApplicationError.INVALID_USER_TAG_FORMAT);
+        }
+    }
+
 }

@@ -4,8 +4,10 @@ import kr.co.zeppy.global.aws.service.AwsS3Uploader;
 import kr.co.zeppy.global.jwt.service.JwtService;
 import kr.co.zeppy.global.redis.dto.LocationAndBatteryRequest;
 import kr.co.zeppy.global.redis.service.RedisService;
+import kr.co.zeppy.user.dto.UserInfoResponse;
 import kr.co.zeppy.user.dto.UserPinInformationResponse;
 import kr.co.zeppy.user.dto.UserRegisterRequest;
+import kr.co.zeppy.user.dto.UserTagRequest;
 import kr.co.zeppy.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
@@ -70,6 +72,14 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+    // testcode 미작성 usertag로 사용자 검색후 반환
+    @PostMapping("/v1/users/search/usertag")
+    public ResponseEntity<UserInfoResponse> searchUserTag(@ModelAttribute UserTagRequest userTagRequest) {
+        UserInfoResponse userInfoResponse = userService.findUserTag(userTagRequest);
+    
+        return ResponseEntity.ok(userInfoResponse);
+    }
+
     // test
     @PostMapping("/test/image")
     public ResponseEntity<String> testImageUpload(@RequestParam("file") MultipartFile file) throws IOException {
@@ -105,7 +115,4 @@ public class UserController {
 
         return ResponseEntity.ok().build();
     }
-
-
-    // @PostMapping("/v1/users/")
 }
