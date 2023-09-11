@@ -10,7 +10,9 @@ import kr.co.zeppy.global.error.RedisSaveException;
 import kr.co.zeppy.global.jwt.service.JwtService;
 import kr.co.zeppy.global.redis.dto.LocationAndBatteryRequest;
 import kr.co.zeppy.global.redis.service.RedisService;
+import kr.co.zeppy.user.dto.UserInfoResponse;
 import kr.co.zeppy.user.dto.UserRegisterRequest;
+import kr.co.zeppy.user.dto.UserTagRequest;
 import kr.co.zeppy.user.service.UserService;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -53,7 +55,8 @@ public class UserControllerTest extends ApiDocument {
     private static final String BATTERY = "90";
     private static final boolean IS_CHARGING = false;
     private static final String USERID = "userId";
-    private static final String USER_ID = "1";
+    private static final String USER_ID = "1L";
+    private static final Long USER_LONG_ID = 1L;
     private static final String NEWUSERTAG = "newUserTag";
     private static final String USERTAG = "userTag";
     private static final String TOKEN = "token";
@@ -64,6 +67,8 @@ public class UserControllerTest extends ApiDocument {
     private static final String NICKNAME = "userNickname";
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String ACCESSTOKEN = "accessToken";
+    private static final String VALID_USER_TAG = "sampleUserTag";
+    private static final String INVALID_USER_TAG = "invalidUserTag";
 
     @MockBean
     private RedisService redisService;
@@ -75,16 +80,15 @@ public class UserControllerTest extends ApiDocument {
     @MockBean
     private AwsS3Uploader awsS3Uploader;
 
-    private LocationAndBatteryRequest locationAndBatteryRequest;
+    private MockMultipartFile file;
 
     private ApplicationException redisUserLocationUpdateException;
-
     private ApplicationException internalServerException;
-
-    private UserRegisterRequest userRegisterRequest;
-
-    private MockMultipartFile file;
+    private ApplicationException invalidUserTagFormat;
     
+    private LocationAndBatteryRequest locationAndBatteryRequest;
+    private UserRegisterRequest userRegisterRequest;
+    private UserInfoResponse userInfoResponse;
 
     @BeforeEach
     void setUp() {
@@ -100,11 +104,19 @@ public class UserControllerTest extends ApiDocument {
                 .nickname(NICKNAME)
                 .profileimage(file)
                 .build();
+
+        userInfoResponse = UserInfoResponse.builder()
+                .userId(USER_LONG_ID)
+                .nickname(NICKNAME)
+                .userTag(VALID_USER_TAG)
+                .imageUrl(FILE_NAME)
+                .build();
         
         given(jwtService.getStringUserIdFromToken("Bearer " + TOKEN)).willReturn(USER_ID);
         
         redisUserLocationUpdateException = new RedisSaveException(ApplicationError.REDIS_SERVER_UNAVAILABLE);
         internalServerException = new ApplicationException(ApplicationError.INTERNAL_SERVER_ERROR);
+        invalidUserTagFormat = new ApplicationException(ApplicationError.INVALID_USER_TAG_FORMAT);
     }
 
     /////////////////////////////////////////////////////////////////
@@ -216,5 +228,56 @@ public class UserControllerTest extends ApiDocument {
                         .andExpect(content().json(toJson(ErrorResponse.fromException(internalServerException)))),
                         "user-Register-Failure");
         verify(userService, times(1)).register(anyString(), any(UserRegisterRequest.class));
+    }
+
+    /////////////////////////////////////////////////////////////////
+    // usertag search testcode
+    /////////////////////////////////////////////////////////////////
+    @Test
+    void test_UserTag_Search_Success() throws Exception {
+        // given 
+        given(userService.findUserTag(any(UserTagRequest.class))).willReturn(userInfoResponse);
+        
+        // when
+        ResultActions resultActions = userTag_Search_Request(VALID_USER_TAG);
+        
+        // then
+        userTag_Search_Request_Success(resultActions);
+    }
+    
+    @Test
+    void test_UserTag_Search_Failure_InvalidFormat() throws Exception {
+        // given
+        given(userService.findUserTag(any(UserTagRequest.class))).willThrow(invalidUserTagFormat);
+        
+        // when
+        ResultActions resultActions = userTag_Search_Request(INVALID_USER_TAG);
+        
+        // then
+        userTag_Search_Request_Failure(resultActions);
+    }
+    
+    private ResultActions userTag_Search_Request(String userTag) throws Exception {
+        return mockMvc.perform(MockMvcRequestBuilders.post(API_VERSION + RESOURCE_PATH + "/search/usertag")
+                .param(USERTAG, userTag)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED));
+    }
+    
+    
+    private void userTag_Search_Request_Success(ResultActions resultActions) throws Exception {
+        printAndMakeSnippet(resultActions.andExpect(status().isOk())
+                            .andExpect(jsonPath("$.userId", is(USER_LONG_ID.intValue())))
+                            .andExpect(jsonPath("$.nickname", is(NICKNAME)))
+                            .andExpect(jsonPath("$.userTag", is(VALID_USER_TAG)))
+                            .andExpect(jsonPath("$.imageUrl", is(FILE_NAME))),
+                            "userTag-Search-Success");
+        verify(userService, times(1)).findUserTag(any(UserTagRequest.class));
+    }
+    
+    private void userTag_Search_Request_Failure(ResultActions resultActions) throws Exception {
+        printAndMakeSnippet(resultActions.andExpect(status().isBadRequest())
+                        .andExpect(content().json(toJson(ErrorResponse.fromException(invalidUserTagFormat)))),
+                        "userTag-Search-Failure");
+        verify(userService, times(1)).findUserTag(any(UserTagRequest.class));
     }
 }

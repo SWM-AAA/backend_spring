@@ -90,7 +90,7 @@ public class UserService {
 
     // userTag 가 제대로 된 userTag 인지 검증하는 함수
     public boolean userTagValidation(String userTag) {
-        Pattern pattern = Pattern.compile("^[a-zA-Z]+#\\d+$");
+        Pattern pattern = Pattern.compile("^[a-zA-Z\uAC00-\uD7A3]+#\\\\d+$");
         Matcher matcher = pattern.matcher(userTag);
         return matcher.matches();
     }
