@@ -480,7 +480,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_failure_3">Failure</a></li>
 </ul>
 </li>
-<li><a href="#_내가보낸_친구추가_요청_확인하기_get">2.2.2. 내가보낸 친구추가 요청 확인하기 GET</a>
+<li><a href="#_내가받은_친구추가_요청_확인하기_get">2.2.2. 내가받은 친구추가 요청 확인하기 GET</a>
 <ul class="sectlevel4">
 <li><a href="#_success_4">Success</a></li>
 <li><a href="#_failure_4">Failure</a></li>
@@ -581,10 +581,12 @@ image content
 <div class="content">
 <pre class="highlight nowrap"><code class="language-http" data-lang="http">HTTP/1.1 200 OK
 Content-Type: application/json;charset=UTF-8
-Content-Length: 42
+Content-Length: 86
 
 {
-  "access_token" : "testAccessToken"
+  "userTag" : "newUserTag",
+  "accessToken" : "accessToken",
+  "userId" : "1L"
 }</code></pre>
 </div>
 </div>
@@ -753,7 +755,7 @@ Content-Length: 89
 </div>
 </div>
 <div class="sect3">
-<h4 id="_내가보낸_친구추가_요청_확인하기_get">2.2.2. 내가보낸 친구추가 요청 확인하기 GET</h4>
+<h4 id="_내가받은_친구추가_요청_확인하기_get">2.2.2. 내가받은 친구추가 요청 확인하기 GET</h4>
 <div class="listingblock">
 <div class="content">
 <pre>/api/v1/friends/requests</pre>
@@ -996,7 +998,7 @@ Content-Length: 83
 <div id="footer">
 <div id="footer-text">
 Version 0.0.1-SNAPSHOT<br>
-Last updated 2023-08-31 19:54:57 +0900
+Last updated 2023-09-05 20:21:12 +0900
 </div>
 </div>
 </body>
