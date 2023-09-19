@@ -63,6 +63,5 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             log.info("refreshToken : 리프레시 토큰 : " + refreshToken);
             response.sendRedirect(url);
         }
-
     }
 }

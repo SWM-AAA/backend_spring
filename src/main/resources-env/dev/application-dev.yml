@@ -8,7 +8,7 @@ logging:
           schema: DEBUG
 spring:
   datasource:
-    url: jdbc:postgresql://${POSTGRESQL_IP}/${DB_NAME}
+    url: jdbc:postgresql://${POSTGRESQL_IP}:${POSTGRESQL_PORT}/${DB_NAME}
     username: ${POSTGRESQL_DEV_USERNAME}
     password: ${POSTGRESQL_DEV_PASSWORD}
   jpa:

@@ -21,6 +21,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -89,13 +91,16 @@ public class JwtService {
     }
 
 
-    public String setTokenAndUserInfoURLParam(String url, String userId, String userTag, 
-                String accessToken, String refreshToken, boolean isfirst) {
+    public String setTokenAndUserInfoURLParam(String url, String accessToken, String refreshToken, 
+                String userId, String userTag, boolean isfirst)
+                                    throws UnsupportedEncodingException {
+        
+        String encodedUserTag = URLEncoder.encode(userTag, UTF_8);
         return UriComponentsBuilder.fromUriString(url)
                 .queryParam(accessTokenName, accessToken)
                 .queryParam(refreshTokenName, refreshToken)
                 .queryParam(USERID, userId)
-                .queryParam(USERTAG, userTag)
+                .queryParam(USERTAG, encodedUserTag)
                 .queryParam(IS_FIRST, isfirst)
                 .build().toUriString();
     }
