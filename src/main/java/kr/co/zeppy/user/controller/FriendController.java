@@ -84,10 +84,10 @@ public class FriendController {
     }
     
 
-    //jenkins test
-    // @GetMapping("/v1/jenkins")
-    // public ResponseEntity<Void> jenkins() {
+    // jenkins test
+    @GetMapping("/v1/jenkins")
+    public ResponseEntity<Void> jenkins() {
 
-    //     return ResponseEntity.ok().build();
-    // }
+        return ResponseEntity.ok().build();
+    }
 }
