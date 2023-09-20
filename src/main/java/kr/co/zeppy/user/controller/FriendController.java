@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.amazonaws.Response;
+
 import kr.co.zeppy.global.annotation.UserId;
 import kr.co.zeppy.global.error.ApplicationError;
 import kr.co.zeppy.global.error.ApplicationException;
@@ -79,5 +81,13 @@ public class FriendController {
                 .orElseThrow(() -> new ApplicationException(ApplicationError.USER_ID_NOT_FOUND));
 
         return ResponseEntity.ok().body(user.getId());
+    }
+    
+
+    //jenkins test
+    @GetMapping("/v1/jenkins")
+    public ResponseEntity<Void> jenkins() {
+
+        return ResponseEntity.ok().build();
     }
 }
