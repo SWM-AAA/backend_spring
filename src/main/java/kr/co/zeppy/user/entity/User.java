@@ -74,7 +74,7 @@ public class User extends BaseModel {
 
     // chatmessages
     @Builder.Default
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user")
     private Set<UserChatMessage> userChatMessages = new HashSet<>();
 
     public void authorizeUser() {
