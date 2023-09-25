@@ -9,7 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import kr.co.zeppy.chat.entity.ChatRoom;
+import kr.co.zeppy.chat.entity.ChatMessage;
 import kr.co.zeppy.global.entity.BaseModel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,7 +17,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "USER_CHATROOM")
+@Table(name = "USER_CHATMESSAGE")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -25,7 +25,7 @@ import lombok.NoArgsConstructor;
 public class UserChatMessage extends BaseModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_chatroom_id")
+    @Column(name = "user_chatmessage_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -33,7 +33,7 @@ public class UserChatMessage extends BaseModel {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chatroom_id")
-    private ChatRoom chatRoom;
+    @JoinColumn(name = "chatmessage_id")
+    private ChatMessage chatMessage;
     
 }

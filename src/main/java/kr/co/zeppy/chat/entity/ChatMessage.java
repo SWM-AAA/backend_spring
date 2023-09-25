@@ -29,6 +29,7 @@ public class ChatMessage extends BaseModel{
     @JoinColumn(name = "chatroom_id")
     private ChatRoom chatRoom;
 
+    @Builder.Default
     @OneToMany(mappedBy = "chatMessage", cascade = CascadeType.ALL)
     private List<UserChatMessage> userChatMessages = new ArrayList<>();
 
