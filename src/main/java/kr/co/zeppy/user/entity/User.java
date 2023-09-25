@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
@@ -65,6 +66,16 @@ public class User extends BaseModel {
     private String socialId;
 
     private String refreshToken;
+
+    // chatroom
+    @Builder.Default
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private Set<UserChatRoom> userChatRooms = new HashSet<>();
+
+    // chatmessages
+    @Builder.Default
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private Set<UserChatMessage> userChatMessages = new HashSet<>();
 
     public void authorizeUser() {
         this.role = Role.USER;
