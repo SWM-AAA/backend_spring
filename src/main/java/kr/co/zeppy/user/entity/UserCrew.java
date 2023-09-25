@@ -16,6 +16,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import kr.co.zeppy.crew.entity.Crew;
+import kr.co.zeppy.global.entity.BaseModel;
 
 @Getter
 @SuperBuilder
@@ -23,7 +24,7 @@ import kr.co.zeppy.crew.entity.Crew;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLDelete(sql = "UPDATE user_crew SET is_deleted = true WHERE user_crew_id = ?")
 @Entity
-public class UserCrew {
+public class UserCrew extends BaseModel{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

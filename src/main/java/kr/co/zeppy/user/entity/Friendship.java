@@ -19,13 +19,15 @@ import jakarta.persistence.GenerationType;
 
 import jakarta.persistence.Column;
 
+import kr.co.zeppy.global.entity.BaseModel;
+
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Builder
 @AllArgsConstructor
 @Table(name = "FRIENDSHIPS")
-public class Friendship {
+public class Friendship extends BaseModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
