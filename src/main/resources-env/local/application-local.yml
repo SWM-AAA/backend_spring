@@ -8,6 +8,11 @@ logging:
         tool:
           schema: DEBUG
 spring:
+  rabbitmq:
+    username: test
+    password: test
+    host: localhost
+    port: 5672
   datasource:
     url: jdbc:postgresql://localhost:${POSTGRESQL_PORT}/${DB_NAME}
     username: ${POSTGRESQL_LOCAL_USERNAME}
