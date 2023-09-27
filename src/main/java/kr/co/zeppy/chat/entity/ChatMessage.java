@@ -33,5 +33,5 @@ public class ChatMessage extends BaseModel{
     @OneToMany(mappedBy = "chatMessage", cascade = CascadeType.ALL)
     private List<UserChatMessage> userChatMessages = new ArrayList<>();
 
-    private String content;
+    private String message;
 }
