@@ -2,7 +2,7 @@ version: '3'
 
 services:
   zeppy-app:
-    image: carrotww/zeppy:latest
+    image: carrotww/zeppy:1.0.1
     ports:
       - "8080:8080"
     environment:
