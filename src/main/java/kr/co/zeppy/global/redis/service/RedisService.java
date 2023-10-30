@@ -60,9 +60,11 @@ public class RedisService {
                 allUsersData.put(key, data);
             }
         } catch (Exception e) {
+            log.error("Redis error: ", e);
             throw new ApplicationException(ApplicationError.REDIS_SERVER_UNAVAILABLE);
         }
         wrappedResponse.put(RESULT, allUsersData);
+
         return wrappedResponse;
     }
 }

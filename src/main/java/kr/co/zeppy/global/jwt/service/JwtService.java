@@ -95,12 +95,12 @@ public class JwtService {
                 String userId, String userTag, boolean isfirst)
                                     throws UnsupportedEncodingException {
         
-        String encodedUserTag = URLEncoder.encode(userTag, UTF_8);
+        // String encodedUserTag = URLEncoder.encode(userTag, UTF_8);
         return UriComponentsBuilder.fromUriString(url)
                 .queryParam(accessTokenName, accessToken)
                 .queryParam(refreshTokenName, refreshToken)
                 .queryParam(USERID, userId)
-                .queryParam(USERTAG, encodedUserTag)
+                // .queryParam(USERTAG, encodedUserTag)
                 .queryParam(IS_FIRST, isfirst)
                 .build().toUriString();
     }

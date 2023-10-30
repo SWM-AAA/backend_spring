@@ -1,6 +1,9 @@
 package kr.co.zeppy.user.controller;
 
+import kr.co.zeppy.global.annotation.UserId;
 import kr.co.zeppy.global.aws.service.AwsS3Uploader;
+import kr.co.zeppy.global.error.ApplicationError;
+import kr.co.zeppy.global.error.ApplicationException;
 import kr.co.zeppy.global.jwt.service.JwtService;
 import kr.co.zeppy.global.redis.dto.LocationAndBatteryRequest;
 import kr.co.zeppy.global.redis.service.RedisService;
@@ -8,6 +11,7 @@ import kr.co.zeppy.user.dto.UserInfoResponse;
 import kr.co.zeppy.user.dto.UserPinInformationResponse;
 import kr.co.zeppy.user.dto.UserRegisterRequest;
 import kr.co.zeppy.user.dto.UserTagRequest;
+import kr.co.zeppy.user.repository.UserRepository;
 import kr.co.zeppy.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,6 +44,7 @@ public class UserController {
     private final UserService userService;
     private final AwsS3Uploader awsS3Uploader;
     private final JwtService jwtService;
+    private final UserRepository userRepository;
 
     @GetMapping("/test/jwt-test")
     public String jwtTest() {
@@ -52,9 +57,10 @@ public class UserController {
     public ResponseEntity<Map<String, String>> userRegister(@RequestHeader("Authorization") String token,
             @ModelAttribute UserRegisterRequest userRegisterRequest) 
             throws IOException {
+        
         String newUserTag = userService.register(token, userRegisterRequest);
         String accessToken = jwtService.createAccessToken(newUserTag);
-        String userId = jwtService.getStringUserIdFromToken(token);
+        String userId = userRepository.findIdByUserTag(newUserTag).toString();
 
         Map<String, String> responseBody = userService.userRegisterBody(accessToken, newUserTag, userId);
 
