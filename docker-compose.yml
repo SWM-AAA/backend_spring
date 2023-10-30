@@ -2,7 +2,7 @@ version: '3'
 
 services:
   zeppy-app:
-    image: carrotww/zeppy:1.0.0
+    image: carrotww/zeppy:2.0.1
     ports:
       - "8080:8080"
     environment:
@@ -38,4 +38,3 @@ services:
 networks:
   zeppy-network:
     driver: bridge
-    
