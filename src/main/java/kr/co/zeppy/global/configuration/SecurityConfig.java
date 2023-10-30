@@ -39,7 +39,8 @@ public class SecurityConfig {
     private static final String[] AUTH_WHITELIST = {
             "/login",
             "/api/healthcheck",
-            "/api/test/**"
+            "/api/test/**",
+            "/api/v1/users/all-user-location-and-battery",
     };
 
     @Bean
