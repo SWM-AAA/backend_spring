@@ -59,11 +59,11 @@ public class JwtService {
 
     private static final String USERID = "userId";
     private static final String USERTAG = "userTag";
-    private static final String ACCESS_TOKEN_SUBJECT = "AccessToken";
-    private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
+    private static final String ACCESS_TOKEN_SUBJECT = "accessToken";
+    private static final String REFRESH_TOKEN_SUBJECT = "refreshToken";
     private static final String LOGIN_USER_TAG = "userTag";
     private static final String BEARER = "Bearer ";
-    private static final String IS_FIRST = "is_first";
+    private static final String IS_FIRST = "isFirst";
     private static final String APPLICATION_JSON = "application/json";
     private static final String UTF_8 = "UTF-8";
 
