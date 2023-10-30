@@ -46,7 +46,6 @@ public class UserController {
     private final JwtService jwtService;
     private final UserRepository userRepository;
 
-    
     @GetMapping("/test/jwt-test")
     public String jwtTest() {
         log.info("로그인 테스트");
