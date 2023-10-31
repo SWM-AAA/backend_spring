@@ -74,6 +74,8 @@ public class UserService {
         user.updateUserTag(newUserTag);
         user.updateNickname(userRegisterRequest.getNickname());
         user.updateImageUrl(fileName);
+        user.authorizeUser();
+        userRepository.save(user);
 
         return newUserTag;
     }
