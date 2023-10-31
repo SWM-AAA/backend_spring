@@ -51,14 +51,15 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
         if (oAuth2User.getRole() == Role.GUEST) {
             String url = jwtService.setTokenAndUserInfoURLParam(CALLBACK_URL, accessToken,
-                    refreshToken, userId, userTag, true);
+            refreshToken, userId, userTag, "", true);
             log.info("accessToken : 엑세스 토큰 : " + accessToken);
             log.info("refreshToken : 리프레시 토큰 : " + refreshToken);
             response.sendRedirect(url);
         }
         else {
+            String userImage = findUser.getImageUrl();
             String url = jwtService.setTokenAndUserInfoURLParam(CALLBACK_URL, accessToken,
-                    refreshToken, userId, userTag, false);
+                    refreshToken, userId, userTag, userImage, false);
             log.info("accessToken : 엑세스 토큰 : " + accessToken);
             log.info("refreshToken : 리프레시 토큰 : " + refreshToken);
             response.sendRedirect(url);
