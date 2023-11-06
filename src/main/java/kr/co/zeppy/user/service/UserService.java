@@ -20,6 +20,7 @@ import kr.co.zeppy.global.jwt.service.JwtService;
 import kr.co.zeppy.user.dto.UserInfoResponse;
 import kr.co.zeppy.user.dto.UserPinInformationResponse;
 import kr.co.zeppy.user.dto.UserRegisterRequest;
+import kr.co.zeppy.user.dto.UserRegisterResponse;
 import kr.co.zeppy.user.dto.UserTagRequest;
 import kr.co.zeppy.user.entity.Role;
 import kr.co.zeppy.user.entity.SocialType;
@@ -102,16 +103,15 @@ public class UserService {
         return newUserTag;
     }
 
-    public Map<String, String> userRegisterBody(String accessToken, String userTag, String userId
+    public UserRegisterResponse userRegisterBody(String accessToken, String userTag, Long userId
         , String userImageUrl) {
-        Map<String, String> responseBody = new HashMap<>();
         
-        responseBody.put(ACCESSTOKEN, accessToken);
-        responseBody.put(USERTAG, userTag);
-        responseBody.put(USERID, userId);
-        responseBody.put(IMAGEURL, userImageUrl);
-
-        return responseBody;
+        return UserRegisterResponse.builder()
+                    .userId(userId)
+                    .userTag(userTag)
+                    .accessToken(accessToken)
+                    .imageUrl(userImageUrl)
+                    .build();
     }
 
     // userTag 가 제대로 된 userTag 인지 검증하는 함수
