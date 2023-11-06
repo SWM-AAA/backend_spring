@@ -26,7 +26,9 @@ import kr.co.zeppy.user.entity.SocialType;
 import kr.co.zeppy.user.entity.User;
 import kr.co.zeppy.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -127,6 +129,9 @@ public class UserService {
     // userTag로 검색 후 user정보 반환
     public UserInfoResponse findUserTag(UserTagRequest userTagRequest) {
         String userTag = userTagRequest.getUserTag();
+        log.info("###############");
+        log.info(userTag);
+        log.info("@@@@@@@@@@@@@");
     
         if (userTagValidation(userTag)) {
             User user = userRepository.findByUserTag(userTag)
