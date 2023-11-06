@@ -68,7 +68,9 @@ public class UserController {
         String userId = userRepository.findIdByUserTag(newUserTag)
                 .map(String::valueOf)
                 .orElseThrow(() -> new ApplicationException(ApplicationError.USER_TAG_NOT_FOUND));
-        String userImageUrl = userRepository.findImageUrlByUserTag(newUserTag).toString();
+        String userImageUrl = userRepository.findImageUrlByUserTag(newUserTag)
+                .map(String::valueOf)
+                .orElseThrow(() -> new ApplicationException(ApplicationError.USER_IMAGE_URL_NOT_FOUND));
 
         Map<String, String> responseBody = userService.userRegisterBody(accessToken, newUserTag, userId, userImageUrl);
 

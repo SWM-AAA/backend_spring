@@ -27,9 +27,9 @@ public enum ApplicationError {
     USER_REFRESHTOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_003", "사용자 RefreshToken을 찾을 수 없습니다."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_004", "사용자를 찾을 수 없습니다."),
     USER_NICKNAME_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_005", "사용자 닉네임을 찾을 수 없습니다."),
+    USER_IMAGE_URL_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_007", "사용자 이미지를 찾을 수 없습니다."),
     // 400
     INVALID_USER_TAG_FORMAT(HttpStatus.BAD_REQUEST, "USER_006", "UserTag가 올바르지 않습니다."),
-
     FRIEND_REQUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "FRIEND_001", "친구 요청을 찾을 수 없습니다."),
 
     FRIENDSHIP_NOT_FOUND(HttpStatus.NOT_FOUND, "FRIENDSHIP_001", "친구 요청을 찾을 수 없습니다."),
