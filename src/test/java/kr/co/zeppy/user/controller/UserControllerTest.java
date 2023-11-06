@@ -209,7 +209,7 @@ public class UserControllerTest extends ApiDocument {
         given(jwtService.createAccessToken(NEWUSERTAG)).willReturn(ACCESSTOKEN);
         given(userRepository.findIdByUserTag(NEWUSERTAG)).willReturn(Optional.of(USER_LONG_ID));
         given(userRepository.findImageUrlByUserTag(NEWUSERTAG)).willReturn(Optional.of(NEWUSERTAG));
-        given(userService.userRegisterBody(ACCESSTOKEN, NEWUSERTAG, USER_ID, PROFILE_IMAGE_NAME)).willReturn(expectedResponse);
+        // given(userService.userRegisterBody(ACCESSTOKEN, NEWUSERTAG, USER_ID, PROFILE_IMAGE_NAME)).willReturn(expectedResponse);
         
         // when
         ResultActions resultActions = user_Register_Request();
