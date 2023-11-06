@@ -2,7 +2,9 @@ logging:
   level:
     # root: DEBUG
     org:
-      springframework: DEBUG
+      springframework:
+        web : DEBUG
+        test : DEBUG
       hibernate:
         SQL: DEBUG
         tool:

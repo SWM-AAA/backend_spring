@@ -79,6 +79,9 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
         Optional<String> accessTokenOpt = jwtService.extractAccessToken(request);
         Optional<String> refreshTokenOpt = jwtService.extractRefreshToken(request);
 
+        log.info(accessTokenOpt.toString());
+        log.info(refreshTokenOpt.toString());
+
         if (accessTokenOpt.isPresent()) {
             String accessToken = accessTokenOpt.get();
             if (!jwtService.isTokenValid(accessToken)) {
@@ -86,6 +89,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
             }
             String userTag = jwtService.extractUserTag(accessToken)
                     .orElseThrow(() -> new ApplicationException(ApplicationError.USER_TAG_NOT_FOUND));
+            log.info(userTag);
             User user = userRepository.findByUserTag(userTag)
                     .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
 

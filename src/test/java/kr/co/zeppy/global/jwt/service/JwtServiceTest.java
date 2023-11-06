@@ -23,8 +23,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 @ExtendWith(MockitoExtension.class)
 public class JwtServiceTest {
 
-    private static final String ACCESS_TOKEN_SUBJECT = "AccessToken";
-    // private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
+    private static final String ACCESS_TOKEN_SUBJECT = "accessToken";
+    // private static final String REFRESH_TOKEN_SUBJECT = "refreshToken";
     private static final String LOGIN_USER_TAG = "userTag";
     private static final Long LOGIN_ID = 1L;
 
