@@ -57,7 +57,7 @@ public class FriendControllerTest extends ApiDocument{
     private static final String API_VERSION = "/api/v1";
     private static final String RESOURCE_PATH = "/friends";
     private static final String AUTHORIZATION_HEADER = "Authorization";
-    private static final String ACCESSTOKEN = "access_token";
+    private static final String ACCESSTOKEN = "accessToken";
     private static final Long INIT_USERID = 1L;
     private static final Long INIT_FRIENDID = 2L;
     private static final Long INIT_FRIENDSHIPID = 1L;

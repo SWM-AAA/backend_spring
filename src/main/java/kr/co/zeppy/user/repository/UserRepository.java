@@ -19,7 +19,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findById(Long id);
 
+    @Query("SELECT u.imageUrl FROM User u WHERE u.userTag = :userTag")
+    Optional<String> findImageUrlByUserTag(@Param("userTag") String userTag);
+
     @Query("SELECT u.id FROM User u WHERE u.userTag = :userTag")
     Optional<Long> findIdByUserTag(@Param("userTag") String userTag);
 
+    boolean existsByUserTag(String userTag);
 }

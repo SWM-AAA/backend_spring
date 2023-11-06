@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -20,6 +21,8 @@ import kr.co.zeppy.user.dto.UserInfoResponse;
 import kr.co.zeppy.user.dto.UserPinInformationResponse;
 import kr.co.zeppy.user.dto.UserRegisterRequest;
 import kr.co.zeppy.user.dto.UserTagRequest;
+import kr.co.zeppy.user.entity.Role;
+import kr.co.zeppy.user.entity.SocialType;
 import kr.co.zeppy.user.entity.User;
 import kr.co.zeppy.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +36,7 @@ public class UserService {
     private static final String ACCESSTOKEN = "accessToken";
     private static final String USERTAG = "userTag";
     private static final String USERID = "userId";
+    private static final String IMAGEURL = "imageUrl";
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
@@ -55,6 +59,22 @@ public class UserService {
             .nickname(user.getNickname())
             .imageUrl(user.getImageUrl())
             .build();
+    }
+
+    // test
+    public void testUserRegister(String nickname, String userTag) {
+        String randomSocialId = UUID.randomUUID().toString();
+
+        User user = User.builder()
+            .nickname(nickname)
+            .userTag(userTag)
+            .socialType(SocialType.KAKAO)
+            .socialId(randomSocialId)
+            .role(Role.GUEST)
+            .imageUrl("test")
+            .build();
+        
+        userRepository.save(user);
     }
 
     public String register(String Token, UserRegisterRequest userRegisterRequest) 
@@ -80,19 +100,21 @@ public class UserService {
         return newUserTag;
     }
 
-    public Map<String, String> userRegisterBody(String accessToken, String userTag, String userId) {
+    public Map<String, String> userRegisterBody(String accessToken, String userTag, String userId
+        , String userImageUrl) {
         Map<String, String> responseBody = new HashMap<>();
         
         responseBody.put(ACCESSTOKEN, accessToken);
         responseBody.put(USERTAG, userTag);
         responseBody.put(USERID, userId);
+        responseBody.put(IMAGEURL, userImageUrl);
 
         return responseBody;
     }
 
     // userTag 가 제대로 된 userTag 인지 검증하는 함수
     public boolean userTagValidation(String userTag) {
-        Pattern pattern = Pattern.compile("^[a-zA-Z\uAC00-\uD7A3]+#\\\\d+$");
+        Pattern pattern = Pattern.compile("^[a-zA-Z\uAC00-\uD7A3]+#\\d+$");
         Matcher matcher = pattern.matcher(userTag);
         return matcher.matches();
     }

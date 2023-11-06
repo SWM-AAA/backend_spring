@@ -4,6 +4,7 @@ import kr.co.zeppy.global.annotation.UserId;
 import kr.co.zeppy.global.aws.service.AwsS3Uploader;
 import kr.co.zeppy.global.error.ApplicationError;
 import kr.co.zeppy.global.error.ApplicationException;
+import kr.co.zeppy.global.error.NotFoundException;
 import kr.co.zeppy.global.jwt.service.JwtService;
 import kr.co.zeppy.global.redis.dto.LocationAndBatteryRequest;
 import kr.co.zeppy.global.redis.service.RedisService;
@@ -11,6 +12,7 @@ import kr.co.zeppy.user.dto.UserInfoResponse;
 import kr.co.zeppy.user.dto.UserPinInformationResponse;
 import kr.co.zeppy.user.dto.UserRegisterRequest;
 import kr.co.zeppy.user.dto.UserTagRequest;
+import kr.co.zeppy.user.entity.User;
 import kr.co.zeppy.user.repository.UserRepository;
 import kr.co.zeppy.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -23,10 +25,12 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.io.IOException;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -53,7 +57,7 @@ public class UserController {
         return "jwtTest 요청 성공";
     }
 
-
+    // todo : 사용자 이미지도 body에 포함시켜서 보내주기
     @PostMapping("/v1/users/register")
     public ResponseEntity<Map<String, String>> userRegister(@RequestHeader("Authorization") String token,
             @ModelAttribute UserRegisterRequest userRegisterRequest) 
@@ -61,9 +65,38 @@ public class UserController {
         
         String newUserTag = userService.register(token, userRegisterRequest);
         String accessToken = jwtService.createAccessToken(newUserTag);
-        String userId = userRepository.findIdByUserTag(newUserTag).toString();
+        String userId = userRepository.findIdByUserTag(newUserTag)
+                .map(String::valueOf)
+                .orElseThrow(() -> new ApplicationException(ApplicationError.USER_TAG_NOT_FOUND));
+        String userImageUrl = userRepository.findImageUrlByUserTag(newUserTag).toString();
 
-        Map<String, String> responseBody = userService.userRegisterBody(accessToken, newUserTag, userId);
+        Map<String, String> responseBody = userService.userRegisterBody(accessToken, newUserTag, userId, userImageUrl);
+
+        return ResponseEntity.ok(responseBody);
+    }
+
+    // test controller
+    @Profile("local")
+    @PostMapping("/test/users/register")
+    public ResponseEntity<Map<String, String>> userTestToken(
+        @RequestParam String nickName,
+        @RequestParam String userTag
+    ) {
+
+        if (!userRepository.existsByUserTag(userTag)) {
+            userService.testUserRegister(nickName, userTag);
+        }
+        User user = userRepository.findByUserTag(userTag) 
+                .orElseThrow(() -> new ApplicationException(ApplicationError.USER_TAG_NOT_FOUND));
+        log.info(user.getUserTag());
+        log.info(user.getId().toString());
+        String accessToken = jwtService.createAccessToken(userTag);
+        String refreshToken = jwtService.createRefreshToken();
+
+        Map<String, String> responseBody = new HashMap<>();
+        responseBody.put("accessToken", accessToken);
+        responseBody.put("refreshToken", refreshToken);
+        user.updateRefreshToken(refreshToken);
 
         return ResponseEntity.ok(responseBody);
     }

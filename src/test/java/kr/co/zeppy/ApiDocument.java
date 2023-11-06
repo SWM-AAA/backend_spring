@@ -6,6 +6,7 @@ import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
 import org.springframework.restdocs.operation.preprocess.OperationRequestPreprocessor;
 import org.springframework.restdocs.operation.preprocess.OperationResponsePreprocessor;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -29,6 +30,8 @@ public class ApiDocument {
 
     // 결과를 출력하고, 문서 스니펫을 만드는 메서드
     protected void printAndMakeSnippet(ResultActions resultActions, String title) throws Exception {
+        MvcResult mvcResult = resultActions.andReturn();
+        System.err.println(mvcResult.getResponse().getContentAsString());
         resultActions.andDo(print())
                 .andDo(toDocument(title));
     }

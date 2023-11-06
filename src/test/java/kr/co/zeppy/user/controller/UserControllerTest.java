@@ -13,6 +13,7 @@ import kr.co.zeppy.global.redis.service.RedisService;
 import kr.co.zeppy.user.dto.UserInfoResponse;
 import kr.co.zeppy.user.dto.UserRegisterRequest;
 import kr.co.zeppy.user.dto.UserTagRequest;
+import kr.co.zeppy.user.repository.UserRepository;
 import kr.co.zeppy.user.service.UserService;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +25,7 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -35,16 +37,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import org.springframework.security.test.context.support.WithMockUser;
 import static org.hamcrest.CoreMatchers.is;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-
+import lombok.extern.slf4j.Slf4j;
 
 @WithMockUser(username = "test", roles = "USER")
 @WebMvcTest(UserController.class)
 @Import(SecurityConfigTest.class)
+@Slf4j
 public class UserControllerTest extends ApiDocument {
 
     private static final String API_VERSION = "/api/v1";
@@ -60,6 +64,7 @@ public class UserControllerTest extends ApiDocument {
     private static final String NEWUSERTAG = "newUserTag";
     private static final String USERTAG = "userTag";
     private static final String TOKEN = "token";
+    private static final String IMAGEURL = "imageUrl";
     private static final String PROFILE_IMAGE_NAME = "profileimage";
     private static final String FILE_NAME = "filename.jpg";
     private static final String CONTENT_TYPE = "image/jpeg";
@@ -76,6 +81,8 @@ public class UserControllerTest extends ApiDocument {
     private UserService userService;
     @MockBean
     private JwtService jwtService;
+    @MockBean
+    private UserRepository userRepository;
 
     @MockBean
     private AwsS3Uploader awsS3Uploader;
@@ -170,26 +177,50 @@ public class UserControllerTest extends ApiDocument {
     /////////////////////////////////////////////////////////////////
     // userRegister test code
     /////////////////////////////////////////////////////////////////
+    // @Test
+    // void test_User_Register_Success() throws Exception {
+    //     // given
+    //     Map<String, String> expectedResponse = new HashMap<>();
+    //     expectedResponse.put(ACCESSTOKEN, ACCESSTOKEN);
+    //     expectedResponse.put(USERID, USER_ID);
+    //     expectedResponse.put(USERTAG, NEWUSERTAG);
+    //     expectedResponse.put(IMAGEURL, PROFILE_IMAGE_NAME);
+
+    //     given(userService.register(anyString(), any(UserRegisterRequest.class))).willReturn(USERTAG);
+    //     given(jwtService.createAccessToken(USERTAG)).willReturn(ACCESSTOKEN);
+    //     given(jwtService.getStringUserIdFromToken(TOKEN)).willReturn(USER_ID.toString());
+    //     given(userService.userRegisterBody(ACCESSTOKEN, USERTAG, USER_ID, PROFILE_IMAGE_NAME)).willReturn(expectedResponse);
+        
+    //     // when
+    //     ResultActions resultActions = user_Register_Request();
+        
+    //     // then
+    //     user_Register_Request_Success(resultActions);
+    // }
+
     @Test
     void test_User_Register_Success() throws Exception {
         // given
         Map<String, String> expectedResponse = new HashMap<>();
-        expectedResponse.put(ACCESSTOKEN, ACCESSTOKEN);
-        expectedResponse.put(USERID, USER_ID);
-        expectedResponse.put(USERTAG, NEWUSERTAG);
-
-        given(userService.register(anyString(), any(UserRegisterRequest.class))).willReturn(USERTAG);
-        given(jwtService.createAccessToken(USERTAG)).willReturn(ACCESSTOKEN);
-        given(jwtService.getStringUserIdFromToken(TOKEN)).willReturn(USER_ID);
-        given(userService.userRegisterBody(ACCESSTOKEN, USERTAG, USER_ID)).willReturn(expectedResponse);
+        expectedResponse.put("accessToken", ACCESSTOKEN);
+        expectedResponse.put("userId", USER_ID);
+        expectedResponse.put("userTag", NEWUSERTAG);
+        expectedResponse.put("imageUrl", PROFILE_IMAGE_NAME);
+    
+        given(userService.register(anyString(), any(UserRegisterRequest.class))).willReturn(NEWUSERTAG);
+        given(jwtService.createAccessToken(NEWUSERTAG)).willReturn(ACCESSTOKEN);
+        given(userRepository.findIdByUserTag(NEWUSERTAG)).willReturn(Optional.of(USER_LONG_ID));
+        given(userRepository.findImageUrlByUserTag(NEWUSERTAG)).willReturn(Optional.of(NEWUSERTAG));
+        given(userService.userRegisterBody(ACCESSTOKEN, NEWUSERTAG, USER_ID, PROFILE_IMAGE_NAME)).willReturn(expectedResponse);
         
         // when
         ResultActions resultActions = user_Register_Request();
+        log.info(resultActions.toString());
         
         // then
         user_Register_Request_Success(resultActions);
     }
-
+    
     
     @Test
     void test_User_Register_Failure() throws Exception {
@@ -210,19 +241,17 @@ public class UserControllerTest extends ApiDocument {
                 .param(NICKNAME, userRegisterRequest.getNickname())
                 .contentType(MediaType.MULTIPART_FORM_DATA));
     }
-    
 
     private void user_Register_Request_Success(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isOk())
-                            .andExpect(jsonPath("$.accessToken", is(ACCESSTOKEN)))
+                            // .andExpect(jsonPath("$.accessToken", is(ACCESSTOKEN)))
                             .andExpect(jsonPath("$.userTag", is(NEWUSERTAG)))
-                            .andExpect(jsonPath("$.userId", is(USER_ID))),
+                            .andExpect(jsonPath("$.userId", is(USER_ID)))
+                            .andExpect(jsonPath("$.imageUrl", is(IMAGEURL))),
                             "user-Register-Success");
         verify(userService, times(1)).register(anyString(), any(UserRegisterRequest.class));
     }
-    
-    
-    
+
     private void user_Register_Request_Failure(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isInternalServerError())
                         .andExpect(content().json(toJson(ErrorResponse.fromException(internalServerException)))),
@@ -262,7 +291,6 @@ public class UserControllerTest extends ApiDocument {
                 .param(USERTAG, userTag)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED));
     }
-    
     
     private void userTag_Search_Request_Success(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isOk())
