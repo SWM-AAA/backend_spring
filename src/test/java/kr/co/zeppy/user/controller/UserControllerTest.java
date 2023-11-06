@@ -43,12 +43,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.springframework.security.test.context.support.WithMockUser;
 import static org.hamcrest.CoreMatchers.is;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import lombok.extern.slf4j.Slf4j;
 
 @WithMockUser(username = "test", roles = "USER")
 @WebMvcTest(UserController.class)
 @Import(SecurityConfigTest.class)
-@Slf4j
 public class UserControllerTest extends ApiDocument {
 
     private static final String API_VERSION = "/api/v1";
@@ -215,7 +213,6 @@ public class UserControllerTest extends ApiDocument {
         
         // when
         ResultActions resultActions = user_Register_Request();
-        log.info(resultActions.toString());
         
         // then
         user_Register_Request_Success(resultActions);
