@@ -26,7 +26,9 @@ import kr.co.zeppy.user.entity.SocialType;
 import kr.co.zeppy.user.entity.User;
 import kr.co.zeppy.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -114,10 +116,15 @@ public class UserService {
 
     // userTag 가 제대로 된 userTag 인지 검증하는 함수
     public boolean userTagValidation(String userTag) {
-        Pattern pattern = Pattern.compile("^[a-zA-Z\uAC00-\uD7A3]+#\\d+$");
+        if (userTag == null) {
+            return false;
+        }
+    
+        Pattern pattern = Pattern.compile("^[a-zA-Z\\uAC00-\\uD7A3]+#\\d+$");
         Matcher matcher = pattern.matcher(userTag);
         return matcher.matches();
     }
+    
 
     // userTag로 검색 후 user정보 반환
     public UserInfoResponse findUserTag(UserTagRequest userTagRequest) {
