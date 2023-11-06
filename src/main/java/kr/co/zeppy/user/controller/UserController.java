@@ -11,6 +11,7 @@ import kr.co.zeppy.global.redis.service.RedisService;
 import kr.co.zeppy.user.dto.UserInfoResponse;
 import kr.co.zeppy.user.dto.UserPinInformationResponse;
 import kr.co.zeppy.user.dto.UserRegisterRequest;
+import kr.co.zeppy.user.dto.UserRegisterResponse;
 import kr.co.zeppy.user.dto.UserTagRequest;
 import kr.co.zeppy.user.entity.User;
 import kr.co.zeppy.user.repository.UserRepository;
@@ -59,22 +60,21 @@ public class UserController {
 
     // todo : 사용자 이미지도 body에 포함시켜서 보내주기
     @PostMapping("/v1/users/register")
-    public ResponseEntity<Map<String, String>> userRegister(@RequestHeader("Authorization") String token,
+    public ResponseEntity<UserRegisterResponse> userRegister(@RequestHeader("Authorization") String token,
             @ModelAttribute UserRegisterRequest userRegisterRequest) 
             throws IOException {
         
         String newUserTag = userService.register(token, userRegisterRequest);
         String accessToken = jwtService.createAccessToken(newUserTag);
-        String userId = userRepository.findIdByUserTag(newUserTag)
-                .map(String::valueOf)
+        Long userId = userRepository.findIdByUserTag(newUserTag)
                 .orElseThrow(() -> new ApplicationException(ApplicationError.USER_TAG_NOT_FOUND));
         String userImageUrl = userRepository.findImageUrlByUserTag(newUserTag)
                 .map(String::valueOf)
                 .orElseThrow(() -> new ApplicationException(ApplicationError.USER_IMAGE_URL_NOT_FOUND));
 
-        Map<String, String> responseBody = userService.userRegisterBody(accessToken, newUserTag, userId, userImageUrl);
+        UserRegisterResponse userRegisterResponse = userService.userRegisterBody(accessToken, newUserTag, userId, userImageUrl);
 
-        return ResponseEntity.ok(responseBody);
+        return ResponseEntity.ok(userRegisterResponse);
     }
 
     // test controller
