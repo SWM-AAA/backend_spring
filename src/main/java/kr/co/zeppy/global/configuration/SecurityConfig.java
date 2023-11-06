@@ -41,6 +41,7 @@ public class SecurityConfig {
             "/api/healthcheck",
             "/api/test/**",
             "/api/v1/users/all-user-location-and-battery",
+            "/**",
     };
 
     @Bean

@@ -129,9 +129,6 @@ public class UserService {
     // userTag로 검색 후 user정보 반환
     public UserInfoResponse findUserTag(UserTagRequest userTagRequest) {
         String userTag = userTagRequest.getUserTag();
-        log.info("###############");
-        log.info(userTag);
-        log.info("@@@@@@@@@@@@@");
     
         if (userTagValidation(userTag)) {
             User user = userRepository.findByUserTag(userTag)
