@@ -31,7 +31,7 @@ public class ApiDocument {
     // 결과를 출력하고, 문서 스니펫을 만드는 메서드
     protected void printAndMakeSnippet(ResultActions resultActions, String title) throws Exception {
         MvcResult mvcResult = resultActions.andReturn();
-        System.err.println(mvcResult.getResponse().getContentAsString());
+        System.err.println("mvcResult Output: " + mvcResult.getResponse().getContentAsString());
         resultActions.andDo(print())
                 .andDo(toDocument(title));
     }
@@ -40,7 +40,9 @@ public class ApiDocument {
     // 객체를 JSON 문자열로 직렬화하는 메서드
     protected String toJson(Object object) {
         try {
-            return objectMapper.writeValueAsString(object);
+            String jsonString = objectMapper.writeValueAsString(object);
+            System.out.println("JSON Output: " + jsonString);
+            return jsonString;
         } catch (JsonProcessingException e) {
             throw new IllegalStateException("Seriallizer Error", e);
         }
