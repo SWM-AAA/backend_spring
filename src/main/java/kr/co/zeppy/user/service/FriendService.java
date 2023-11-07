@@ -29,6 +29,7 @@ public class FriendService {
     private final FriendshipRepository friendshipRepository;
     private final UserRepository userRepository;
 
+
     // user 친구 추가 기능
     public void sendFriendRequest(String token, FriendshipRequest friendshipRequest) {
         Long userId = jwtService.getLongUserIdFromToken(token);

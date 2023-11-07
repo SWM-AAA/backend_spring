@@ -13,6 +13,7 @@ import kr.co.zeppy.global.redis.service.RedisService;
 import kr.co.zeppy.user.dto.UserInfoResponse;
 import kr.co.zeppy.user.dto.UserRegisterRequest;
 import kr.co.zeppy.user.dto.UserTagRequest;
+import kr.co.zeppy.user.repository.FriendshipRepository;
 import kr.co.zeppy.user.repository.UserRepository;
 import kr.co.zeppy.user.service.UserService;
 
@@ -28,7 +29,9 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.BDDMockito.*;
@@ -81,6 +84,8 @@ public class UserControllerTest extends ApiDocument {
     private JwtService jwtService;
     @MockBean
     private UserRepository userRepository;
+    @MockBean
+    private FriendshipRepository friendshipRepository;
 
     @MockBean
     private AwsS3Uploader awsS3Uploader;
@@ -115,6 +120,7 @@ public class UserControllerTest extends ApiDocument {
                 .nickname(NICKNAME)
                 .userTag(VALID_USER_TAG)
                 .imageUrl(FILE_NAME)
+                .isRelationship(true)
                 .build();
         
         given(jwtService.getStringUserIdFromToken("Bearer " + TOKEN)).willReturn(USER_ID);
@@ -262,7 +268,9 @@ public class UserControllerTest extends ApiDocument {
     @Test
     void test_UserTag_Search_Success() throws Exception {
         // given 
-        given(userService.findUserTag(any(UserTagRequest.class))).willReturn(userInfoResponse);
+        // checkFriendship 메소드를 위한 mocking
+        given(friendshipRepository.existsByUserIdAndFriendId(anyLong(), anyLong())).willReturn(true);
+        given(userService.findUserTag(any(UserTagRequest.class), anyLong())).willReturn(userInfoResponse);
         
         // when
         ResultActions resultActions = userTag_Search_Request(VALID_USER_TAG);
@@ -274,7 +282,7 @@ public class UserControllerTest extends ApiDocument {
     @Test
     void test_UserTag_Search_Failure_InvalidFormat() throws Exception {
         // given
-        given(userService.findUserTag(any(UserTagRequest.class))).willThrow(invalidUserTagFormat);
+        given(userService.findUserTag(any(UserTagRequest.class), eq(USER_LONG_ID))).willThrow(invalidUserTagFormat);
         
         // when
         ResultActions resultActions = userTag_Search_Request(INVALID_USER_TAG);
@@ -296,13 +304,13 @@ public class UserControllerTest extends ApiDocument {
                             .andExpect(jsonPath("$.userTag", is(VALID_USER_TAG)))
                             .andExpect(jsonPath("$.imageUrl", is(FILE_NAME))),
                             "userTag-Search-Success");
-        verify(userService, times(1)).findUserTag(any(UserTagRequest.class));
+        verify(userService, times(1)).findUserTag(any(UserTagRequest.class), anyLong());
     }
     
     private void userTag_Search_Request_Failure(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isBadRequest())
                         .andExpect(content().json(toJson(ErrorResponse.fromException(invalidUserTagFormat)))),
                         "userTag-Search-Failure");
-        verify(userService, times(1)).findUserTag(any(UserTagRequest.class));
+        verify(userService, times(1)).findUserTag(any(UserTagRequest.class), anyLong());
     }
 }

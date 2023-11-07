@@ -116,8 +116,8 @@ public class UserController {
 
     // testcode 미작성 usertag로 사용자 검색후 반환
     @PostMapping("/v1/users/search/usertag")
-    public ResponseEntity<UserInfoResponse> searchUserTag(@RequestBody UserTagRequest userTagRequest) {
-        UserInfoResponse userInfoResponse = userService.findUserTag(userTagRequest);
+    public ResponseEntity<UserInfoResponse> searchUserTag(@UserId Long userId, @RequestBody UserTagRequest userTagRequest) {
+        UserInfoResponse userInfoResponse = userService.findUserTag(userTagRequest, userId);
     
         return ResponseEntity.ok(userInfoResponse);
     }
