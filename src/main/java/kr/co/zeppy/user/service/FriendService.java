@@ -109,16 +109,17 @@ public class FriendService {
             throw new ApplicationException(ApplicationError.FRIENDSHIP_ALREADY_DECLINE);
         }
 
-        if (isAccept) {
-            acceptFriendship(friendship);
-        } else {
-            declineFriendship(friendship);
-        }
         friend.removeSentFriendships(friendship);
         user.removeReceivedFriendships(friendship);
 
-        friendshipRepository.save(friendship);
-        // 알림 기능 완성 되면 알림
+        if (isAccept) {
+            acceptFriendship(friendship);
+            friendshipRepository.save(friendship);
+        } else {
+            declineFriendship(friendship);
+            friendshipRepository.delete(friendship);
+        }
+        // todo : 지금은 friendship db를 삭제 나중에는 요청 쿨타임이라던지 다른 기능 보완 필요
     }
 
     // 친구 추가 요청을 수락

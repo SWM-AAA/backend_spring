@@ -12,10 +12,12 @@ import kr.co.zeppy.global.redis.dto.LocationAndBatteryRequest;
 import kr.co.zeppy.global.redis.service.RedisService;
 import kr.co.zeppy.user.dto.UserInfoResponse;
 import kr.co.zeppy.user.dto.UserRegisterRequest;
+import kr.co.zeppy.user.dto.UserRegisterResponse;
 import kr.co.zeppy.user.dto.UserTagRequest;
 import kr.co.zeppy.user.repository.FriendshipRepository;
 import kr.co.zeppy.user.repository.UserRepository;
 import kr.co.zeppy.user.service.UserService;
+import kr.co.zeppy.user.service.NickNameService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,13 +28,10 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
-import org.springframework.web.servlet.handler.UserRoleAuthorizationInterceptor;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.BDDMockito.*;
@@ -87,7 +86,8 @@ public class UserControllerTest extends ApiDocument {
     private UserRepository userRepository;
     @MockBean
     private FriendshipRepository friendshipRepository;
-
+    @MockBean
+    private NickNameService nickNameService;
     @MockBean
     private AwsS3Uploader awsS3Uploader;
 
@@ -101,6 +101,7 @@ public class UserControllerTest extends ApiDocument {
     private UserRegisterRequest userRegisterRequest;
     private UserInfoResponse userInfoResponse;
     private UserTagRequest userTagRequest;
+    private UserRegisterResponse userRegisterResponse;
 
     @BeforeEach
     void setUp() {
@@ -127,6 +128,13 @@ public class UserControllerTest extends ApiDocument {
         
         userTagRequest = UserTagRequest.builder()
                 .userTag(NEWUSERTAG)
+                .build();
+
+        userRegisterResponse = UserRegisterResponse.builder()
+                .userId(USER_LONG_ID)
+                .userTag(VALID_USER_TAG)
+                .imageUrl(FILE_NAME)
+                .accessToken(ACCESSTOKEN)
                 .build();
         
         given(jwtService.getStringUserIdFromToken("Bearer " + TOKEN)).willReturn(USER_ID);
@@ -197,9 +205,9 @@ public class UserControllerTest extends ApiDocument {
         expectedResponse.put("imageUrl", PROFILE_IMAGE_NAME);
     
         given(userService.register(anyString(), any(UserRegisterRequest.class))).willReturn(NEWUSERTAG);
-        given(jwtService.createAccessToken(anyString())).willReturn(ACCESSTOKEN);
-        given(userRepository.findIdByUserTag(anyString())).willReturn(Optional.of(USER_LONG_ID));
-        given(userRepository.findImageUrlByUserTag(anyString())).willReturn(Optional.of(NEWUSERTAG));
+        // given(jwtService.createAccessToken(anyString())).willReturn(ACCESSTOKEN);
+        // given(userRepository.findIdByUserTag(anyString())).willReturn(Optional.of(USER_LONG_ID));
+        // given(userRepository.findImageUrlByUserTag(anyString())).willReturn(Optional.of(NEWUSERTAG));
         // given(userService.userRegisterBody(ACCESSTOKEN, NEWUSERTAG, USER_ID, PROFILE_IMAGE_NAME)).willReturn(expectedResponse);
         
         // when
