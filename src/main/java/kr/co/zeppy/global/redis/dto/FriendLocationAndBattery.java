@@ -1,4 +1,4 @@
-package kr.co.zeppy.user.dto;
+package kr.co.zeppy.global.redis.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,12 +10,9 @@ import lombok.AccessLevel;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserInfoResponse {
-
-    private Long userId;
-    private String nickname;
-    private String userTag;
-    private String imageUrl;
-    private boolean isFriend;
-    private boolean isRelationship;
+public class FriendLocationAndBattery {
+    private String latitude;
+    private String longitude;
+    private String battery;
+    private Boolean isCharging;
 }

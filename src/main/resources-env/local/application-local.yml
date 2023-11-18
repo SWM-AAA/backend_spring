@@ -40,14 +40,14 @@ spring:
           google:
             client-id: ${GOOGLE_LOGIN_CLIENT_ID}
             client-secret: ${GOOGLE_LOGIN_CLIENT_SECRET}
-            redirect-uri: http://localhost:8080/login/oauth2/code/google
+            redirect-uri: https://e75c-125-177-98-67.ngrok-free.app/login/oauth2/code/google
             scope: profile
 
           kakao:
             client-id: ${KAKAO_LOGIN_CLIENT_ID}
             client-secret: ${KAKAO_LOGIN_CLIENT_SECRET}
             # redirect-uri: http://localhost:8080/login/oauth2/code/kakao
-            redirect-uri: https://f260-125-177-98-67.ngrok-free.app/login/oauth2/code/kakao
+            redirect-uri: https://e75c-125-177-98-67.ngrok-free.app/login/oauth2/code/kakao
             client-authentication-method: client_secret_post
             authorization-grant-type: authorization_code
             scope: profile_nickname, profile_image

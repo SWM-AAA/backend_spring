@@ -14,10 +14,8 @@ ext {
 }
 
 test {
-  if (profile == 'local') {
-	outputs.dir snippetsDir
-	useJUnitPlatform()
-  }
+    outputs.dir snippetsDir
+    useJUnitPlatform()
 }
 
 asciidoctor.doFirst {

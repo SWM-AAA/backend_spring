@@ -44,6 +44,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         User findUser = userRepository.findByUserTag(oAuth2User.getUserTag())
                         .orElseThrow(() -> new IllegalArgumentException("ID 에 해당하는 유저가 없습니다."));
         String userTag = findUser.getUserTag();
+        String nickName = findUser.getNickname();
         String userId = findUser.getId().toString();
 
         findUser.updateRefreshToken(refreshToken);
@@ -51,7 +52,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
         if (oAuth2User.getRole() == Role.GUEST) {
             String url = jwtService.setTokenAndUserInfoURLParam(CALLBACK_URL, accessToken,
-            refreshToken, userId, userTag, "", true);
+            refreshToken, userId, userTag, nickName, "", true);
             log.info("accessToken : 엑세스 토큰 : " + accessToken);
             log.info("refreshToken : 리프레시 토큰 : " + refreshToken);
             response.sendRedirect(url);
@@ -59,7 +60,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         else {
             String userImage = findUser.getImageUrl();
             String url = jwtService.setTokenAndUserInfoURLParam(CALLBACK_URL, accessToken,
-                    refreshToken, userId, userTag, userImage, false);
+                    refreshToken, userId, userTag, nickName, userImage, false);
             log.info("accessToken : 엑세스 토큰 : " + accessToken);
             log.info("refreshToken : 리프레시 토큰 : " + refreshToken);
             response.sendRedirect(url);

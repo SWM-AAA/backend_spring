@@ -122,7 +122,7 @@ public class UserService {
             return false;
         }
     
-        Pattern pattern = Pattern.compile("^[a-zA-Z\\uAC00-\\uD7A3]+#\\d+$");
+        Pattern pattern = Pattern.compile("^[a-zA-Z\\uAC00-\\uD7A3\\d]+#\\d+$");
         Matcher matcher = pattern.matcher(userTag);
         return matcher.matches();
     }
@@ -135,12 +135,17 @@ public class UserService {
             User user = userRepository.findByUserTag(userTag)
                     .orElseThrow(() -> new ApplicationException(ApplicationError.USER_TAG_NOT_FOUND));
             boolean isRelationship = checkFriendship(userId, user.getId());
-    
+            boolean isFriend = false;
+            if (isRelationship) {
+                isFriend = friendshipRepository.findIsAcceptFriendshipsByUserId(userId, user.getId());
+            }
+
             return UserInfoResponse.builder()
                     .userId(user.getId())
                     .nickname(user.getNickname())
                     .userTag(user.getUserTag())
                     .imageUrl(user.getImageUrl())
+                    .isFriend(isFriend)
                     .isRelationship(isRelationship)
                     .build();
         } else {
