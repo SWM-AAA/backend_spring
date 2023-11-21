@@ -10,12 +10,7 @@ import lombok.AccessLevel;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserInfoResponse {
 
-    private Long userId;
-    private String nickname;
-    private String userTag;
-    private String imageUrl;
-    private boolean isFriend;
-    private boolean isRelationship;
+public class DeleteFriendRequest {
+    private Long friendId;
 }

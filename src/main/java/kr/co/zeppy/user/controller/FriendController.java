@@ -15,14 +15,19 @@ import com.amazonaws.Response;
 import kr.co.zeppy.global.annotation.UserId;
 import kr.co.zeppy.global.error.ApplicationError;
 import kr.co.zeppy.global.error.ApplicationException;
+import kr.co.zeppy.global.redis.dto.FriendLocationAndBatteryResponse;
+import kr.co.zeppy.global.redis.service.RedisService;
 import kr.co.zeppy.user.dto.ConfirmFriendshipRequest;
+import kr.co.zeppy.user.dto.DeleteFriendRequest;
 import kr.co.zeppy.user.dto.FriendshipRequest;
 import kr.co.zeppy.user.dto.UserFriendInfoResponse;
 import kr.co.zeppy.user.entity.User;
 import kr.co.zeppy.user.repository.UserRepository;
 import kr.co.zeppy.user.service.FriendService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
@@ -30,6 +35,7 @@ public class FriendController {
 
     private final FriendService friendService;
     private final UserRepository userRepository;
+    private final RedisService redisService;
     
     // 친구 추가 요청 post
     @PostMapping("/v1/friends/requests")
@@ -37,6 +43,16 @@ public class FriendController {
             @RequestBody FriendshipRequest friendshipRequest) {
         
         friendService.sendFriendRequest(token, friendshipRequest);
+
+        return ResponseEntity.ok().build();
+    }
+
+    // 친구 삭제하기
+    // todo : testcode
+    @PostMapping("/v1/friends/delete")
+    public ResponseEntity<Void> deleteFriendRequest(@UserId Long userId,
+            @RequestBody DeleteFriendRequest deleteFriendRequest) {
+        friendService.deleteFriend(userId, deleteFriendRequest);
 
         return ResponseEntity.ok().build();
     }
@@ -72,6 +88,14 @@ public class FriendController {
         List<UserFriendInfoResponse> friendRequestList = friendService.giveUserFriendList(userId);
 
         return ResponseEntity.ok().body(friendRequestList);
+    }
+
+    // todo : testcode 미작성
+    // 친구 위치와 배터리 반환하는 함수
+    @GetMapping("/v1/users/friend-location-and-battery")
+    public ResponseEntity<FriendLocationAndBatteryResponse> getFriendLocationAndBattery(@UserId Long userId) throws Exception {
+
+        return ResponseEntity.ok().body(redisService.getFriendLocationAndBattery(userId));
     }
 
     // annotation api test

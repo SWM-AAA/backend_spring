@@ -2,6 +2,7 @@ package kr.co.zeppy.user.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
@@ -11,6 +12,7 @@ import kr.co.zeppy.global.error.ApplicationError;
 import kr.co.zeppy.global.error.ApplicationException;
 import kr.co.zeppy.global.jwt.service.JwtService;
 import kr.co.zeppy.user.dto.ConfirmFriendshipRequest;
+import kr.co.zeppy.user.dto.DeleteFriendRequest;
 import kr.co.zeppy.user.dto.FriendshipRequest;
 import kr.co.zeppy.user.entity.Friendship;
 import kr.co.zeppy.user.entity.FriendshipStatus;
@@ -19,7 +21,10 @@ import kr.co.zeppy.user.repository.FriendshipRepository;
 import kr.co.zeppy.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import kr.co.zeppy.user.dto.UserFriendInfoResponse;
+import lombok.extern.slf4j.Slf4j;
 
+
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -28,6 +33,7 @@ public class FriendService {
     private final JwtService jwtService;
     private final FriendshipRepository friendshipRepository;
     private final UserRepository userRepository;
+
 
     // user 친구 추가 기능
     public void sendFriendRequest(String token, FriendshipRequest friendshipRequest) {
@@ -50,6 +56,15 @@ public class FriendService {
         friend.addReceivedFriendships(friendship);
         
         friendshipRepository.save(friendship);
+    }
+
+    // 친구 삭제
+    public void deleteFriend(Long userId, DeleteFriendRequest deleteFriendRequest) {
+        Long friendId = deleteFriendRequest.getFriendId();
+
+        Optional<Friendship> friendship = friendshipRepository.findByUserIdAndFriendIdAndStatus(userId, friendId, FriendshipStatus.ACCEPTED);
+
+        friendship.ifPresent(friendshipRepository::delete);
     }
 
     // 나에게 친구추가 요청을 보낸 사용자 리스트를 확인
@@ -108,16 +123,18 @@ public class FriendService {
             throw new ApplicationException(ApplicationError.FRIENDSHIP_ALREADY_DECLINE);
         }
 
-        if (isAccept) {
-            acceptFriendship(friendship);
-        } else {
-            declineFriendship(friendship);
-        }
         friend.removeSentFriendships(friendship);
         user.removeReceivedFriendships(friendship);
 
-        friendshipRepository.save(friendship);
-        // 알림 기능 완성 되면 알림
+        if (isAccept) {
+            acceptFriendship(friendship);
+            friendshipRepository.save(friendship);
+        } else {
+            declineFriendship(friendship);
+            friendshipRepository.delete(friendship);
+        }
+        // todo : 지금은 friendship db를 삭제 나중에는 요청 쿨타임이라던지 다른 기능 보완 필요
+        // todo : isAccept가 true 즉 수락했을때 friendship db에 없는 것 같음
     }
 
     // 친구 추가 요청을 수락

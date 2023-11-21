@@ -12,9 +12,12 @@ import kr.co.zeppy.global.redis.dto.LocationAndBatteryRequest;
 import kr.co.zeppy.global.redis.service.RedisService;
 import kr.co.zeppy.user.dto.UserInfoResponse;
 import kr.co.zeppy.user.dto.UserRegisterRequest;
+import kr.co.zeppy.user.dto.UserRegisterResponse;
 import kr.co.zeppy.user.dto.UserTagRequest;
+import kr.co.zeppy.user.repository.FriendshipRepository;
 import kr.co.zeppy.user.repository.UserRepository;
 import kr.co.zeppy.user.service.UserService;
+import kr.co.zeppy.user.service.NickNameService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,9 +28,9 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -81,7 +84,10 @@ public class UserControllerTest extends ApiDocument {
     private JwtService jwtService;
     @MockBean
     private UserRepository userRepository;
-
+    @MockBean
+    private FriendshipRepository friendshipRepository;
+    @MockBean
+    private NickNameService nickNameService;
     @MockBean
     private AwsS3Uploader awsS3Uploader;
 
@@ -94,6 +100,8 @@ public class UserControllerTest extends ApiDocument {
     private LocationAndBatteryRequest locationAndBatteryRequest;
     private UserRegisterRequest userRegisterRequest;
     private UserInfoResponse userInfoResponse;
+    private UserTagRequest userTagRequest;
+    private UserRegisterResponse userRegisterResponse;
 
     @BeforeEach
     void setUp() {
@@ -115,6 +123,18 @@ public class UserControllerTest extends ApiDocument {
                 .nickname(NICKNAME)
                 .userTag(VALID_USER_TAG)
                 .imageUrl(FILE_NAME)
+                .isRelationship(true)
+                .build();
+        
+        userTagRequest = UserTagRequest.builder()
+                .userTag(NEWUSERTAG)
+                .build();
+
+        userRegisterResponse = UserRegisterResponse.builder()
+                .userId(USER_LONG_ID)
+                .userTag(VALID_USER_TAG)
+                .imageUrl(FILE_NAME)
+                .accessToken(ACCESSTOKEN)
                 .build();
         
         given(jwtService.getStringUserIdFromToken("Bearer " + TOKEN)).willReturn(USER_ID);
@@ -155,7 +175,7 @@ public class UserControllerTest extends ApiDocument {
         return mockMvc.perform(post(API_VERSION + RESOURCE_PATH + "/location-and-battery")
                 .header("Authorization", "Bearer " + TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(locationAndBatteryRequest)));
+                .content(toJson(locationAndBatteryRequest)));
     }
 
     private void update_User_Location_And_Battery_Request_Success(ResultActions resultActions) throws Exception {
@@ -175,27 +195,6 @@ public class UserControllerTest extends ApiDocument {
     /////////////////////////////////////////////////////////////////
     // userRegister test code
     /////////////////////////////////////////////////////////////////
-    // @Test
-    // void test_User_Register_Success() throws Exception {
-    //     // given
-    //     Map<String, String> expectedResponse = new HashMap<>();
-    //     expectedResponse.put(ACCESSTOKEN, ACCESSTOKEN);
-    //     expectedResponse.put(USERID, USER_ID);
-    //     expectedResponse.put(USERTAG, NEWUSERTAG);
-    //     expectedResponse.put(IMAGEURL, PROFILE_IMAGE_NAME);
-
-    //     given(userService.register(anyString(), any(UserRegisterRequest.class))).willReturn(USERTAG);
-    //     given(jwtService.createAccessToken(USERTAG)).willReturn(ACCESSTOKEN);
-    //     given(jwtService.getStringUserIdFromToken(TOKEN)).willReturn(USER_ID.toString());
-    //     given(userService.userRegisterBody(ACCESSTOKEN, USERTAG, USER_ID, PROFILE_IMAGE_NAME)).willReturn(expectedResponse);
-        
-    //     // when
-    //     ResultActions resultActions = user_Register_Request();
-        
-    //     // then
-    //     user_Register_Request_Success(resultActions);
-    // }
-
     @Test
     void test_User_Register_Success() throws Exception {
         // given
@@ -206,9 +205,9 @@ public class UserControllerTest extends ApiDocument {
         expectedResponse.put("imageUrl", PROFILE_IMAGE_NAME);
     
         given(userService.register(anyString(), any(UserRegisterRequest.class))).willReturn(NEWUSERTAG);
-        given(jwtService.createAccessToken(NEWUSERTAG)).willReturn(ACCESSTOKEN);
-        given(userRepository.findIdByUserTag(NEWUSERTAG)).willReturn(Optional.of(USER_LONG_ID));
-        given(userRepository.findImageUrlByUserTag(NEWUSERTAG)).willReturn(Optional.of(NEWUSERTAG));
+        // given(jwtService.createAccessToken(anyString())).willReturn(ACCESSTOKEN);
+        // given(userRepository.findIdByUserTag(anyString())).willReturn(Optional.of(USER_LONG_ID));
+        // given(userRepository.findImageUrlByUserTag(anyString())).willReturn(Optional.of(NEWUSERTAG));
         // given(userService.userRegisterBody(ACCESSTOKEN, NEWUSERTAG, USER_ID, PROFILE_IMAGE_NAME)).willReturn(expectedResponse);
         
         // when
@@ -261,12 +260,12 @@ public class UserControllerTest extends ApiDocument {
     /////////////////////////////////////////////////////////////////
     @Test
     void test_UserTag_Search_Success() throws Exception {
-        // given 
-        given(userService.findUserTag(any(UserTagRequest.class))).willReturn(userInfoResponse);
-        
+        // given
+        given(userService.findUserTag(any(UserTagRequest.class), anyLong())).willReturn(userInfoResponse);
+    
         // when
-        ResultActions resultActions = userTag_Search_Request(VALID_USER_TAG);
-        
+        ResultActions resultActions = userTag_Search_Request();
+    
         // then
         userTag_Search_Request_Success(resultActions);
     }
@@ -274,35 +273,36 @@ public class UserControllerTest extends ApiDocument {
     @Test
     void test_UserTag_Search_Failure_InvalidFormat() throws Exception {
         // given
-        given(userService.findUserTag(any(UserTagRequest.class))).willThrow(invalidUserTagFormat);
+        given(userService.findUserTag(any(UserTagRequest.class), anyLong())).willThrow(invalidUserTagFormat);
         
         // when
-        ResultActions resultActions = userTag_Search_Request(INVALID_USER_TAG);
+        ResultActions resultActions = userTag_Search_Request();
         
         // then
         userTag_Search_Request_Failure(resultActions);
     }
     
-    private ResultActions userTag_Search_Request(String userTag) throws Exception {
+    private ResultActions userTag_Search_Request() throws Exception {
         return mockMvc.perform(MockMvcRequestBuilders.post(API_VERSION + RESOURCE_PATH + "/search/usertag")
-                .param(USERTAG, userTag)
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED));
+                .header("Authorization", "Bearer " + TOKEN)
+                .content(toJson(userTagRequest))
+                .contentType(MediaType.APPLICATION_JSON));
     }
-    
+
     private void userTag_Search_Request_Success(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isOk())
-                            .andExpect(jsonPath("$.userId", is(USER_LONG_ID.intValue())))
-                            .andExpect(jsonPath("$.nickname", is(NICKNAME)))
-                            .andExpect(jsonPath("$.userTag", is(VALID_USER_TAG)))
-                            .andExpect(jsonPath("$.imageUrl", is(FILE_NAME))),
-                            "userTag-Search-Success");
-        verify(userService, times(1)).findUserTag(any(UserTagRequest.class));
+                    .andExpect(jsonPath("$.userId", is(userInfoResponse.getUserId().intValue())))
+                    .andExpect(jsonPath("$.nickname", is(userInfoResponse.getNickname())))
+                    .andExpect(jsonPath("$.userTag", is(userInfoResponse.getUserTag())))
+                    .andExpect(jsonPath("$.imageUrl", is(userInfoResponse.getImageUrl()))),
+                    "userTag-Search-Success");
+        verify(userService, times(1)).findUserTag(any(UserTagRequest.class), anyLong());
     }
     
     private void userTag_Search_Request_Failure(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isBadRequest())
                         .andExpect(content().json(toJson(ErrorResponse.fromException(invalidUserTagFormat)))),
                         "userTag-Search-Failure");
-        verify(userService, times(1)).findUserTag(any(UserTagRequest.class));
+        verify(userService, times(1)).findUserTag(any(UserTagRequest.class), anyLong());
     }
 }

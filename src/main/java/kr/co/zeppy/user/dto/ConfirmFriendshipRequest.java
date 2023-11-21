@@ -13,5 +13,5 @@ import lombok.AccessLevel;
 
 public class ConfirmFriendshipRequest {
     private Long userId;
-    private boolean isAccept;
+    private boolean accept;
 }

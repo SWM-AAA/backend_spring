@@ -62,9 +62,10 @@ public class JwtService {
     private static final String ACCESS_TOKEN_SUBJECT = "accessToken";
     private static final String REFRESH_TOKEN_SUBJECT = "refreshToken";
     private static final String LOGIN_USER_TAG = "userTag";
+    private static final String NICKNAME = "nickName";
     private static final String BEARER = "Bearer ";
     private static final String USERIMAGE = "imageUrl";
-    private static final String IS_FIRST = "isFirst";
+    private static final String ISFIRST = "isFirst";
     private static final String APPLICATION_JSON = "application/json";
     private static final String UTF_8 = "UTF-8";
 
@@ -93,17 +94,19 @@ public class JwtService {
 
 
     public String setTokenAndUserInfoURLParam(String url, String accessToken, String refreshToken, 
-                String userId, String userTag, String userImage, boolean isfirst)
+                String userId, String userTag, String nickName, String userImage, boolean isfirst)
                                     throws UnsupportedEncodingException {
         
         String encodedUserTag = URLEncoder.encode(userTag, UTF_8);
+        String encodedNickName = URLEncoder.encode(nickName, UTF_8);
         return UriComponentsBuilder.fromUriString(url)
                 .queryParam(ACCESS_TOKEN_SUBJECT, accessToken)
                 .queryParam(REFRESH_TOKEN_SUBJECT, refreshToken)
                 .queryParam(USERID, userId)
                 .queryParam(USERTAG, encodedUserTag)
+                .queryParam(NICKNAME, encodedNickName)
                 .queryParam(USERIMAGE, userImage)
-                .queryParam(IS_FIRST, isfirst)
+                .queryParam(ISFIRST, isfirst)
                 .build().toUriString();
     }
 

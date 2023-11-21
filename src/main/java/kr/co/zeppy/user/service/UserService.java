@@ -25,6 +25,7 @@ import kr.co.zeppy.user.dto.UserTagRequest;
 import kr.co.zeppy.user.entity.Role;
 import kr.co.zeppy.user.entity.SocialType;
 import kr.co.zeppy.user.entity.User;
+import kr.co.zeppy.user.repository.FriendshipRepository;
 import kr.co.zeppy.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +43,7 @@ public class UserService {
     private static final String IMAGEURL = "imageUrl";
 
     private final UserRepository userRepository;
+    private final FriendshipRepository friendshipRepository;
     private final JwtService jwtService;
     private final AwsS3Uploader awsS3Uploader;
     private final NickNameService nickNameService;
@@ -120,29 +122,39 @@ public class UserService {
             return false;
         }
     
-        Pattern pattern = Pattern.compile("^[a-zA-Z\\uAC00-\\uD7A3]+#\\d+$");
+        Pattern pattern = Pattern.compile("^[a-zA-Z\\uAC00-\\uD7A3\\d]+#\\d+$");
         Matcher matcher = pattern.matcher(userTag);
         return matcher.matches();
     }
     
-
     // userTag로 검색 후 user정보 반환
-    public UserInfoResponse findUserTag(UserTagRequest userTagRequest) {
+    public UserInfoResponse findUserTag(UserTagRequest userTagRequest, Long userId) {
         String userTag = userTagRequest.getUserTag();
     
         if (userTagValidation(userTag)) {
             User user = userRepository.findByUserTag(userTag)
                     .orElseThrow(() -> new ApplicationException(ApplicationError.USER_TAG_NOT_FOUND));
-    
+            boolean isRelationship = checkFriendship(userId, user.getId());
+            boolean isFriend = false;
+            if (isRelationship) {
+                isFriend = friendshipRepository.findIsAcceptFriendshipsByUserId(userId, user.getId());
+            }
+
             return UserInfoResponse.builder()
                     .userId(user.getId())
                     .nickname(user.getNickname())
                     .userTag(user.getUserTag())
                     .imageUrl(user.getImageUrl())
+                    .isFriend(isFriend)
+                    .isRelationship(isRelationship)
                     .build();
         } else {
             throw new ApplicationException(ApplicationError.INVALID_USER_TAG_FORMAT);
         }
     }
 
+    // userTag 검색 후 해당 유저와의 상태를 나타내는 함수
+    public boolean checkFriendship(Long userId, Long friendId) {
+        return friendshipRepository.existsByUserIdAndFriendId(userId, friendId);
+    }
 }

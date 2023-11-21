@@ -107,7 +107,7 @@ public class FriendServiceTest {
 
         request = ConfirmFriendshipRequest.builder()
                 .userId(INIT_FRIENDID)
-                .isAccept(false)
+                .accept(false)
                 .build();
 
         pendingFriendship = Friendship.builder()
@@ -227,7 +227,7 @@ public class FriendServiceTest {
         // given
         ConfirmFriendshipRequest request = ConfirmFriendshipRequest.builder()
                 .userId(INIT_FRIENDID)
-                .isAccept(true)
+                .accept(true)
                 .build();
         Friendship pendingFriendship = Friendship.builder()
                 .user(friend)

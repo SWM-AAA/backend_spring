@@ -143,7 +143,7 @@ public class FriendControllerTest extends ApiDocument{
         
         confirmFriendshipRequest = ConfirmFriendshipRequest.builder()
                 .userId(INIT_USERID)
-                .isAccept(false)
+                .accept(false)
                 .build();
                 
         userIdNotFoundException = new ApplicationException(ApplicationError.USER_NOT_FOUND);
