@@ -1,27 +1,23 @@
 package kr.co.zeppy.user.service;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-import java.util.Optional;
-
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.web.multipart.MultipartFile;
-
 import kr.co.zeppy.global.aws.service.AwsS3Uploader;
 import kr.co.zeppy.global.jwt.service.JwtService;
 import kr.co.zeppy.user.dto.UserRegisterRequest;
 import kr.co.zeppy.user.entity.User;
 import kr.co.zeppy.user.repository.UserRepository;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.Optional;
+
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
@@ -41,8 +37,8 @@ public class UserServiceTest {
     @Mock
     private AwsS3Uploader awsS3Uploader;
 
-    private static final String S3_USER_PROFILE_PATH = "user/profile-image/";
-
+    private static final String S3_USER_PROFILE_BASE_PATH = "user/profile-image/";
+    private static final String S3_USER_PROFILE_LAST_PATH = "profile";
     private static final String TOKEN = "testToken";
 
     private static final String USER_TAG = "testUserTag";
@@ -78,7 +74,8 @@ public class UserServiceTest {
 
         when(userRepository.findByUserTag(USER_TAG)).thenReturn(Optional.of(user));
         when(nickNameService.getUserTagFromNickName(NICKNAME)).thenReturn(NEW_USER_TAG);
-        when(awsS3Uploader.upload(file, S3_USER_PROFILE_PATH + USER_ID)).thenReturn(IMAGE_URL);
+        when(awsS3Uploader.newUpload(file, S3_USER_PROFILE_BASE_PATH + USER_ID +
+                S3_USER_PROFILE_LAST_PATH)).thenReturn(IMAGE_URL);
 
         // When
         userService.register(TOKEN, userRegisterRequest);
