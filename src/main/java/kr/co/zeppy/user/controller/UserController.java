@@ -1,41 +1,31 @@
 package kr.co.zeppy.user.controller;
 
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import kr.co.zeppy.global.annotation.UserId;
 import kr.co.zeppy.global.aws.service.AwsS3Uploader;
 import kr.co.zeppy.global.error.ApplicationError;
 import kr.co.zeppy.global.error.ApplicationException;
-import kr.co.zeppy.global.error.NotFoundException;
 import kr.co.zeppy.global.jwt.service.JwtService;
 import kr.co.zeppy.global.redis.dto.LocationAndBatteryRequest;
 import kr.co.zeppy.global.redis.service.RedisService;
-import kr.co.zeppy.user.dto.UserInfoResponse;
-import kr.co.zeppy.user.dto.UserPinInformationResponse;
-import kr.co.zeppy.user.dto.UserRegisterRequest;
-import kr.co.zeppy.user.dto.UserRegisterResponse;
-import kr.co.zeppy.user.dto.UserTagRequest;
+import kr.co.zeppy.user.dto.*;
 import kr.co.zeppy.user.entity.User;
 import kr.co.zeppy.user.repository.UserRepository;
 import kr.co.zeppy.user.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.io.IOException;
-
-import org.springframework.context.annotation.Profile;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import lombok.extern.slf4j.Slf4j;
 
 
 @Slf4j
@@ -51,6 +41,10 @@ public class UserController {
     private final JwtService jwtService;
     private final UserRepository userRepository;
 
+    private final AmazonS3Client amazonS3Client;
+
+    @Value("${cloud.aws.s3.bucket}")
+    public String bucket;
     
     @GetMapping("/test/jwt-test")
     public String jwtTest() {
@@ -126,9 +120,43 @@ public class UserController {
     // test
     @PostMapping("/test/image")
     public ResponseEntity<String> testImageUpload(@RequestParam("file") MultipartFile file) throws IOException {
-        String fileName = awsS3Uploader.upload(file, USER_PROFILE_IMAGE_PATH+"/1");
+        log.info("테스트");
+        String fileName = awsS3Uploader.upload(file, "test/test-image");
         return ResponseEntity.ok().body(fileName);
     }
+
+    @PostMapping("/test/image2")
+    public ResponseEntity<String> testimage2(@RequestParam("file") MultipartFile file) throws IOException {
+        String userId = "/0";
+        String fileName = awsS3Uploader.newUpload(file, "user" + userId + "/profile");
+        return ResponseEntity.ok().body(fileName);
+    }
+
+    @PostMapping("/test/image3")
+    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
+        try {
+            // 파일명 얻기
+            String fileName = file.getOriginalFilename();
+
+            // 파일 URL 구성
+            String fileUrl = "https://" + bucket + "/test/" + fileName; // 'test'와 파일명 사이에 슬래시 추가
+
+            // 메타데이터 설정
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentType(file.getContentType());
+            metadata.setContentLength(file.getSize());
+            log.info(bucket);
+
+            // S3에 파일 업로드
+            amazonS3Client.putObject(bucket, "test/" + fileName, file.getInputStream(), metadata); // 파일 경로에 'test/' 추가
+
+            return ResponseEntity.ok(fileUrl);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 
     // test
     @GetMapping("/v1/users/all-user-location-and-battery")

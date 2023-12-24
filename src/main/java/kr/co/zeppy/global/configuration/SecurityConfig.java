@@ -3,6 +3,7 @@ package kr.co.zeppy.global.configuration;
 import kr.co.zeppy.global.jwt.service.JwtService;
 import kr.co.zeppy.global.filter.ExceptionHandlerFilter;
 import kr.co.zeppy.global.jwt.filter.JwtAuthenticationProcessingFilter;
+import kr.co.zeppy.oauth2.repository.HttpCookieOAuth2AuthorizationRequestRepository;
 import kr.co.zeppy.user.repository.UserRepository;
 import kr.co.zeppy.oauth2.handler.OAuth2LoginFailureHandler;
 import kr.co.zeppy.oauth2.handler.OAuth2LoginSuccessHandler;
@@ -57,6 +58,9 @@ public class SecurityConfig {
                 .requestMatchers(AUTH_WHITELIST).permitAll()
             .anyRequest().authenticated())
             .oauth2Login(oauth2Login -> oauth2Login
+                .authorizationEndpoint()
+                .authorizationRequestRepository(new HttpCookieOAuth2AuthorizationRequestRepository())
+                .and()
                 .successHandler(oAuth2LoginSuccessHandler)
                 .failureHandler(oAuth2LoginFailureHandler)
                 .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint.userService(customOAuth2UserService)));
