@@ -77,8 +77,11 @@ public class RedisService {
     
     // 친구 위치, 배터리 반환
     public FriendLocationAndBatteryResponse getFriendLocationAndBattery(Long userId) {
+        log.info("시작@@@@@@@@@@@@@@@@");
         List<User> friendList = friendshipRepository.findAcceptedFriendsByUserId(userId);
+        log.info(friendList.toString() + "######################");
         List<FriendLocationAndBattery> friendLocationAndBatteryList = new ArrayList<>();
+        log.info(friendLocationAndBatteryList.toString() + "%%%%%%%%%%%%%%%%%%%%%");
 
         for (User friend : friendList) {
             String key = USER_PREFIX + friend.getId();

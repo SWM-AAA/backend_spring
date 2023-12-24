@@ -1,27 +1,11 @@
 package kr.co.zeppy.user.service;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
 import jakarta.transaction.Transactional;
 import kr.co.zeppy.global.aws.service.AwsS3Uploader;
 import kr.co.zeppy.global.error.ApplicationError;
 import kr.co.zeppy.global.error.ApplicationException;
 import kr.co.zeppy.global.jwt.service.JwtService;
-import kr.co.zeppy.user.dto.UserInfoResponse;
-import kr.co.zeppy.user.dto.UserPinInformationResponse;
-import kr.co.zeppy.user.dto.UserRegisterRequest;
-import kr.co.zeppy.user.dto.UserRegisterResponse;
-import kr.co.zeppy.user.dto.UserTagRequest;
+import kr.co.zeppy.user.dto.*;
 import kr.co.zeppy.user.entity.Role;
 import kr.co.zeppy.user.entity.SocialType;
 import kr.co.zeppy.user.entity.User;
@@ -29,6 +13,15 @@ import kr.co.zeppy.user.repository.FriendshipRepository;
 import kr.co.zeppy.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -36,7 +29,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class UserService {
 
-    private static final String S3_USER_PROFILE_PATH = "user/profile-image/";
+    private static final String S3_USER_PROFILE_BASE_PATH = "user/profile-image/";
+    private static final String S3_USER_PROFILE_LAST_PATH = "profile";
     private static final String ACCESSTOKEN = "accessToken";
     private static final String USERTAG = "userTag";
     private static final String USERID = "userId";
@@ -93,8 +87,8 @@ public class UserService {
         MultipartFile file = userRegisterRequest.getProfileimage();
         String newUserTag = nickNameService.getUserTagFromNickName(userRegisterRequest.getNickname());
 
-        String fileName = awsS3Uploader.upload(file
-                ,S3_USER_PROFILE_PATH + user.getId());
+        String fileName = awsS3Uploader.newUpload(file
+                ,S3_USER_PROFILE_BASE_PATH + user.getId() + S3_USER_PROFILE_LAST_PATH);
         
         user.updateUserTag(newUserTag);
         user.updateNickname(userRegisterRequest.getNickname());

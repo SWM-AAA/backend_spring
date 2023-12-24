@@ -1,20 +1,19 @@
 package kr.co.zeppy.global.aws.service;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Optional;
 
 @Log4j2
@@ -29,10 +28,24 @@ public class AwsS3Uploader {
     public String bucket;
 
     public String upload(MultipartFile multipartFile, String dirName) throws IOException {
+        log.info("upload to " + bucket);
         File uploadFile = convert(multipartFile)
                 .orElseThrow(IllegalArgumentException::new);
 
         return uploadS3(uploadFile, dirName);
+    }
+
+    public String newUpload(MultipartFile multipartFile, String dirName) throws IOException {
+        log.info("start new_upload_fuc");
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentType(multipartFile.getContentType());
+        metadata.setContentLength(multipartFile.getSize());
+        log.info("end new_upload_fuc");
+
+        log.info("start putObject");
+        amazonS3Client.putObject(bucket, dirName, multipartFile.getInputStream(), metadata);
+
+        return amazonS3Client.getUrl(bucket, dirName).toString();
     }
 
     private String uploadS3(File uploadFile, String dirName) {
