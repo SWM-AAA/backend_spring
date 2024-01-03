@@ -77,16 +77,13 @@ public class RedisService {
     
     // 친구 위치, 배터리 반환
     public FriendLocationAndBatteryResponse getFriendLocationAndBattery(Long userId) {
-        log.info("시작@@@@@@@@@@@@@@@@");
-        List<User> friendList = friendshipRepository.findAcceptedFriendsByUserId(userId);
-        log.info(friendList.toString() + "######################");
         List<FriendLocationAndBattery> friendLocationAndBatteryList = new ArrayList<>();
-        log.info(friendLocationAndBatteryList.toString() + "%%%%%%%%%%%%%%%%%%%%%");
+        List<Long> friendIdList = friendshipRepository.findAcceptedFriendIdsByUserId(userId);
 
-        for (User friend : friendList) {
-            String key = USER_PREFIX + friend.getId();
+        for (Long friendId : friendIdList) {
+            String key = USER_PREFIX + friendId;
             String jsonValue = redisTemplate.opsForValue().get(key);
-            
+
             if (jsonValue != null) {
                 try {
                     FriendLocationAndBattery data = objectMapper.readValue(jsonValue, FriendLocationAndBattery.class);
@@ -97,6 +94,7 @@ public class RedisService {
                 }
             }
         }
+
 
         return FriendLocationAndBatteryResponse.builder()
                 .message("success")

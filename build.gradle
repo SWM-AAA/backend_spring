@@ -7,7 +7,7 @@ plugins {
 }
 
 // profile의 기본값 local로 설정
-ext.profile = (!project.hasProperty('profile') || !profile) ? 'local' : profile
+ext.profile = (!project.hasProperty('profile') || !profile) ? 'dev' : profile
 
 ext {
   snippetsDir = file('build/generated-snippets')
@@ -18,6 +18,10 @@ test {
 	outputs.dir snippetsDir
 	useJUnitPlatform()
   }
+	environment "DB_NAME", "zeppy_db"
+	environment "POSTGRESQL_PORT", "5432"
+	environment "POSTGRESQL_LOCAL_USERNAME", "test"
+	environment "POSTGRESQL_LOCAL_PASSWORD", "test"
 }
 
 asciidoctor.doFirst {
