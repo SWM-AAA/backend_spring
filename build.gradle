@@ -1,13 +1,24 @@
+// add
+buildscript {
+	ext {
+		restdocsApiSpecVersion = '0.17.1'
+	}
+}
+
 plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.0.1'
 	id 'io.spring.dependency-management' version '1.1.0'
 	// spring rest docs
 	id "org.asciidoctor.jvm.convert" version "3.3.2"
+
+	// add
+	id 'com.epages.restdocs-api-spec' version "${restdocsApiSpecVersion}"
+	id 'org.hidetake.swagger.generator' version '2.18.2'
 }
 
 // profile의 기본값 local로 설정
-ext.profile = (!project.hasProperty('profile') || !profile) ? 'dev' : profile
+ext.profile = (!project.hasProperty('profile') || !profile) ? 'local' : profile
 
 ext {
   snippetsDir = file('build/generated-snippets')
@@ -35,11 +46,13 @@ task CreateDocument(type: Copy) {
 }
 
 bootJar {
-  if (profile == 'local') {
-	dependsOn CreateDocument
-  }
-  from("${asciidoctor.outputDir}") {
-	into 'static/docs'}
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+	if (profile == 'local') {
+		dependsOn CreateDocument
+	}
+	from("${asciidoctor.outputDir}") {
+		into 'static/docs'
+	}
 }
 
 build {
@@ -79,6 +92,46 @@ configurations {
 	}
 }
 
+// SwaggerUI 설정
+swaggerSources {
+	sample {
+		setInputFile(file("${project.buildDir}/api-spec/openapi3.yaml"))
+	}
+}
+
+openapi3 {
+	server = "http://localhost:8080"
+	title = "API 문서"
+	description = "RestDocsWithSwagger Docs"
+
+	version = "0.0.1"
+	format = "yml"
+}
+
+tasks.withType(GenerateSwaggerUI) {
+	dependsOn 'openapi3'
+	doFirst {
+		def swaggerUIFile = file("${openapi3.outputDirectory}/openapi3.yaml")
+
+		def securitySchemesContent =  "  securitySchemes:\n" +  \
+                                      "    APIKey:\n" +  \
+                                      "      type: apiKey\n" +  \
+                                      "      name: Authorization\n" +  \
+                                      "      in: header\n" + \
+                                      "security:\n" +
+				"  - APIKey: []  # Apply the security scheme here"
+
+		swaggerUIFile.append securitySchemesContent
+	}
+}
+
+bootJar {
+	dependsOn generateSwaggerUISample
+	from("${generateSwaggerUISample.outputDir}") {
+		into 'static/docs'
+	}
+}
+
 repositories {
 	mavenCentral()
 }
@@ -106,6 +159,10 @@ dependencies {
 	// spring rest docs
 	asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
 	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+
+	testImplementation "com.epages:restdocs-api-spec-mockmvc:$restdocsApiSpecVersion"
+	// Swagger UI 웹자원
+	swaggerUI 'org.webjars:swagger-ui:4.11.1'
 
 	// spring boot oauth2 library
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'

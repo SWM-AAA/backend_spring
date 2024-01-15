@@ -27,6 +27,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.test.web.servlet.ResultActions;
@@ -170,11 +171,17 @@ public class UserControllerTest extends ApiDocument {
     }
 
     private ResultActions update_User_Location_And_Battery_Request() throws Exception {
-        return mockMvc.perform(post(API_VERSION + RESOURCE_PATH + "/location-and-battery")
+        return mockMvc.perform(RestDocumentationRequestBuilders.post(API_VERSION + RESOURCE_PATH + "/location-and-battery")
                 .header("Authorization", "Bearer " + TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(locationAndBatteryRequest)));
     }
+//    private ResultActions update_User_Location_And_Battery_Request() throws Exception {
+//        return mockMvc.perform(post(API_VERSION + RESOURCE_PATH + "/location-and-battery")
+//                .header("Authorization", "Bearer " + TOKEN)
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .content(toJson(locationAndBatteryRequest)));
+//    }
 
     private void update_User_Location_And_Battery_Request_Success(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isOk()), 
@@ -230,7 +237,7 @@ public class UserControllerTest extends ApiDocument {
     }
     
     private ResultActions user_Register_Request() throws Exception {
-        return mockMvc.perform(MockMvcRequestBuilders.multipart(API_VERSION + RESOURCE_PATH + "/register")
+        return mockMvc.perform(RestDocumentationRequestBuilders.multipart(API_VERSION + RESOURCE_PATH + "/register")
                 .file(PROFILE_IMAGE_NAME, userRegisterRequest.getProfileimage().getBytes())
                 .header(AUTHORIZATION_HEADER, "Bearer " + TOKEN)
                 .param(NICKNAME, userRegisterRequest.getNickname())
@@ -282,7 +289,7 @@ public class UserControllerTest extends ApiDocument {
     }
     
     private ResultActions userTag_Search_Request() throws Exception {
-        return mockMvc.perform(MockMvcRequestBuilders.post(API_VERSION + RESOURCE_PATH + "/search/usertag")
+        return mockMvc.perform(RestDocumentationRequestBuilders.post(API_VERSION + RESOURCE_PATH + "/search/usertag")
                 .header("Authorization", "Bearer " + TOKEN)
                 .content(toJson(userTagRequest))
                 .contentType(MediaType.APPLICATION_JSON));

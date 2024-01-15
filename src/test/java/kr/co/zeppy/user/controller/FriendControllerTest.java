@@ -25,6 +25,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -191,7 +192,7 @@ public class FriendControllerTest extends ApiDocument{
 
     private ResultActions send_Friend_Request(String jsonRequest) throws Exception {
         return mockMvc.perform(
-                post(API_VERSION + RESOURCE_PATH + "/requests")
+                RestDocumentationRequestBuilders.post(API_VERSION + RESOURCE_PATH + "/requests")
                         .header(AUTHORIZATION_HEADER, ACCESSTOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest)
@@ -264,7 +265,7 @@ public class FriendControllerTest extends ApiDocument{
 
     private ResultActions check_Friend_Request() throws Exception {
         return mockMvc.perform(
-                get(API_VERSION + RESOURCE_PATH + "/requests")
+                RestDocumentationRequestBuilders.get(API_VERSION + RESOURCE_PATH + "/requests")
                         .header(AUTHORIZATION_HEADER, ACCESSTOKEN));
     }
 
@@ -313,7 +314,7 @@ public class FriendControllerTest extends ApiDocument{
     
     private ResultActions confirm_Friend_Request() throws Exception {
         return mockMvc.perform(
-                post(API_VERSION + RESOURCE_PATH + "/response")
+                RestDocumentationRequestBuilders.post(API_VERSION + RESOURCE_PATH + "/response")
                         .header(AUTHORIZATION_HEADER, ACCESSTOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(toJson(confirmFriendshipRequest))
@@ -361,7 +362,7 @@ public class FriendControllerTest extends ApiDocument{
     
     private ResultActions check_Sent_Friend_Request() throws Exception {
         return mockMvc.perform(
-                get(API_VERSION + RESOURCE_PATH + "/requests/send")
+                RestDocumentationRequestBuilders.get(API_VERSION + RESOURCE_PATH + "/requests/send")
                         .header(AUTHORIZATION_HEADER, ACCESSTOKEN));
     }
     
@@ -410,7 +411,7 @@ public class FriendControllerTest extends ApiDocument{
     
     private ResultActions my_Friend_List_Request() throws Exception {
         return mockMvc.perform(
-                get(API_VERSION + RESOURCE_PATH)
+                RestDocumentationRequestBuilders.get(API_VERSION + RESOURCE_PATH)
                         .header(AUTHORIZATION_HEADER, ACCESSTOKEN));
     }
     
