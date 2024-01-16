@@ -18,7 +18,7 @@ plugins {
 }
 
 // profile의 기본값 local로 설정
-ext.profile = (!project.hasProperty('profile') || !profile) ? 'dev' : profile
+ext.profile = (!project.hasProperty('profile') || !profile) ? 'local' : profile
 
 ext {
   snippetsDir = file('build/generated-snippets')
