@@ -45,9 +45,11 @@ public class SecurityConfig {
             "/swagger-ui/index.html", // 이 부분을 업데이트
             "/swagger-ui/**",
             "/v3/api-docs/**",
+            "/v2/api-docs/**",
             "/swagger-resources/**",
             "/webjars/**",
             "/docs/**",
+            "*",
     };
 
     @Bean

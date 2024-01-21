@@ -1,142 +1,127 @@
-// add
-buildscript {
-	ext {
-		restdocsApiSpecVersion = '0.17.1'
-	}
-}
-
 plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.0.1'
 	id 'io.spring.dependency-management' version '1.1.0'
-	// spring rest docs
 	id "org.asciidoctor.jvm.convert" version "3.3.2"
-
-	// add
-	id 'com.epages.restdocs-api-spec' version "${restdocsApiSpecVersion}"
-	id 'org.hidetake.swagger.generator' version '2.18.2'
-}
-
-// profile의 기본값 local로 설정
-ext.profile = (!project.hasProperty('profile') || !profile) ? 'local' : profile
-
-ext {
-  snippetsDir = file('build/generated-snippets')
-}
-
-test {
-  if (profile == 'local') {
-	outputs.dir snippetsDir
-	useJUnitPlatform()
-  }
-	environment "DB_NAME", "zeppy_db"
-	environment "POSTGRESQL_PORT", "5432"
-	environment "POSTGRESQL_LOCAL_USERNAME", "test"
-	environment "POSTGRESQL_LOCAL_PASSWORD", "test"
-}
-
-asciidoctor.doFirst {
-	delete file("src/main/resources/static/docs")
-}
-
-task CreateDocument(type: Copy) {
-	dependsOn asciidoctor
-	from file("build/docs/asciidoc")
-	into file("src/main/resources/static/docs")
-}
-
-bootJar {
-	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-	if (profile == 'local') {
-		dependsOn CreateDocument
-	}
-	from("${asciidoctor.outputDir}") {
-		into 'static/docs'
-	}
-}
-
-build {
-	if (profile == 'local') {
-		dependsOn CreateDocument
-	}
-}
-
-asciidoctor {
-  inputs.dir snippetsDir
-  configurations 'asciidoctorExt'
-  baseDirFollowsSourceFile()
-  dependsOn test
-}
-
-// 리소스 디렉토리 추가
-sourceSets {
-    main {
-        resources {
-            srcDirs "src/main/resources-env/${profile}"
-        }
-    }
+	// add //
+	id "com.gorylenko.gradle-git-properties" version "2.4.1"
+	id "com.epages.restdocs-api-spec" version "0.18.4"
+	// add //
 }
 
 group = 'com.aaa'
 version = '0.0.1-SNAPSHOT'
-
-java {
-	sourceCompatibility = '17'
-}
+sourceCompatibility = JavaVersion.VERSION_17
 
 configurations {
-	// spring rest docs
-	asciidoctorExt
 	compileOnly {
 		extendsFrom annotationProcessor
 	}
-}
-
-// SwaggerUI 설정
-swaggerSources {
-	sample {
-		setInputFile(file("${project.buildDir}/api-spec/openapi3.yaml"))
-	}
-}
-
-openapi3 {
-	server = "http://localhost:8080"
-	title = "API 문서"
-	description = "RestDocsWithSwagger Docs"
-
-	version = "0.0.1"
-	format = "yml"
-}
-
-tasks.withType(GenerateSwaggerUI) {
-	dependsOn 'openapi3'
-	doFirst {
-		def swaggerUIFile = file("${openapi3.outputDirectory}/openapi3.yaml")
-
-		def securitySchemesContent =  "  securitySchemes:\n" +  \
-                                      "    APIKey:\n" +  \
-                                      "      type: apiKey\n" +  \
-                                      "      name: Authorization\n" +  \
-                                      "      in: header\n" + \
-                                      "security:\n" +
-				"  - APIKey: []  # Apply the security scheme here"
-
-		swaggerUIFile.append securitySchemesContent
-	}
-}
-
-bootJar {
-	dependsOn generateSwaggerUISample
-	from("${generateSwaggerUISample.outputDir}") {
-		into 'static/docs'
-	}
+	asciidoctorExt
 }
 
 repositories {
 	mavenCentral()
 }
 
+ext.profile = (!project.hasProperty('profile') || !profile) ? 'local' : profile
+
+ext {
+	snippetsDir = file('build/generated-snippets')
+}
+
+tasks.named("test") {
+	if (profile == 'local') {
+		outputs.dir snippetsDir
+		useJUnitPlatform()
+		environment "DB_NAME", "zeppy_db"
+		environment "POSTGRESQL_PORT", "5432"
+		environment "POSTGRESQL_LOCAL_USERNAME", "test"
+		environment "POSTGRESQL_LOCAL_PASSWORD", "test"
+	}
+}
+
+tasks.register("restDocsTest", Test) {
+	outputs.dir snippetsDir
+	useJUnitPlatform {
+		includeTags("restDocs")
+	}
+
+	finalizedBy "asciidoctor"
+	finalizedBy "openapi3"
+}
+
+tasks.named("asciidoctor") {
+	dependsOn restDocsTest
+	dependsOn test
+
+	inputs.dir snippetsDir
+	configurations "asciidoctorExt"
+	baseDirFollowsSourceDir() // 원본파일작업은 .adoc 디렉터리 기준
+}
+
+openapi3 {
+	servers = [
+			{ url = 'http://localhost:8080' },
+	]
+	title = 'spring-rest-docs-guide'
+	description = 'Spring REST Docs 테스트 생성물 생성시 추가생성되는 OpenAPI 문서이용'
+	version = "${project.version}"
+	format = 'yaml'
+}
+
+tasks.register("apiBuild", GradleBuild) {
+	tasks = ["clean", "restDocsTest", "build"]
+}
+
+springBoot {
+	buildInfo()
+}
+
+gitProperties {
+	dateFormat = "yyyy-MM-dd'T'HH:mm:ss.Zz"
+	dateFormatTimeZone = "Asia/Seoul"
+	failOnNoGitDirectory = false
+}
+
+bootJar {
+	dependsOn asciidoctor
+	duplicatesStrategy = DuplicatesStrategy.INCLUDE
+
+	from("swagger-ui") {
+		into "BOOT-INF/classes/static/swagger"
+	}
+	from("${asciidoctor.outputDir}") {
+		into "BOOT-INF/classes/static/docs"
+	}
+	from("build/api-spec") {
+		into "BOOT-INF/classes/static/swagger"
+	}
+
+	archiveFileName.set "application.jar"
+}
+
+
+// 리소스 디렉토리 추가
+sourceSets {
+	main {
+		resources {
+			srcDirs "src/main/resources-env/${profile}"
+		}
+	}
+}
+
+java {
+	sourceCompatibility = '17'
+}
+
 dependencies {
+	// add //
+	implementation("org.springdoc:springdoc-openapi-ui:1.6.11")
+	implementation("org.springdoc:springdoc-openapi-webmvc-core:1.6.11")
+	testImplementation("com.epages:restdocs-api-spec:0.18.4")
+	testImplementation("com.epages:restdocs-api-spec-mockmvc:0.18.4")
+	// add //
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -160,14 +145,11 @@ dependencies {
 	asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
 	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
 
-	testImplementation "com.epages:restdocs-api-spec-mockmvc:$restdocsApiSpecVersion"
-	// Swagger UI 웹자원
-	swaggerUI 'org.webjars:swagger-ui:4.11.1'
-
 	// spring boot oauth2 library
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
-	implementation 'org.springdoc:springdoc-openapi-ui:1.6.11'
+//	implementation 'org.springdoc:springdoc-openapi-ui:1.6.11'
+	implementation 'com.epages:restdocs-api-spec-openapi3-generator:0.17.1'
 
 	implementation 'org.hibernate.validator:hibernate-validator:7.0.2.Final'
 
@@ -175,7 +157,7 @@ dependencies {
 	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.1.RELEASE'
 	testImplementation 'io.findify:s3mock_2.13:0.2.6'
 
-    // websocket
-    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+	// websocket
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
 }

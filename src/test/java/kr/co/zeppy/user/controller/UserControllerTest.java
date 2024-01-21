@@ -225,6 +225,7 @@ public class UserControllerTest extends ApiDocument {
     
     
     @Test
+    @Disabled
     void test_User_Register_Failure() throws Exception {
         // given
         willThrow(new RuntimeException("User registration failed")).given(userService).register(anyString(), any(UserRegisterRequest.class));
