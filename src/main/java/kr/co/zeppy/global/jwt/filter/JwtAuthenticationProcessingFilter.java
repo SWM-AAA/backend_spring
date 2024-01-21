@@ -32,6 +32,7 @@ import java.util.Optional;
 public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     private static final String NO_CHECK_URL = "/login";
+    private static final String NO_CHECK_URL2 = "/login-by-username";
 
     private final JwtService jwtService;
     private final UserRepository userRepository;
@@ -39,7 +40,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if (request.getRequestURI().equals(NO_CHECK_URL)) {
+        if (request.getRequestURI().equals(NO_CHECK_URL) || request.getRequestURI().equals(NO_CHECK_URL2)) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -87,18 +88,32 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
             if (!jwtService.isTokenValid(accessToken)) {
                 throw new ApplicationException(ApplicationError.INVALID_JWT_TOKEN);
             }
-            String userTag = jwtService.extractUserTag(accessToken)
-                    .orElseThrow(() -> new ApplicationException(ApplicationError.USER_TAG_NOT_FOUND));
-            log.info(userTag);
-            User user = userRepository.findByUserTag(userTag)
-                    .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
 
-            if (jwtService.shouldReissueToken(accessToken)) {
-                String newAccessToken = jwtService.createAccessToken(userTag);
-                jwtService.setAccessTokenHeader(response, newAccessToken);
+            Optional<String> username = jwtService.extractUsername(accessToken);
+            if (username.isPresent()) {
+                User user = userRepository.findByUsername(String.valueOf(username))
+                        .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
+
+                if (jwtService.shouldReissueToken(accessToken)) {
+                    String newAccessToken = jwtService.createAccessTokenByUsername(String.valueOf(username));
+                    jwtService.setAccessTokenHeader(response, newAccessToken);
+                }
+
+                saveAuthentication(user);
+            } else {
+                String userTag = jwtService.extractUserTag(accessToken)
+                        .orElseThrow(() -> new ApplicationException(ApplicationError.USER_TAG_NOT_FOUND));
+                log.info(userTag);
+                User user = userRepository.findByUserTag(userTag)
+                        .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
+
+                if (jwtService.shouldReissueToken(accessToken)) {
+                    String newAccessToken = jwtService.createAccessToken(userTag);
+                    jwtService.setAccessTokenHeader(response, newAccessToken);
+                }
+
+                saveAuthentication(user);
             }
-
-            saveAuthentication(user);
         }
 
         if (refreshTokenOpt.isPresent()) {
@@ -118,7 +133,10 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     public void saveAuthentication(User myUser) {
         log.info("saveAuthentication() 호출");
-        String password = PasswordUtil.generateRandomPassword();
+        String password = myUser.getPassword();
+        if (password == null) {
+            password = PasswordUtil.generateRandomPassword();
+        }
 
         UserDetails userDetailsUser = org.springframework.security.core.userdetails.User.builder()
                 .username(myUser.getUserTag())
