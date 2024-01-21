@@ -24,11 +24,13 @@ public class ChatRoom extends BaseModel {
     @Column(name = "chatroom_id")
     private Long id;
 
+    private String roomName;
+
     @Builder.Default
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL)
     private List<UserChatRoom> userChatRooms = new ArrayList<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.REMOVE)
     private List<ChatMessage> chatMessages = new ArrayList<>();
 }
