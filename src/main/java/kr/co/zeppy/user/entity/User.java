@@ -23,6 +23,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
 
 import kr.co.zeppy.global.entity.BaseModel;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -40,6 +41,10 @@ public class User extends BaseModel {
     private String nickname;
 
     private String imageUrl;
+
+    private String username;
+
+    private String password;
 
     @Builder.Default
     @OneToMany(mappedBy = "user")
@@ -115,5 +120,10 @@ public class User extends BaseModel {
 
     public void removeReceivedFriendships(Friendship friendship) {
         this.receivedFriendships.remove(friendship);
+    }
+
+    // 아이디 패스워드 회원가입 시 비밀번호 암호화
+    public void passwordEncode(PasswordEncoder passwordEncoder) {
+        this.password = passwordEncoder.encode(this.password);
     }
 }

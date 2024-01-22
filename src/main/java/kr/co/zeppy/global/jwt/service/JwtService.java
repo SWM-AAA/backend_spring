@@ -68,9 +68,19 @@ public class JwtService {
     private static final String ISFIRST = "isFirst";
     private static final String APPLICATION_JSON = "application/json";
     private static final String UTF_8 = "UTF-8";
+    private static final String USERNAME = "username";
 
     private final UserRepository userRepository;
 
+    public String createAccessTokenByUsername(String username) {
+        Date now = new Date();
+        return JWT.create()
+                .withSubject(ACCESS_TOKEN_SUBJECT)
+                .withClaim(USERNAME, username)
+                .withIssuedAt(now)
+                .withExpiresAt(new Date(now.getTime() + accessTokenExpirationPeriod))
+                .sign(Algorithm.HMAC512(secretKey));
+    }
 
     public String createAccessToken(String userTag) {
         Date now = new Date();
@@ -176,6 +186,20 @@ public class JwtService {
                     .verify(accessToken)
                     .getClaim(LOGIN_USER_TAG).asString());
         } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+
+    public Optional<String> extractUsername(String accessToken) {
+        try {
+            return Optional.ofNullable(JWT.require(Algorithm.HMAC512(secretKey))
+                    .build()
+                    .verify(accessToken)
+                    .getClaim(USERNAME)
+                    .asString());
+        } catch (Exception e) {
+            log.error("액세스 토큰이 유효하지 않습니다.");
             return Optional.empty();
         }
     }
