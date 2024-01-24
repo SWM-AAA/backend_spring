@@ -1,12 +1,8 @@
 package kr.co.zeppy.chat.entity;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import jakarta.persistence.*;
 import kr.co.zeppy.global.entity.BaseModel;
 import kr.co.zeppy.user.entity.User;
-import kr.co.zeppy.user.entity.UserChatMessage;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import jakarta.persistence.*;
 import kr.co.zeppy.global.entity.BaseModel;
-import kr.co.zeppy.user.entity.UserChatRoom;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,10 +26,9 @@ public class ChatRoom extends BaseModel {
     private String roomName;
 
     @Builder.Default
-    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL)
-    private List<UserChatRoom> userChatRooms = new ArrayList<>();
-
-    @Builder.Default
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.REMOVE)
     private List<ChatMessage> chatMessages = new ArrayList<>();
+
+    @Enumerated(EnumType.STRING)
+    private ReadStatus readStatus;
 }
