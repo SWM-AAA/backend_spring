@@ -30,5 +30,8 @@ public class ChatMessage extends BaseModel{
     @JoinColumn(name = "chatroom_id")
     private ChatRoom chatRoom;
 
+    @Enumerated
+    private MessageType messageType;
+
     private String message;
 }
