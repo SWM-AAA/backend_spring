@@ -18,12 +18,22 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long>{
     @Query("SELECT f FROM Friendship f WHERE (f.user.id = :userId OR f.friend.id = :userId) AND f.status = 'ACCEPTED'")
     List<Friendship> findAllFriendshipsByUserId(@Param("userId") Long userId);
 
-    @Query("SELECT COUNT(f) > 0 FROM Friendship f WHERE ((f.user.id = :userId AND f.friend.id = :friendId) OR (f.user.id = :friendId AND f.friend.id = :userId)) AND f.status = 'ACCEPTED'")
+    @Query("SELECT COUNT(f) > 0 FROM Friendship f " +
+            "WHERE ((f.user.id = :userId AND f.friend.id = :friendId) OR (f.user.id = :friendId AND f.friend.id = :userId)) " +
+            "AND f.status = 'ACCEPTED'")
     boolean findIsAcceptFriendshipsByUserId(@Param("userId") Long userId, @Param("friendId") Long friendId);
 
-    @Query("SELECT COUNT(f) > 0 FROM Friendship f WHERE (f.user.id = :userId AND f.friend.id = :friendId) OR (f.user.id = :friendId AND f.friend.id = :userId)")
+    @Query("SELECT COUNT(f) > 0 FROM Friendship f " +
+            "WHERE (f.user.id = :userId AND f.friend.id = :friendId) OR (f.user.id = :friendId AND f.friend.id = :userId)")
     boolean existsByUserIdAndFriendId(@Param("userId") Long userId, @Param("friendId") Long friendId);
 
-    @Query("SELECT CASE WHEN f.user.id = :userId THEN f.friend ELSE f.user END FROM Friendship f WHERE (f.user.id = :userId OR f.friend.id = :userId) AND f.status = 'ACCEPTED'")
+    @Query(value = "SELECT CASE WHEN f.user.id = :userId THEN f.friend ELSE f.user END FROM Friendship f WHERE" +
+            " (f.user.id = :userId OR f.friend.id = :userId) AND f.status = 'ACCEPTED'", nativeQuery = true)
     List<User> findAcceptedFriendsByUserId(@Param("userId") Long userId);
+
+    @Query(value = "SELECT CASE WHEN friendships.user_id = :userId THEN friendships.friend_id ELSE " +
+            "friendships.user_id END FROM friendships " +
+            "WHERE (friendships.user_id = :userId OR friendships.friend_id = :userId) AND friendships.status = 'ACCEPTED'",
+            nativeQuery = true)
+    List<Long> findAcceptedFriendIdsByUserId(@Param("userId") Long userId);
 }

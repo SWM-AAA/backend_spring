@@ -16,7 +16,8 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.mo
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+//import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import com.epages.restdocs.apispec.MockMvcRestDocumentationWrapper;
 
 @EnableMockMvc
 @AutoConfigureRestDocs
@@ -49,7 +50,7 @@ public class ApiDocument {
     }
 
     private RestDocumentationResultHandler toDocument(String title) {
-        return document(title, getDocumentRequest(), getDocumentResponse());
+        return MockMvcRestDocumentationWrapper.document(title, getDocumentRequest(), getDocumentResponse());
     }
 
     // 문서에 표시될 요청의 형태를 정의하는 메서드

@@ -1,11 +1,8 @@
 package kr.co.zeppy.chat.entity;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import jakarta.persistence.*;
 import kr.co.zeppy.global.entity.BaseModel;
-import kr.co.zeppy.user.entity.UserChatMessage;
+import kr.co.zeppy.user.entity.User;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,12 +23,15 @@ public class ChatMessage extends BaseModel{
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sender_id")
+    private User sender;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chatroom_id")
     private ChatRoom chatRoom;
 
-    @Builder.Default
-    @OneToMany(mappedBy = "chatMessage", cascade = CascadeType.ALL)
-    private List<UserChatMessage> userChatMessages = new ArrayList<>();
+    @Enumerated
+    private MessageType messageType;
 
     private String message;
 }

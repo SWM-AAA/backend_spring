@@ -72,16 +72,6 @@ public class User extends BaseModel {
 
     private String refreshToken;
 
-    // chatroom
-    @Builder.Default
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private Set<UserChatRoom> userChatRooms = new HashSet<>();
-
-    // chatmessages
-    @Builder.Default
-    @OneToMany(mappedBy = "user")
-    private Set<UserChatMessage> userChatMessages = new HashSet<>();
-
     public void authorizeUser() {
         this.role = Role.USER;
     }

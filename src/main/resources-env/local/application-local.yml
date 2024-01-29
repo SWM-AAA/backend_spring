@@ -21,6 +21,7 @@ spring:
     username: ${POSTGRESQL_LOCAL_USERNAME}
     password: ${POSTGRESQL_LOCAL_PASSWORD}
   jpa:
+    show-sql: true
     hibernate:
       ddl-auto: update
     properties:

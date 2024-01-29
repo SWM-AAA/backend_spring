@@ -1,4 +1,4 @@
-package kr.co.zeppy.user.entity;
+package kr.co.zeppy.chat.entity;
 
 import lombok.RequiredArgsConstructor;
 
