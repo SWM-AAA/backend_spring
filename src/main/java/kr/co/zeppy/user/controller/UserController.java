@@ -52,6 +52,13 @@ public class UserController {
         return "jwtTest 요청 성공";
     }
 
+    @PostMapping("/test/register-by-username")
+    public String registerByUsername(@RequestBody UserRegisterByUsernameRequest userRegisterByUsernameRequest)
+            throws Exception {
+        userService.registerByUsername(userRegisterByUsernameRequest);
+        return "아이디-패스워드로 테스트 회원 가입 성공";
+    }
+
     // todo : 사용자 이미지도 body에 포함시켜서 보내주기
     @PostMapping("/v1/users/register")
     public ResponseEntity<UserRegisterResponse> userRegister(@RequestHeader("Authorization") String token,
