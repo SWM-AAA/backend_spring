@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ChatMessageResponse {
-    private Long Id;
+    private Long id;
     private Long chatRoomId;
     private Long userId;
 

@@ -6,6 +6,7 @@ import kr.co.zeppy.chat.dto.ChatMessageResponse;
 import kr.co.zeppy.chat.entity.MessageType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -17,7 +18,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class RedisSubscriber implements MessageListener {
     private final ObjectMapper objectMapper;
-    private final RedisTemplate redisTemplate;
+    @Qualifier("redisChatTemplate")
+    private final RedisTemplate<String, Object> redisTemplate;
     private final SimpMessageSendingOperations messagingTemplate;
 
     @Override
@@ -28,7 +30,6 @@ public class RedisSubscriber implements MessageListener {
             ChatMessageRequest roomMessage = objectMapper.readValue(publishMessage, ChatMessageRequest.class);
 
             if (roomMessage.getMessageType().equals(MessageType.TALK)) {
-//                ChatMessageResponse chatMessageResponse = new ChatMessageResponse(roomMessage);
                 ChatMessageResponse chatMessageResponse = ChatMessageResponse.builder()
                         .chatRoomId(roomMessage.getId())
                         .userId(roomMessage.getUserId())
