@@ -2,11 +2,10 @@ package kr.co.zeppy.oauth2.handler;
 
 import kr.co.zeppy.user.entity.Role;
 import kr.co.zeppy.user.entity.User;
-import kr.co.zeppy.user.repository.UserRepository;
-import kr.co.zeppy.user.service.UserService;
 import kr.co.zeppy.global.jwt.service.JwtService;
 import kr.co.zeppy.oauth2.entity.CustomOAuth2User;
 
+import kr.co.zeppy.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

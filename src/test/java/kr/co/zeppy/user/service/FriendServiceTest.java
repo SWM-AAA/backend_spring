@@ -24,8 +24,8 @@ import kr.co.zeppy.user.entity.Role;
 import kr.co.zeppy.user.entity.SocialType;
 import kr.co.zeppy.user.entity.User;
 import kr.co.zeppy.user.repository.FriendshipRepository;
-import kr.co.zeppy.user.repository.UserRepository;
 
+import kr.co.zeppy.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

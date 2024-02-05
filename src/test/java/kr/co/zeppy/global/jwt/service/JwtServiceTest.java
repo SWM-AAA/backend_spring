@@ -10,7 +10,6 @@ import java.util.Date;
 import com.auth0.jwt.JWT;
 
 import kr.co.zeppy.user.repository.UserRepository;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

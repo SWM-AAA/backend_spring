@@ -1,13 +1,12 @@
 package kr.co.zeppy.global.jwt.filter;
 
 import kr.co.zeppy.global.error.ApplicationError;
-import kr.co.zeppy.global.error.InvalidJwtException;
 import kr.co.zeppy.global.error.ApplicationException;
 import kr.co.zeppy.global.jwt.service.JwtService;
 import kr.co.zeppy.global.jwt.util.PasswordUtil;
 import kr.co.zeppy.user.entity.User;
-import kr.co.zeppy.user.repository.UserRepository;
 
+import kr.co.zeppy.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

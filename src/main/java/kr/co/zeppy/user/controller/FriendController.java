@@ -2,6 +2,7 @@ package kr.co.zeppy.user.controller;
 
 import java.util.List;
 
+import kr.co.zeppy.user.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,7 +21,6 @@ import kr.co.zeppy.user.dto.DeleteFriendRequest;
 import kr.co.zeppy.user.dto.FriendshipRequest;
 import kr.co.zeppy.user.dto.UserFriendInfoResponse;
 import kr.co.zeppy.user.entity.User;
-import kr.co.zeppy.user.repository.UserRepository;
 import kr.co.zeppy.user.service.FriendService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

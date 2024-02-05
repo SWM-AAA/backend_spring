@@ -1,9 +1,13 @@
 package kr.co.zeppy.chat.entity;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import jakarta.persistence.*;
 import kr.co.zeppy.global.entity.BaseModel;
+import kr.co.zeppy.user.entity.UserChatRoom;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,6 +32,9 @@ public class ChatRoom extends BaseModel {
     @Builder.Default
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.REMOVE)
     private List<ChatMessage> chatMessages = new ArrayList<>();
+
+    @OneToMany(mappedBy = "chatRoom", fetch = FetchType.LAZY)
+    private Set<UserChatRoom> userChatRooms = new HashSet<>();
 
     @Enumerated(EnumType.STRING)
     private ReadStatus readStatus;

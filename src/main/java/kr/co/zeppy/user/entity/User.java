@@ -1,26 +1,15 @@
 package kr.co.zeppy.user.entity;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
-
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.EnumType;
 
 import kr.co.zeppy.global.entity.BaseModel;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -47,16 +36,19 @@ public class User extends BaseModel {
     private String password;
 
     @Builder.Default
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private Set<UserCrew> userCrews = new LinkedHashSet<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private Set<Friendship> sentFriendships = new HashSet<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "friend")
+    @OneToMany(mappedBy = "friend", fetch = FetchType.LAZY)
     private Set<Friendship> receivedFriendships = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private Set<UserChatRoom> userChatRooms = new HashSet<>();
 
     // ex) 닉네임#0001
     @Column(unique = true)

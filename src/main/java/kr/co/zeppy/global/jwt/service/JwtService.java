@@ -8,9 +8,9 @@ import kr.co.zeppy.global.error.ApplicationError;
 import kr.co.zeppy.global.error.ApplicationException;
 import kr.co.zeppy.global.error.InvalidJwtException;
 import kr.co.zeppy.user.entity.User;
-import kr.co.zeppy.user.repository.UserRepository;
 import kr.co.zeppy.global.error.NotFoundException;
 
+import kr.co.zeppy.user.repository.UserRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -100,7 +100,7 @@ public class JwtService {
                 .withIssuedAt(now)
                 .withExpiresAt(new Date(now.getTime() + refreshTokenExpirationPeriod))
                 .sign(Algorithm.HMAC512(secretKey));
-    }
+}
 
 
     public String setTokenAndUserInfoURLParam(String url, String accessToken, String refreshToken, 
