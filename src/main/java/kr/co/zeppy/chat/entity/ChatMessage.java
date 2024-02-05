@@ -34,4 +34,7 @@ public class ChatMessage extends BaseModel{
     private MessageType messageType;
 
     private String message;
+
+    @Enumerated(EnumType.STRING)
+    private ReadStatus readStatus;
 }

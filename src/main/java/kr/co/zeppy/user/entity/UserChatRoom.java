@@ -27,4 +27,8 @@ public class UserChatRoom extends BaseModel {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chatroom_id")
     private ChatRoom chatRoom;
+
+    // 개별 사용자에게 보여지는 채팅방 이름
+    @Column(name = "display_name")
+    private String displayName;
 }

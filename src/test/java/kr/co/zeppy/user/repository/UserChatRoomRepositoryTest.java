@@ -53,7 +53,6 @@ class UserChatRoomRepositoryTest {
         // ChatRoom 엔티티 생성 및 영속화
         ChatRoom chatRoom = ChatRoom.builder()
                 .roomName("chatRoom0")
-                .readStatus(ReadStatus.UNREAD)
                 .build();
         entityManager.persist(chatRoom);
 

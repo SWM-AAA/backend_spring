@@ -35,7 +35,4 @@ public class ChatRoom extends BaseModel {
 
     @OneToMany(mappedBy = "chatRoom", fetch = FetchType.LAZY)
     private Set<UserChatRoom> userChatRooms = new HashSet<>();
-
-    @Enumerated(EnumType.STRING)
-    private ReadStatus readStatus;
 }
