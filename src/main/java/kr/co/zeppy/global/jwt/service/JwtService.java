@@ -72,16 +72,6 @@ public class JwtService {
 
     private final UserRepository userRepository;
 
-    public String createAccessTokenByUsername(String username) {
-        Date now = new Date();
-        return JWT.create()
-                .withSubject(ACCESS_TOKEN_SUBJECT)
-                .withClaim(USERNAME, username)
-                .withIssuedAt(now)
-                .withExpiresAt(new Date(now.getTime() + accessTokenExpirationPeriod))
-                .sign(Algorithm.HMAC512(secretKey));
-    }
-
     public String createAccessToken(String userTag) {
         Date now = new Date();
         return JWT.create()
@@ -103,10 +93,10 @@ public class JwtService {
     }
 
 
-    public String setTokenAndUserInfoURLParam(String url, String accessToken, String refreshToken, 
-                String userId, String userTag, String nickName, String userImage, boolean isfirst)
-                                    throws UnsupportedEncodingException {
-        
+    public String setTokenAndUserInfoURLParam(String url, String accessToken, String refreshToken,
+                                              String userId, String userTag, String nickName, String userImage, boolean isfirst)
+            throws UnsupportedEncodingException {
+
         String encodedUserTag = URLEncoder.encode(userTag, UTF_8);
         String encodedNickName = URLEncoder.encode(nickName, UTF_8);
         return UriComponentsBuilder.fromUriString(url)
@@ -172,7 +162,7 @@ public class JwtService {
         return accessToken;
     }
 
-    
+
     public Optional<String> extractUserTagFromToken(String token) {
         return Optional.of(token.replace(BEARER, "").trim())
                 .flatMap(this::extractUserTag);
@@ -191,30 +181,16 @@ public class JwtService {
     }
 
 
-    public Optional<String> extractUsername(String accessToken) {
-        try {
-            return Optional.ofNullable(JWT.require(Algorithm.HMAC512(secretKey))
-                    .build()
-                    .verify(accessToken)
-                    .getClaim(USERNAME)
-                    .asString());
-        } catch (Exception e) {
-            log.error("액세스 토큰이 유효하지 않습니다.");
-            return Optional.empty();
-        }
-    }
-
-    
     public void setAccessTokenHeader(HttpServletResponse response, String accessToken) {
         response.setHeader(accessHeader, accessToken);
     }
 
-    
+
     // access token을 response body에 담아서 보냄
     public void setAccessTokenBody(HttpServletResponse response, String accessToken) {
         response.setContentType(APPLICATION_JSON);
         response.setCharacterEncoding(UTF_8);
-    
+
         Map<String, String> tokenMap = new HashMap<>();
         tokenMap.put(accessTokenName, accessToken);
 
@@ -281,7 +257,7 @@ public class JwtService {
             throw new InvalidJwtException(ApplicationError.INVALID_JWT_TOKEN);
         }
     }
-  
+
 
     public String getStringUserIdFromToken(String token) {
         return extractUserTagFromToken(token)
