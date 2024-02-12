@@ -2,6 +2,7 @@ package kr.co.zeppy.user.controller;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import jakarta.servlet.http.HttpServletResponse;
 import kr.co.zeppy.global.annotation.UserId;
 import kr.co.zeppy.global.aws.service.AwsS3Uploader;
 import kr.co.zeppy.global.error.ApplicationError;
@@ -45,7 +46,7 @@ public class UserController {
 
     @Value("${cloud.aws.s3.bucket}")
     public String bucket;
-    
+
     @GetMapping("/test/jwt-test")
     public String jwtTest() {
         log.info("로그인 테스트");
@@ -62,9 +63,9 @@ public class UserController {
     // todo : 사용자 이미지도 body에 포함시켜서 보내주기
     @PostMapping("/v1/users/register")
     public ResponseEntity<UserRegisterResponse> userRegister(@RequestHeader("Authorization") String token,
-            @ModelAttribute UserRegisterRequest userRegisterRequest) 
+                                                             @ModelAttribute UserRegisterRequest userRegisterRequest)
             throws IOException {
-        
+
         String newUserTag = userService.register(token, userRegisterRequest);
         String accessToken = jwtService.createAccessToken(newUserTag);
         Long userId = userRepository.findIdByUserTag(newUserTag)
@@ -82,14 +83,14 @@ public class UserController {
     @Profile("local")
     @PostMapping("/test/users/register")
     public ResponseEntity<Map<String, String>> userTestToken(
-        @RequestParam String nickName,
-        @RequestParam String userTag
+            @RequestParam String nickName,
+            @RequestParam String userTag
     ) {
 
         if (!userRepository.existsByUserTag(userTag)) {
             userService.testUserRegister(nickName, userTag);
         }
-        User user = userRepository.findByUserTag(userTag) 
+        User user = userRepository.findByUserTag(userTag)
                 .orElseThrow(() -> new ApplicationException(ApplicationError.USER_TAG_NOT_FOUND));
         log.info(user.getUserTag());
         log.info(user.getId().toString());
@@ -106,8 +107,8 @@ public class UserController {
 
 
     @PostMapping("/v1/users/location-and-battery")
-    public ResponseEntity<Void> updateUserLocationAndBattery(@RequestHeader("Authorization") String token, 
-            @RequestBody LocationAndBatteryRequest locationAndBatteryRequest) {
+    public ResponseEntity<Void> updateUserLocationAndBattery(@RequestHeader("Authorization") String token,
+                                                             @RequestBody LocationAndBatteryRequest locationAndBatteryRequest) {
 
         String userId = jwtService.getStringUserIdFromToken(token);
         redisService.updateLocationAndBattery(userId, locationAndBatteryRequest);
@@ -120,7 +121,7 @@ public class UserController {
     @PostMapping("/v1/users/search/usertag")
     public ResponseEntity<UserInfoResponse> searchUserTag(@UserId Long userId, @RequestBody UserTagRequest userTagRequest) {
         UserInfoResponse userInfoResponse = userService.findUserTag(userTagRequest, userId);
-    
+
         return ResponseEntity.ok(userInfoResponse);
     }
 
@@ -184,6 +185,41 @@ public class UserController {
     @GetMapping("/v1/users/my-location-and-battery")
     public ResponseEntity<Void> getMyLocationAndBattery() throws Exception {
 
+        return ResponseEntity.ok().build();
+    }
+
+    // 사용자 정보를 불러오는 함수
+    @GetMapping("/test/users")
+    public ResponseEntity<UserSettingInformationResponse> getMyInformation(@UserId Long userId) {
+        UserSettingInformationResponse userSettingInformationResponse = userService.getUserInformation(userId);
+
+        return ResponseEntity.ok().body(userSettingInformationResponse);
+    }
+
+    // 사용자의 닉네임을 변경하는 함수
+    @PatchMapping("/v1/users/nickname")
+    public ResponseEntity<Map<String, String>> updateMyNickname(@RequestHeader("Authorization") String token,
+                                                                @RequestBody UserNicknameRequest userNicknameRequest) {
+        Map<String, String> tokenMap = userService.updateUserNickname(token, userNicknameRequest);
+
+        return ResponseEntity.ok().body(tokenMap);
+    }
+
+    // todo : 테스트 용도로 S3에 업로드할 때 파일 이름 다르게 하는 코드 작성
+    // 사용자의 이미지를 변경하는 함수
+    @PatchMapping("/v1/users/image")
+    public ResponseEntity<String> updateMyImage(@RequestHeader("Authorization") String token,
+                                                @RequestPart("File") MultipartFile profileImage) throws IOException {
+        String newImageUrl = userService.updateUserImage(token, profileImage);
+
+        return ResponseEntity.ok().body(newImageUrl);
+    }
+
+    // 사용자 탈퇴
+    @PatchMapping("/v1/users")
+    public ResponseEntity<Void> deleteMe(@RequestHeader("Authorization") String token) {
+
+        userService.deleteUser(token);
         return ResponseEntity.ok().build();
     }
 }

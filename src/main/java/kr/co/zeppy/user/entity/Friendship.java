@@ -20,12 +20,17 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
 
 import kr.co.zeppy.global.entity.BaseModel;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.Where;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Builder
 @AllArgsConstructor
+@Where(clause = "deleted = false")
 @Table(name = "FRIENDSHIPS")
 public class Friendship extends BaseModel {
 
@@ -45,11 +50,18 @@ public class Friendship extends BaseModel {
     @Enumerated(EnumType.STRING)
     private FriendshipStatus status;
 
+    @ColumnDefault("false")
+    private Boolean deleted;
+
     public void acceptRequest() {
         this.status = FriendshipStatus.ACCEPTED;
     }
 
     public void declineRequest() {
         this.status = FriendshipStatus.DECLINE;
+    }
+
+    public void setDeleted() {
+        this.deleted = true;
     }
 }

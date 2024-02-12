@@ -11,6 +11,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 
+import java.util.Optional;
+
 @Slf4j
 @RequiredArgsConstructor
 public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
@@ -26,7 +28,13 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
                                         Authentication authentication) {
         log.info("아이디-패스워드 Login 성공!");
         String username = extractUsername(authentication);
+
         String userTag = userRepository.findUserTagByUsername(username).toString();
+        Optional<String> userTagOpt = userRepository.findUserTagByUsername(username);
+        if (userTagOpt.isPresent()) {
+            userTag = userTagOpt.get();
+        }
+
         String accessToken = jwtService.createAccessToken(userTag);
         String refreshToken = jwtService.createRefreshToken();
 
@@ -39,6 +47,7 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
                 });
 
         log.info("username : 아이디 : " + username);
+        log.info("userTag : 유저태그 : " + userTag);
         log.info("accessToken : 엑세스 토큰 : " + accessToken);
         log.info("refreshToken : 리프레시 토큰 : " + refreshToken);
     }
