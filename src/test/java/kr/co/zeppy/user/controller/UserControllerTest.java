@@ -27,12 +27,15 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
@@ -211,7 +214,7 @@ public class UserControllerTest extends ApiDocument {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(locationAndBatteryRequest)));
     }
-    
+
     private void update_User_Location_And_Battery_Request_Success(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isOk()),
                 "update-Location-And-Battery-Success");
@@ -430,7 +433,16 @@ public class UserControllerTest extends ApiDocument {
     }
 
     private ResultActions update_User_Image() throws Exception {
-        return mockMvc.perform(RestDocumentationRequestBuilders.multipart(API_VERSION + RESOURCE_PATH + "/image", HttpMethod.PATCH)
+        MockMultipartHttpServletRequestBuilder builder = RestDocumentationRequestBuilders.multipart(API_VERSION + RESOURCE_PATH + "/image");
+        builder.with(new RequestPostProcessor() {
+            @Override
+            public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+                request.setMethod("PATCH");
+                return request;
+            }
+        });
+
+        return mockMvc.perform(builder
                 .file("File", file.getBytes())
                 .header(AUTHORIZATION_HEADER, "Bearer " + ACCESSTOKEN)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
