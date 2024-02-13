@@ -53,7 +53,7 @@ public class ChatRoomService {
                     .displayName(displayName)
                     .build();
 
-            userChatRoom = userChatRoomRepository.save(userChatRoom);
+            userChatRoomRepository.save(userChatRoom);
         }
 
         return ChatRoomResponse.builder()
