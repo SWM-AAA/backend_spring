@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -201,8 +202,12 @@ public class UserController {
     public ResponseEntity<Map<String, String>> updateMyNickname(@RequestHeader("Authorization") String token,
                                                                 @RequestBody UserNicknameRequest userNicknameRequest) {
         Map<String, String> tokenMap = userService.updateUserNickname(token, userNicknameRequest);
+        HttpHeaders responseHeader = new HttpHeaders();
+        responseHeader.add("Authorization", "Bearer " + tokenMap.get("accessToken"));
+        responseHeader.add("Authorization-refresh", "Bearer " + tokenMap.get("refreshToken"));
 
-        return ResponseEntity.ok().body(tokenMap);
+        return new ResponseEntity<>(responseHeader, HttpStatus.OK);
+//        return ResponseEntity.ok().body(tokenMap);
     }
 
     // todo : 테스트 용도로 S3에 업로드할 때 파일 이름 다르게 하는 코드 작성

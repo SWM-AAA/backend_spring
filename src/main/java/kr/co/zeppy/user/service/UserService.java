@@ -207,11 +207,7 @@ public class UserService {
         String newUserTag = nickNameService.getUserTagFromNickName(newNickname);
 
         Map<String, String> tokenMap = jwtService.reissueToken(newUserTag);
-        String newAccessToken = tokenMap.get(ACCESSTOKEN);
         String newRefreshToken = tokenMap.get(REFRESHTOKEN);
-
-        log.info("newAccessToken: " + newAccessToken);
-        log.info("newRefreshToken: " + newRefreshToken);
 
         user.updateNickname(newNickname);
         user.updateUserTag(newUserTag);
