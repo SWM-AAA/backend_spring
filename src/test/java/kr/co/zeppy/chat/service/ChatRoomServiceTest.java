@@ -3,22 +3,16 @@ package kr.co.zeppy.chat.service;
 import kr.co.zeppy.chat.dto.ChatRoomResponse;
 import kr.co.zeppy.chat.entity.ChatRoom;
 import kr.co.zeppy.chat.repository.ChatRoomRepository;
-import kr.co.zeppy.user.entity.Role;
-import kr.co.zeppy.user.entity.SocialType;
 import kr.co.zeppy.user.entity.User;
-import kr.co.zeppy.user.entity.UserChatRoom;
 import kr.co.zeppy.user.repository.UserChatRoomRepository;
 import kr.co.zeppy.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.*;
 
