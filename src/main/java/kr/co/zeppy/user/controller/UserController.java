@@ -45,7 +45,7 @@ public class UserController {
 
     @Value("${cloud.aws.s3.bucket}")
     public String bucket;
-    
+
     @GetMapping("/test/jwt-test")
     public String jwtTest() {
         log.info("로그인 테스트");
@@ -53,18 +53,34 @@ public class UserController {
     }
 
     @PostMapping("/test/register-by-username")
-    public String registerByUsername(@RequestBody UserRegisterByUsernameRequest userRegisterByUsernameRequest)
+    public UserRegisterByUsernameResponse registerByUsername(@RequestBody UserRegisterByUsernameRequest userRegisterByUsernameRequest)
             throws Exception {
         userService.registerByUsername(userRegisterByUsernameRequest);
-        return "아이디-패스워드로 테스트 회원 가입 성공";
+
+        User user = userRepository.findByUsername(userRegisterByUsernameRequest.getUsername())
+                .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
+
+        String accessToken = jwtService.createAccessToken(user.getUserTag());
+        String refreshToken = jwtService.createRefreshToken();
+        user.updateRefreshToken(refreshToken);
+
+        return UserRegisterByUsernameResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(user.getRefreshToken())
+                .userId(user.getId())
+                .username(user.getUsername())
+                .nickname(user.getNickname())
+                .userTag(user.getUserTag())
+                .imageUrl(user.getImageUrl())
+                .build();
     }
 
     // todo : 사용자 이미지도 body에 포함시켜서 보내주기
     @PostMapping("/v1/users/register")
     public ResponseEntity<UserRegisterResponse> userRegister(@RequestHeader("Authorization") String token,
-            @ModelAttribute UserRegisterRequest userRegisterRequest) 
+                                                             @ModelAttribute UserRegisterRequest userRegisterRequest)
             throws IOException {
-        
+
         String newUserTag = userService.register(token, userRegisterRequest);
         String accessToken = jwtService.createAccessToken(newUserTag);
         Long userId = userRepository.findIdByUserTag(newUserTag)
@@ -89,7 +105,7 @@ public class UserController {
         if (!userRepository.existsByUserTag(userTag)) {
             userService.testUserRegister(nickName, userTag);
         }
-        User user = userRepository.findByUserTag(userTag) 
+        User user = userRepository.findByUserTag(userTag)
                 .orElseThrow(() -> new ApplicationException(ApplicationError.USER_TAG_NOT_FOUND));
         log.info(user.getUserTag());
         log.info(user.getId().toString());
@@ -106,8 +122,8 @@ public class UserController {
 
 
     @PostMapping("/v1/users/location-and-battery")
-    public ResponseEntity<Void> updateUserLocationAndBattery(@RequestHeader("Authorization") String token, 
-            @RequestBody LocationAndBatteryRequest locationAndBatteryRequest) {
+    public ResponseEntity<Void> updateUserLocationAndBattery(@RequestHeader("Authorization") String token,
+                                                             @RequestBody LocationAndBatteryRequest locationAndBatteryRequest) {
 
         String userId = jwtService.getStringUserIdFromToken(token);
         redisService.updateLocationAndBattery(userId, locationAndBatteryRequest);
@@ -120,7 +136,7 @@ public class UserController {
     @PostMapping("/v1/users/search/usertag")
     public ResponseEntity<UserInfoResponse> searchUserTag(@UserId Long userId, @RequestBody UserTagRequest userTagRequest) {
         UserInfoResponse userInfoResponse = userService.findUserTag(userTagRequest, userId);
-    
+
         return ResponseEntity.ok(userInfoResponse);
     }
 
