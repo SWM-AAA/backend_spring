@@ -92,9 +92,6 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
             String userTag = jwtService.extractUserTag(accessToken)
                     .orElseThrow(() -> new ApplicationException(ApplicationError.USER_TAG_NOT_FOUND));
 
-            log.info("userTag >>");
-            log.info(userTag);
-
             User user = userRepository.findByUserTag(userTag)
                     .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
 
