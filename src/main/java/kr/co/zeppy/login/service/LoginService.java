@@ -24,19 +24,10 @@ public class LoginService implements UserDetailsService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("해당 Login ID 가 존재하지 않습니다."));
 
-//        if (user.getPassword() == null) {
-//            String password = PasswordUtil.generateRandomPassword();
-//            return org.springframework.security.core.userdetails.User.builder()
-//                    .username(user.getUserTag())
-//                    .password(password)
-//                    .roles(user.getRole().toString())
-//                    .build();
-//        } else {
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getUsername())
                 .password(user.getPassword())
                 .roles(user.getRole().toString())
                 .build();
-//        }
     }
 }

@@ -91,6 +91,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
             String userTag = jwtService.extractUserTag(accessToken)
                     .orElseThrow(() -> new ApplicationException(ApplicationError.USER_TAG_NOT_FOUND));
+
             User user = userRepository.findByUserTag(userTag)
                     .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
 
@@ -132,7 +133,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
         Authentication authentication =
                 new UsernamePasswordAuthenticationToken(userDetailsUser, null,
-                authoritiesMapper.mapAuthorities(userDetailsUser.getAuthorities()));
+                        authoritiesMapper.mapAuthorities(userDetailsUser.getAuthorities()));
 
         log.info(authentication.isAuthenticated() + " : 인증 여부");
 

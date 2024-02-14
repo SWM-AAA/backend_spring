@@ -72,6 +72,7 @@ public class JwtService {
 
     private final UserRepository userRepository;
 
+  
     public String createAccessToken(String userTag) {
         Date now = new Date();
         return JWT.create()
@@ -261,14 +262,31 @@ public class JwtService {
 
     public String getStringUserIdFromToken(String token) {
         return extractUserTagFromToken(token)
-            .flatMap(userRepository::findIdByUserTag)
-            .orElseThrow(() -> new ApplicationException(ApplicationError.USER_ID_NOT_FOUND))
-            .toString();
+                .flatMap(userRepository::findIdByUserTag)
+                .orElseThrow(() -> new ApplicationException(ApplicationError.USER_ID_NOT_FOUND))
+                .toString();
     }
 
     public Long getLongUserIdFromToken(String token) {
         return extractUserTagFromToken(token)
-            .flatMap(userRepository::findIdByUserTag)
-            .orElseThrow(() -> new ApplicationException(ApplicationError.USER_ID_NOT_FOUND));
+                .flatMap(userRepository::findIdByUserTag)
+                .orElseThrow(() -> new ApplicationException(ApplicationError.USER_ID_NOT_FOUND));
+    }
+
+    public Map<String, String> reissueToken(String userTag) {
+        String accessToken = createAccessToken(userTag);
+        String refreshToken = createRefreshToken();
+
+        userRepository.findByUserTag(userTag)
+                .ifPresent(user -> {
+                    user.updateRefreshToken(refreshToken);
+                    userRepository.saveAndFlush(user);
+                });
+
+        Map<String, String> tokenMap = new HashMap<>();
+        tokenMap.put("accessToken", accessToken);
+        tokenMap.put("refreshToken", refreshToken);
+
+        return tokenMap;
     }
 }
