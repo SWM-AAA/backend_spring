@@ -67,7 +67,7 @@ public class UserControllerTest extends ApiDocument {
     private static final String USERTAG = "userTag";
     private static final String TOKEN = "token";
     private static final String IMAGEURL = "imageUrl";
-    private static final String PROFILE_IMAGE_NAME = "profileimage";
+    private static final String PROFILE_IMAGE_NAME = "profileImage";
     private static final String FILE_NAME = "filename.jpg";
     private static final String CONTENT_TYPE = "image/jpeg";
     private static final byte[] CONTENT = "image content".getBytes();
@@ -147,7 +147,7 @@ public class UserControllerTest extends ApiDocument {
         file = new MockMultipartFile(PROFILE_IMAGE_NAME, FILE_NAME, CONTENT_TYPE, CONTENT);
         userRegisterRequest = UserRegisterRequest.builder()
                 .nickname(NICKNAME)
-                .profileimage(file)
+                .profileImage(file)
                 .build();
 
         userInfoResponse = UserInfoResponse.builder()
@@ -166,7 +166,6 @@ public class UserControllerTest extends ApiDocument {
                 .userId(USER_LONG_ID)
                 .userTag(VALID_USER_TAG)
                 .imageUrl(FILE_NAME)
-                .accessToken(ACCESSTOKEN)
                 .build();
 
         userNicknameRequest = UserNicknameRequest.builder()
@@ -271,7 +270,7 @@ public class UserControllerTest extends ApiDocument {
 
     private ResultActions user_Register_Request() throws Exception {
         return mockMvc.perform(RestDocumentationRequestBuilders.multipart(API_VERSION + RESOURCE_PATH + "/register")
-                .file(PROFILE_IMAGE_NAME, userRegisterRequest.getProfileimage().getBytes())
+                .file(PROFILE_IMAGE_NAME, userRegisterRequest.getProfileImage().getBytes())
                 .header(AUTHORIZATION_HEADER, "Bearer " + TOKEN)
                 .param(NICKNAME, userRegisterRequest.getNickname())
                 .contentType(MediaType.MULTIPART_FORM_DATA));
