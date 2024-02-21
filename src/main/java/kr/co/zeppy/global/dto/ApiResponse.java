@@ -19,9 +19,8 @@ public class ApiResponse<T> {
                 .build();
     }
 
-    public static <T> ApiResponse<T> failure(ApplicationException ex) {
-        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage(), ex.getCode());
-        return ApiResponse.<T>builder()
+    public static ApiResponse<ErrorResponse> failure(ErrorResponse errorResponse) {
+        return ApiResponse.<ErrorResponse>builder()
                 .success(false)
                 .error(errorResponse)
                 .build();
