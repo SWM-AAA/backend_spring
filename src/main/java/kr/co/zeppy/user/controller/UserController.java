@@ -55,7 +55,7 @@ public class UserController {
         return "jwtTest 요청 성공";
     }
 
-    @PostMapping("/test/register-by-username")
+    @PostMapping("/v1/users/register-by-username")
     public ResponseEntity<ApiResponse<UserRegisterByUsernameResponse>> registerByUsername(@RequestBody UserRegisterByUsernameRequest userRegisterByUsernameRequest)
             throws Exception {
         ApiResponse<UserRegisterByUsernameResponse> response = userService.registerByUsername(userRegisterByUsernameRequest);

@@ -89,6 +89,8 @@ public class UserControllerTest extends ApiDocument {
     private static final String NEW_IMAGE_URL = "newImageURL";
     private static final String NEWACCESSTOKEN = "Bearer newAccessToken";
     private static final String NEWREFRESHTOKEN = "Bearer newRefreshToken";
+    private static final String USERNAME = "username";
+    private static final String PASSWORD = "password";
 
     @MockBean
     private RedisService redisService;
@@ -115,6 +117,7 @@ public class UserControllerTest extends ApiDocument {
     private ApplicationException invalidUserTagFormat;
     private ApplicationException userNicknameNotFoundException;
     private ApplicationException userTagNotFoundException;
+    private ApplicationException usernameDuplicatedException;
 
     private LocationAndBatteryRequest locationAndBatteryRequest;
     private UserRegisterRequest userRegisterRequest;
@@ -123,6 +126,8 @@ public class UserControllerTest extends ApiDocument {
     private UserRegisterResponse userRegisterResponse;
     private UserNicknameRequest userNicknameRequest;
     private UserSettingInformationResponse userSettingInformationResponse;
+    private UserRegisterByUsernameRequest userRegisterByUsernameRequest;
+    private UserRegisterByUsernameResponse userRegisterByUsernameResponse;
 
     private User user;
 
@@ -181,6 +186,21 @@ public class UserControllerTest extends ApiDocument {
                 .socialType(USER_SOCIAL_TYPE)
                 .build();
 
+        userRegisterByUsernameRequest = UserRegisterByUsernameRequest.builder()
+                .username(USERNAME)
+                .password(PASSWORD)
+                .build();
+
+        userRegisterByUsernameResponse = UserRegisterByUsernameResponse.builder()
+                .accessToken(ACCESSTOKEN)
+                .refreshToken(REFRESHTOKEN)
+                .userId(USER_LONG_ID)
+                .username(USERNAME)
+                .nickname(USER_NICKNAME)
+                .userTag(USER_TAG)
+                .imageUrl(USER_IMAGE_URL)
+                .build();
+
         given(jwtService.getStringUserIdFromToken("Bearer " + TOKEN)).willReturn(USER_ID);
 
         redisUserLocationUpdateException = new RedisSaveException(ApplicationError.REDIS_SERVER_UNAVAILABLE);
@@ -188,6 +208,7 @@ public class UserControllerTest extends ApiDocument {
         invalidUserTagFormat = new ApplicationException(ApplicationError.INVALID_USER_TAG_FORMAT);
         userNicknameNotFoundException = new ApplicationException(ApplicationError.USER_NICKNAME_NOT_FOUND);
         userTagNotFoundException = new ApplicationException(ApplicationError.USER_TAG_NOT_FOUND);
+        usernameDuplicatedException = new ApplicationException(ApplicationError.USERNAME_DUPLICATED);
     }
 
     /////////////////////////////////////////////////////////////////
@@ -304,28 +325,51 @@ public class UserControllerTest extends ApiDocument {
     }
 
     /////////////////////////////////////////////////////////////////
-    // registerByUsername (Method : get) test code
+    // registerByUsername (Method : post) test code || (url : /test/register-by-username)
     /////////////////////////////////////////////////////////////////
     @Test
-    void test_Register_By_Username_Success() {
+    void test_Register_By_Username_Success() throws Exception {
+        // given
+        ApiResponse<UserRegisterByUsernameResponse> response = ApiResponse.success(userRegisterByUsernameResponse);
+        when(userService.registerByUsername(any(UserRegisterByUsernameRequest.class))).thenReturn(response);
 
+        // when
+        ResultActions resultActions = register_By_Username_Request();
+
+        // then
+        register_By_Username_Success(resultActions, response);
     }
 
-    private ResultActions Register_By_Username_Request() throws Exception {
-        return mockMvc.perform(RestDocumentationRequestBuilders.post(API_VERSION + RESOURCE_PATH + "/search/usertag")
-                .header("Authorization", "Bearer " + TOKEN)
-                .content(toJson(userTagRequest))
+    @Test
+    void test_Register_By_Username_Failure() throws Exception {
+        // given
+        ErrorResponse errorResponse = ErrorResponse.fromException(usernameDuplicatedException);
+        ApiResponse<ErrorResponse> response = ApiResponse.failure(errorResponse);
+        doThrow(usernameDuplicatedException).when(userService).registerByUsername(any(UserRegisterByUsernameRequest.class));
+
+        // when
+        ResultActions resultActions = register_By_Username_Request();
+
+        // then
+        register_By_Username_Failure(resultActions, response);
+    }
+
+    private ResultActions register_By_Username_Request() throws Exception {
+        return mockMvc.perform(RestDocumentationRequestBuilders.post(API_VERSION + RESOURCE_PATH + "/register-by-username")
+                .content(toJson(userRegisterByUsernameRequest))
                 .contentType(MediaType.APPLICATION_JSON));
     }
 
-    private void Register_By_Username_Request_Success(ResultActions resultActions) throws Exception {
+    void register_By_Username_Success(ResultActions resultActions, ApiResponse<UserRegisterByUsernameResponse> response) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isOk())
-                        .andExpect(jsonPath("$.userId", is(userInfoResponse.getUserId().intValue())))
-                        .andExpect(jsonPath("$.nickname", is(userInfoResponse.getNickname())))
-                        .andExpect(jsonPath("$.userTag", is(userInfoResponse.getUserTag())))
-                        .andExpect(jsonPath("$.imageUrl", is(userInfoResponse.getImageUrl()))),
-                "userTag-Search-Success");
-        verify(userService, times(1)).findUserTag(any(UserTagRequest.class), anyLong());
+                        .andExpect(content().json(toJson(response))),
+                "register-By-Username-Request-Success");
+    }
+
+    void register_By_Username_Failure(ResultActions resultActions, ApiResponse<ErrorResponse> response) throws Exception {
+        printAndMakeSnippet(resultActions.andExpect(status().isConflict())
+                        .andExpect(content().json(toJson(response))),
+                "register-By-Username-Request-Failure");
     }
 
     /////////////////////////////////////////////////////////////////
@@ -389,7 +433,7 @@ public class UserControllerTest extends ApiDocument {
         when(userService.getUserInformation(anyLong())).thenReturn(response);
 
         // when
-        ResultActions resultActions = get_User_Information();
+        ResultActions resultActions = get_User_Information_Request();
 
         // then
         get_User_Information_Success(resultActions, response);
@@ -403,18 +447,17 @@ public class UserControllerTest extends ApiDocument {
         doThrow(userTagNotFoundException).when(userService).getUserInformation(anyLong());
 
         // when
-        ResultActions resultActions = get_User_Information();
+        ResultActions resultActions = get_User_Information_Request();
 
         // then
         get_User_Information_Failure(resultActions, response);
     }
 
-    private ResultActions get_User_Information() throws Exception {
+    private ResultActions get_User_Information_Request() throws Exception {
         return mockMvc.perform(
                 RestDocumentationRequestBuilders.get(API_VERSION + RESOURCE_PATH)
                         .header(AUTHORIZATION_HEADER, "Bearer " + TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(toJson(userSettingInformationResponse))
         );
     }
 
@@ -443,7 +486,7 @@ public class UserControllerTest extends ApiDocument {
         when(userService.updateUserNickname(anyString(), any(UserNicknameRequest.class))).thenReturn(tokenMap);
 
         // when
-        ResultActions resultActions = update_User_Nickname();
+        ResultActions resultActions = update_User_Nickname_Request();
 
         // then
         update_User_Nickname_Success(resultActions);
@@ -455,13 +498,13 @@ public class UserControllerTest extends ApiDocument {
         doThrow(userNicknameNotFoundException).when(userService).updateUserNickname(anyString(), any(UserNicknameRequest.class));
 
         // when
-        ResultActions resultActions = update_User_Nickname();
+        ResultActions resultActions = update_User_Nickname_Request();
 
         // then
         update_User_Nickname_Failure(resultActions);
     }
 
-    private ResultActions update_User_Nickname() throws Exception {
+    private ResultActions update_User_Nickname_Request() throws Exception {
         return mockMvc.perform(
                 RestDocumentationRequestBuilders.patch(API_VERSION + RESOURCE_PATH + "/nickname")
                         .header(AUTHORIZATION_HEADER, "Bearer " + TOKEN)
@@ -499,7 +542,7 @@ public class UserControllerTest extends ApiDocument {
         }).when(userService).updateUserImage(anyString(), any(MockMultipartFile.class));
 
         // when
-        ResultActions resultActions = update_User_Image();
+        ResultActions resultActions = update_User_Image_Request();
 
         // then
         update_User_Image_Success(resultActions);
@@ -511,13 +554,13 @@ public class UserControllerTest extends ApiDocument {
         doThrow(internalServerException).when(userService).updateUserImage(anyString(), any(MultipartFile.class));
 
         // when
-        ResultActions resultActions = update_User_Image();
+        ResultActions resultActions = update_User_Image_Request();
 
         // then
         update_User_Image_Failure(resultActions);
     }
 
-    private ResultActions update_User_Image() throws Exception {
+    private ResultActions update_User_Image_Request() throws Exception {
         MockMultipartHttpServletRequestBuilder builder = RestDocumentationRequestBuilders.multipart(API_VERSION + RESOURCE_PATH + "/image");
         builder.with(new RequestPostProcessor() {
             @Override
@@ -560,7 +603,7 @@ public class UserControllerTest extends ApiDocument {
         }).when(userService).deleteUser(anyString());
 
         // when
-        ResultActions resultActions = delete_User();
+        ResultActions resultActions = delete_User_Request();
 
         // then
         delete_User_Success(resultActions);
@@ -573,13 +616,13 @@ public class UserControllerTest extends ApiDocument {
         doThrow(internalServerException).when(userService).deleteUser(anyString());
 
         // when
-        ResultActions resultActions = delete_User();
+        ResultActions resultActions = delete_User_Request();
 
         // then
         delete_User_Failure(resultActions);
     }
 
-    private ResultActions delete_User() throws Exception {
+    private ResultActions delete_User_Request() throws Exception {
         return mockMvc.perform(
                 RestDocumentationRequestBuilders.patch(API_VERSION + RESOURCE_PATH)
                         .header(AUTHORIZATION_HEADER, "Bearer " + ACCESSTOKEN));
