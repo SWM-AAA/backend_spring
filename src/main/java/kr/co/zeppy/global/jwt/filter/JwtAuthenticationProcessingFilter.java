@@ -53,7 +53,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
         //     checkTokenAndAuthentication(request, response, filterChain);
         //     return;
         // }
-        
+
         // checkAccessTokenAndAuthentication(request, response, filterChain);
     }
 
@@ -88,31 +88,18 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                 throw new ApplicationException(ApplicationError.INVALID_JWT_TOKEN);
             }
 
-            Optional<String> username = jwtService.extractUsername(accessToken);
-            if (username.isPresent()) {
-                User user = userRepository.findByUsername(String.valueOf(username))
-                        .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
+            String userTag = jwtService.extractUserTag(accessToken)
+                    .orElseThrow(() -> new ApplicationException(ApplicationError.USER_TAG_NOT_FOUND));
 
-                if (jwtService.shouldReissueToken(accessToken)) {
-                    String newAccessToken = jwtService.createAccessTokenByUsername(String.valueOf(username));
-                    jwtService.setAccessTokenHeader(response, newAccessToken);
-                }
+            User user = userRepository.findByUserTag(userTag)
+                    .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
 
-                saveAuthentication(user);
-            } else {
-                String userTag = jwtService.extractUserTag(accessToken)
-                        .orElseThrow(() -> new ApplicationException(ApplicationError.USER_TAG_NOT_FOUND));
-                log.info(userTag);
-                User user = userRepository.findByUserTag(userTag)
-                        .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
-
-                if (jwtService.shouldReissueToken(accessToken)) {
-                    String newAccessToken = jwtService.createAccessToken(userTag);
-                    jwtService.setAccessTokenHeader(response, newAccessToken);
-                }
-
-                saveAuthentication(user);
+            if (jwtService.shouldReissueToken(accessToken)) {
+                String newAccessToken = jwtService.createAccessToken(userTag);
+                jwtService.setAccessTokenHeader(response, newAccessToken);
             }
+
+            saveAuthentication(user);
         }
 
         if (refreshTokenOpt.isPresent()) {
@@ -145,8 +132,8 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
         Authentication authentication =
                 new UsernamePasswordAuthenticationToken(userDetailsUser, null,
-                authoritiesMapper.mapAuthorities(userDetailsUser.getAuthorities()));
-        
+                        authoritiesMapper.mapAuthorities(userDetailsUser.getAuthorities()));
+
         log.info(authentication.isAuthenticated() + " : 인증 여부");
 
         SecurityContextHolder.getContext().setAuthentication(authentication);

@@ -1,6 +1,8 @@
 package kr.co.zeppy.user.entity;
 
 import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AccessLevel;
@@ -12,6 +14,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import kr.co.zeppy.global.entity.BaseModel;
+import org.hibernate.annotations.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Getter
@@ -19,6 +22,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Entity
 @Builder
 @Table(name = "USERS")
+@DynamicInsert
+@DynamicUpdate
 @AllArgsConstructor
 public class User extends BaseModel {
 
@@ -34,6 +39,9 @@ public class User extends BaseModel {
     private String username;
 
     private String password;
+
+    @ColumnDefault("true")
+    private Boolean activated;
 
     @Builder.Default
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
@@ -107,5 +115,9 @@ public class User extends BaseModel {
     // 아이디 패스워드 회원가입 시 비밀번호 암호화
     public void passwordEncode(PasswordEncoder passwordEncoder) {
         this.password = passwordEncoder.encode(this.password);
+    }
+
+    public void setDeleted() {
+        this.activated = false;
     }
 }
