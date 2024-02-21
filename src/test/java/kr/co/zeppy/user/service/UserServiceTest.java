@@ -1,13 +1,12 @@
 package kr.co.zeppy.user.service;
 
+import com.auth0.jwt.JWT;
 import kr.co.zeppy.global.aws.service.AwsS3Uploader;
 import kr.co.zeppy.global.dto.ApiResponse;
 import kr.co.zeppy.global.error.ApplicationError;
 import kr.co.zeppy.global.error.ApplicationException;
 import kr.co.zeppy.global.jwt.service.JwtService;
-import kr.co.zeppy.user.dto.UserNicknameRequest;
-import kr.co.zeppy.user.dto.UserRegisterRequest;
-import kr.co.zeppy.user.dto.UserSettingInformationResponse;
+import kr.co.zeppy.user.dto.*;
 import kr.co.zeppy.user.entity.*;
 import kr.co.zeppy.user.repository.FriendshipRepository;
 import kr.co.zeppy.user.repository.NickNameRepository;
@@ -20,10 +19,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -64,6 +65,8 @@ public class UserServiceTest {
     private static final String USER_TAG = "testUserTag#0001";
     private static final String NEW_USER_TAG = "newUserTag";
     private static final String NICKNAME = "newNickname";
+    private static final String USERNAME = "userName";
+    private static final String PASSWORD = "password";
 
     private static final String NEW_NICKNAME = "changedNickname";
     private static final Long USER_ID = 1L;
@@ -83,9 +86,13 @@ public class UserServiceTest {
 
 
     private UserRegisterRequest userRegisterRequest;
+    private UserRegisterByUsernameRequest userRegisterByUsernameRequest;
     private User user;
     private MultipartFile file;
     private List<Friendship> friendshipList;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     public void setup(){
@@ -93,6 +100,10 @@ public class UserServiceTest {
         userRegisterRequest = UserRegisterRequest.builder()
                 .nickname(NICKNAME)
                 .profileImage(file)
+                .build();
+        userRegisterByUsernameRequest = UserRegisterByUsernameRequest.builder()
+                .username(USERNAME)
+                .password(PASSWORD)
                 .build();
 
         user = mock(User.class);
@@ -118,6 +129,38 @@ public class UserServiceTest {
         verify(user).updateUserTag(NEW_USER_TAG);
         verify(user).updateNickname(NICKNAME);
         verify(user).updateImageUrl(IMAGE_URL);
+    }
+
+    @Test
+    void registerByUsername() throws Exception {
+        // Given
+        user = User.builder()
+                .id(INIT_USERID)
+                .nickname(USER_NICKNAME)
+                .imageUrl(USER_IMAGE_URL)
+                .userTag(USER_TAG)
+                .role(USER_ROLE)
+                .socialType(USER_SOCIAL_TYPE)
+                .socialId(USER_SOCIAL_ID)
+                .refreshToken(USER_REFRESH_TOKEN)
+                .build();
+
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
+        when(nickNameService.getUserTagFromNickName(anyString())).thenReturn(USER_TAG);
+        when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
+        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(jwtService.createRefreshToken()).thenReturn(USER_REFRESH_TOKEN);
+
+        // When
+        ApiResponse<UserRegisterByUsernameResponse> response = userService.registerByUsername(userRegisterByUsernameRequest);
+
+        // Then
+        verify(userRepository).save(any(User.class));
+        assertAll(
+                () -> assertEquals(USERNAME, response.getData().getUsername()),
+                () -> assertEquals(USER_TAG, response.getData().getUserTag()),
+                () -> assertEquals(USER_REFRESH_TOKEN, response.getData().getRefreshToken())
+        );
     }
 
     @Test
