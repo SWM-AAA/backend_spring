@@ -16,5 +16,5 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserRegisterRequest {
 
     private String nickname;
-    private MultipartFile profileimage;
+    private MultipartFile profileImage;
 }

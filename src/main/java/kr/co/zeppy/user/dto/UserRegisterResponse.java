@@ -15,5 +15,4 @@ public class UserRegisterResponse {
     private Long userId;
     private String userTag;
     private String imageUrl;
-    private String accessToken;
 }

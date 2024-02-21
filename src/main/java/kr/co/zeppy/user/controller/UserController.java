@@ -84,14 +84,15 @@ public class UserController {
             throws IOException {
 
         String newUserTag = userService.register(token, userRegisterRequest);
-        String accessToken = jwtService.createAccessToken(newUserTag);
+        jwtService.createAccessToken(newUserTag);
+
         Long userId = userRepository.findIdByUserTag(newUserTag)
                 .orElseThrow(() -> new ApplicationException(ApplicationError.USER_TAG_NOT_FOUND));
         String userImageUrl = userRepository.findImageUrlByUserTag(newUserTag)
                 .map(String::valueOf)
                 .orElseThrow(() -> new ApplicationException(ApplicationError.USER_IMAGE_URL_NOT_FOUND));
 
-        UserRegisterResponse userRegisterResponse = userService.userRegisterBody(accessToken, newUserTag, userId, userImageUrl);
+        UserRegisterResponse userRegisterResponse = userService.userRegisterBody(newUserTag, userId, userImageUrl);
 
         return ResponseEntity.ok(userRegisterResponse);
     }

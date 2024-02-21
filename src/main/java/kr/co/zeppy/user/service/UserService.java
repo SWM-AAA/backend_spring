@@ -124,7 +124,7 @@ public class UserService {
         User user = userRepository.findByUserTag(userTag)
                 .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
 
-        MultipartFile file = userRegisterRequest.getProfileimage();
+        MultipartFile file = userRegisterRequest.getProfileImage();
         String newUserTag = nickNameService.getUserTagFromNickName(userRegisterRequest.getNickname());
 
         String fileName = awsS3Uploader.newUpload(file
@@ -139,13 +139,12 @@ public class UserService {
         return newUserTag;
     }
 
-    public UserRegisterResponse userRegisterBody(String accessToken, String userTag, Long userId
+    public UserRegisterResponse userRegisterBody(String userTag, Long userId
         , String userImageUrl) {
 
         return UserRegisterResponse.builder()
                     .userId(userId)
                     .userTag(userTag)
-                    .accessToken(accessToken)
                     .imageUrl(userImageUrl)
                     .build();
     }

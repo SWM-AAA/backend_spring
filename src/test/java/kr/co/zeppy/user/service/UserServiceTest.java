@@ -64,7 +64,7 @@ public class UserServiceTest {
     private static final Long USER_ID = 1L;
     private static final String FILE_NAME = "testFileName";
     private static final String IMAGE_URL = "testImageUrl";
-    private static final String PROFILE_IMAGE_NAME = "profileimage";
+    private static final String PROFILE_IMAGE_NAME = "profileImage";
     private static final String FILE_TYPE = "image/jpeg";
     private static final byte[] IMAGE_CONTENT = "image content".getBytes();
 
@@ -87,7 +87,7 @@ public class UserServiceTest {
         file = new MockMultipartFile(PROFILE_IMAGE_NAME, FILE_NAME, FILE_TYPE, IMAGE_CONTENT);
         userRegisterRequest = UserRegisterRequest.builder()
                 .nickname(NICKNAME)
-                .profileimage(file)
+                .profileImage(file)
                 .build();
 
         user = mock(User.class);
