@@ -1,6 +1,5 @@
 package kr.co.zeppy.login.service;
 
-import kr.co.zeppy.global.jwt.util.PasswordUtil;
 import kr.co.zeppy.user.entity.User;
 import kr.co.zeppy.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

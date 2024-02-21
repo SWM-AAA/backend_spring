@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import kr.co.zeppy.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
@@ -18,7 +19,6 @@ import kr.co.zeppy.user.entity.Friendship;
 import kr.co.zeppy.user.entity.FriendshipStatus;
 import kr.co.zeppy.user.entity.User;
 import kr.co.zeppy.user.repository.FriendshipRepository;
-import kr.co.zeppy.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import kr.co.zeppy.user.dto.UserFriendInfoResponse;
 import lombok.extern.slf4j.Slf4j;

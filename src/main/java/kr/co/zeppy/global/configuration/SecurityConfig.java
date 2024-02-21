@@ -6,13 +6,13 @@ import kr.co.zeppy.global.jwt.filter.JwtAuthenticationProcessingFilter;
 import kr.co.zeppy.login.handler.LoginFailureHandler;
 import kr.co.zeppy.login.handler.LoginSuccessHandler;
 import kr.co.zeppy.oauth2.repository.HttpCookieOAuth2AuthorizationRequestRepository;
-import kr.co.zeppy.user.repository.UserRepository;
 import kr.co.zeppy.oauth2.handler.OAuth2LoginFailureHandler;
 import kr.co.zeppy.oauth2.handler.OAuth2LoginSuccessHandler;
 import kr.co.zeppy.oauth2.service.CustomOAuth2UserService;
 import kr.co.zeppy.login.service.LoginService;
 import kr.co.zeppy.login.filter.CustomJsonUsernamePasswordAuthenticationFilter;
 
+import kr.co.zeppy.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -48,14 +48,10 @@ public class SecurityConfig {
             "/api/healthcheck",
             "/api/test/**",
             "/api/v1/users/all-user-location-and-battery",
-            "/swagger-ui/index.html", // 이 부분을 업데이트
             "/swagger-ui/**",
             "/v3/api-docs/**",
-            "/v2/api-docs/**",
-            "/swagger-resources/**",
             "/webjars/**",
             "/docs/**",
-            "*",
     };
 
     @Bean

@@ -12,7 +12,7 @@ import lombok.AccessLevel;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ChatMessageRequest {
-    private Long Id;
+    private Long id;
     private Long chatRoomId;
     private Long userId;
 

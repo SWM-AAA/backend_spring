@@ -7,6 +7,7 @@ plugins {
 	id "com.gorylenko.gradle-git-properties" version "2.4.1"
 	id "com.epages.restdocs-api-spec" version "0.18.4"
 	// add //
+	id 'org.hidetake.swagger.generator' version '2.18.2'
 }
 
 group = 'com.aaa'
@@ -32,7 +33,7 @@ ext {
 
 tasks.named("test") {
 	if (profile == 'local') {
-		outputs.dir snippetsDir
+//		outputs.dir snippetsDir
 		useJUnitPlatform()
 		environment "DB_NAME", "zeppy_db"
 		environment "POSTGRESQL_PORT", "5432"
@@ -61,13 +62,15 @@ tasks.named("asciidoctor") {
 }
 
 openapi3 {
-	servers = [
-			{ url = 'http://localhost:8080' },
-	]
+	server = 'http://localhost:8080'
 	title = 'spring-rest-docs-guide'
 	description = 'Spring REST Docs 테스트 생성물 생성시 추가생성되는 OpenAPI 문서이용'
 	version = "${project.version}"
-	format = 'yaml'
+	outputFileNamePrefix = 'open-api-3.0.1'
+	format = 'json'
+
+	// add
+	outputDirectory = 'build/resources/main/static/docs'
 }
 
 tasks.register("apiBuild", GradleBuild) {
@@ -85,12 +88,13 @@ gitProperties {
 }
 
 bootJar {
+	dependsOn(':openapi3')
 	dependsOn asciidoctor
 	duplicatesStrategy = DuplicatesStrategy.INCLUDE
 
-	from("swagger-ui") {
-		into "BOOT-INF/classes/static/swagger"
-	}
+//	from("swagger-ui") {
+//		into "BOOT-INF/classes/static/swagger"
+//	}
 	from("${asciidoctor.outputDir}") {
 		into "BOOT-INF/classes/static/docs"
 	}
@@ -99,6 +103,16 @@ bootJar {
 	}
 
 	archiveFileName.set "application.jar"
+}
+
+tasks.withType(GenerateSwaggerUI) {
+	dependsOn 'openapi3'
+
+	delete file('src/main/resources/static/docs/')
+	copy {
+		from "build/resources/main/static/docs"
+		into "src/main/resources/static/docs/"
+	}
 }
 
 
@@ -117,9 +131,13 @@ java {
 
 dependencies {
 	// add //
-	implementation("org.springdoc:springdoc-openapi-ui:1.6.11")
-	implementation("org.springdoc:springdoc-openapi-webmvc-core:1.6.11")
-	testImplementation("com.epages:restdocs-api-spec:0.18.4")
+//	implementation("org.springdoc:springdoc-openapi-ui:1.6.11")
+//	implementation("org.springdoc:springdoc-openapi-webmvc-core:1.6.11")
+//	implementation 'javax.xml.bind:jaxb-api:2.3.0'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
+//	implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '2.0.2'
+
+//	testImplementation("com.epages:restdocs-api-spec:0.18.4")
 	testImplementation("com.epages:restdocs-api-spec-mockmvc:0.18.4")
 	// add //
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'

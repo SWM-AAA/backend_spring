@@ -1,7 +1,6 @@
 package kr.co.zeppy.user.entity;
 
 import jakarta.persistence.*;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -44,16 +43,19 @@ public class User extends BaseModel {
     private Boolean activated;
 
     @Builder.Default
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private Set<UserCrew> userCrews = new LinkedHashSet<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private Set<Friendship> sentFriendships = new HashSet<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "friend")
+    @OneToMany(mappedBy = "friend", fetch = FetchType.LAZY)
     private Set<Friendship> receivedFriendships = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private Set<UserChatRoom> userChatRooms = new HashSet<>();
 
     // ex) 닉네임#0001
     @Column(unique = true)

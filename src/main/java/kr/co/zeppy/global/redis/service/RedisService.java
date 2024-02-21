@@ -5,20 +5,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import kr.co.zeppy.user.repository.UserRepository;
 import org.springframework.data.redis.core.RedisTemplate;
 import kr.co.zeppy.global.error.ApplicationError;
 import kr.co.zeppy.global.error.ApplicationException;
 import kr.co.zeppy.global.redis.dto.FriendLocationAndBattery;
 import kr.co.zeppy.global.redis.dto.FriendLocationAndBatteryResponse;
 import kr.co.zeppy.global.redis.dto.LocationAndBatteryRequest;
-import kr.co.zeppy.user.entity.Friendship;
 import kr.co.zeppy.user.entity.User;
 import kr.co.zeppy.user.repository.FriendshipRepository;
-import kr.co.zeppy.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j; 

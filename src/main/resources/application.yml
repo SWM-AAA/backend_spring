@@ -5,3 +5,12 @@ spring:
     ansi:
       enabled: always
 # common: common
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    url: /docs/open-api-3.0.1.json
+    enabled: true
+    tagsSorter: alpha
+    operations-sorter: alpha
+    display-request-duration: true

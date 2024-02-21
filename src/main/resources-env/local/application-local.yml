@@ -1,8 +1,11 @@
 logging:
   level:
-    # root: DEBUG
+    root: DEBUG
     org:
       springframework:
+        data:
+          redis: DEBUG
+        messaging: DEBUG
         web : DEBUG
         test : DEBUG
         jdbc : DEBUG
