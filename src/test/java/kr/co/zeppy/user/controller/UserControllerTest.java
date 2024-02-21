@@ -4,6 +4,7 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import kr.co.zeppy.ApiDocument;
 import kr.co.zeppy.SecurityConfigTest;
 import kr.co.zeppy.global.aws.service.AwsS3Uploader;
+import kr.co.zeppy.global.dto.ApiResponse;
 import kr.co.zeppy.global.dto.ErrorResponse;
 import kr.co.zeppy.global.error.ApplicationError;
 import kr.co.zeppy.global.error.ApplicationException;
@@ -113,6 +114,7 @@ public class UserControllerTest extends ApiDocument {
     private ApplicationException internalServerException;
     private ApplicationException invalidUserTagFormat;
     private ApplicationException userNicknameNotFoundException;
+    private ApplicationException userTagNotFoundException;
 
     private LocationAndBatteryRequest locationAndBatteryRequest;
     private UserRegisterRequest userRegisterRequest;
@@ -120,6 +122,7 @@ public class UserControllerTest extends ApiDocument {
     private UserTagRequest userTagRequest;
     private UserRegisterResponse userRegisterResponse;
     private UserNicknameRequest userNicknameRequest;
+    private UserSettingInformationResponse userSettingInformationResponse;
 
     private User user;
 
@@ -171,12 +174,20 @@ public class UserControllerTest extends ApiDocument {
                 .nickname(NEW_NICKNAME)
                 .build();
 
+        userSettingInformationResponse = UserSettingInformationResponse.builder()
+                .nickname(USER_NICKNAME)
+                .userTag(USER_TAG)
+                .imageUrl(USER_IMAGE_URL)
+                .socialType(USER_SOCIAL_TYPE)
+                .build();
+
         given(jwtService.getStringUserIdFromToken("Bearer " + TOKEN)).willReturn(USER_ID);
 
         redisUserLocationUpdateException = new RedisSaveException(ApplicationError.REDIS_SERVER_UNAVAILABLE);
         internalServerException = new ApplicationException(ApplicationError.INTERNAL_SERVER_ERROR);
         invalidUserTagFormat = new ApplicationException(ApplicationError.INVALID_USER_TAG_FORMAT);
         userNicknameNotFoundException = new ApplicationException(ApplicationError.USER_NICKNAME_NOT_FOUND);
+        userTagNotFoundException = new ApplicationException(ApplicationError.USER_TAG_NOT_FOUND);
     }
 
     /////////////////////////////////////////////////////////////////
@@ -341,6 +352,57 @@ public class UserControllerTest extends ApiDocument {
                         .andExpect(content().json(toJson(ErrorResponse.fromException(invalidUserTagFormat)))),
                 "userTag-Search-Failure");
         verify(userService, times(1)).findUserTag(any(UserTagRequest.class), anyLong());
+    }
+
+    /////////////////////////////////////////////////////////////////
+    // getUserInformation (Method : get) test code
+    /////////////////////////////////////////////////////////////////
+    @Test
+    void test_get_User_Information_Success() throws Exception {
+        // given
+        ApiResponse<UserSettingInformationResponse> response = ApiResponse.success(userSettingInformationResponse);
+        when(userService.getUserInformation(anyLong())).thenReturn(response);
+
+        // when
+        ResultActions resultActions = get_User_Information();
+
+        // then
+        get_User_Information_Success(resultActions, response);
+    }
+
+    @Test
+    void test_get_User_Information_Failure() throws Exception {
+        // given
+        ErrorResponse errorResponse = ErrorResponse.fromException(userTagNotFoundException);
+        ApiResponse<ErrorResponse> response = ApiResponse.failure(errorResponse);
+        doThrow(userTagNotFoundException).when(userService).getUserInformation(anyLong());
+
+        // when
+        ResultActions resultActions = get_User_Information();
+
+        // then
+        get_User_Information_Failure(resultActions, response);
+    }
+
+    private ResultActions get_User_Information() throws Exception {
+        return mockMvc.perform(
+                RestDocumentationRequestBuilders.get(API_VERSION + RESOURCE_PATH)
+                        .header(AUTHORIZATION_HEADER, "Bearer " + TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(userSettingInformationResponse))
+        );
+    }
+
+    void get_User_Information_Success(ResultActions resultActions, ApiResponse<UserSettingInformationResponse> response) throws Exception {
+        printAndMakeSnippet(resultActions.andExpect(status().isOk())
+                .andExpect(content().json(toJson(response))),
+                "get-User-Information-Request-Success");
+    }
+
+    void get_User_Information_Failure(ResultActions resultActions, ApiResponse<ErrorResponse> response) throws Exception {
+        printAndMakeSnippet(resultActions.andExpect(status().isNotFound())
+                .andExpect(content().json(toJson(response))),
+                "get-User-Information-Request-Failure");
     }
 
     /////////////////////////////////////////////////////////////////

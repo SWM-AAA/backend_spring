@@ -2,6 +2,7 @@ package kr.co.zeppy.user.service;
 
 import jakarta.transaction.Transactional;
 import kr.co.zeppy.global.aws.service.AwsS3Uploader;
+import kr.co.zeppy.global.dto.ApiResponse;
 import kr.co.zeppy.global.error.ApplicationError;
 import kr.co.zeppy.global.error.ApplicationException;
 import kr.co.zeppy.global.jwt.service.JwtService;
@@ -12,6 +13,8 @@ import kr.co.zeppy.user.repository.NickNameRepository;
 import kr.co.zeppy.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -192,17 +195,19 @@ public class UserService {
     }
 
     // 환경 설정에서 사용자의 기본 정보 불러오는 함수
-    public UserSettingInformationResponse getUserInformation(Long userId) {
+    public ApiResponse<UserSettingInformationResponse> getUserInformation(Long userId) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApplicationException(ApplicationError.USER_TAG_NOT_FOUND));
 
-        return UserSettingInformationResponse.builder()
+        UserSettingInformationResponse userSettingInformationResponse = UserSettingInformationResponse.builder()
                 .userTag(user.getUserTag())
                 .nickname(user.getNickname())
                 .imageUrl(user.getImageUrl())
                 .socialType(user.getSocialType())
                 .build();
+
+        return ApiResponse.success(userSettingInformationResponse);
     }
 
     // 닉네임 변경

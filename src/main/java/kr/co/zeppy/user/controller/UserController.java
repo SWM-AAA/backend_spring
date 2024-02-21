@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import jakarta.servlet.http.HttpServletResponse;
 import kr.co.zeppy.global.annotation.UserId;
 import kr.co.zeppy.global.aws.service.AwsS3Uploader;
+import kr.co.zeppy.global.dto.ApiResponse;
 import kr.co.zeppy.global.error.ApplicationError;
 import kr.co.zeppy.global.error.ApplicationException;
 import kr.co.zeppy.global.jwt.service.JwtService;
@@ -196,6 +197,8 @@ public class UserController {
     public ResponseEntity<List<UserPinInformationResponse>> getAllUserInformationTest() {
         List<UserPinInformationResponse> allUserInformation = userService.getAllUserInformation();
 
+        ApiResponse apiResponse = ApiResponse.success(allUserInformation);
+
         return ResponseEntity.ok().body(allUserInformation);
     }
 
@@ -207,11 +210,11 @@ public class UserController {
     }
 
     // 사용자 정보를 불러오는 함수
-    @GetMapping("/test/users")
-    public ResponseEntity<UserSettingInformationResponse> getMyInformation(@UserId Long userId) {
-        UserSettingInformationResponse userSettingInformationResponse = userService.getUserInformation(userId);
+    @GetMapping("/v1/users")
+    public ResponseEntity<ApiResponse<UserSettingInformationResponse>> getMyInformation(@UserId Long userId) {
+        ApiResponse<UserSettingInformationResponse> response = userService.getUserInformation(userId);
 
-        return ResponseEntity.ok().body(userSettingInformationResponse);
+        return ResponseEntity.ok().body(response);
     }
 
     // 사용자의 닉네임을 변경하는 함수

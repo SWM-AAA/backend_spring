@@ -48,6 +48,32 @@
         }
       }
     },
+    "/api/v1/users" : {
+      "patch" : {
+        "tags" : [ "api" ],
+        "operationId" : "remove-User-",
+        "responses" : {
+          "500" : {
+            "description" : "500",
+            "content" : {
+              "application/json;charset=UTF-8" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/api-v1-friends-response486549215"
+                },
+                "examples" : {
+                  "remove-User-Failure" : {
+                    "value" : "{\r\n  \"message\" : \"서버 내부 에러가 발생하였습니다.\",\r\n  \"code\" : \"SERVER_001\"\r\n}"
+                  }
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "200"
+          }
+        }
+      }
+    },
     "/api/v1/friends/requests" : {
       "get" : {
         "tags" : [ "api" ],
@@ -170,6 +196,32 @@
         }
       }
     },
+    "/api/v1/users/image" : {
+      "patch" : {
+        "tags" : [ "api" ],
+        "operationId" : "update-User-Image-",
+        "responses" : {
+          "500" : {
+            "description" : "500",
+            "content" : {
+              "application/json;charset=UTF-8" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/api-v1-friends-response486549215"
+                },
+                "examples" : {
+                  "update-User-Image-Failure" : {
+                    "value" : "{\r\n  \"message\" : \"서버 내부 에러가 발생하였습니다.\",\r\n  \"code\" : \"SERVER_001\"\r\n}"
+                  }
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "200"
+          }
+        }
+      }
+    },
     "/api/v1/users/location-and-battery" : {
       "post" : {
         "tags" : [ "api" ],
@@ -202,6 +254,49 @@
                 "examples" : {
                   "update-Location-And-Battery-Failure" : {
                     "value" : "{\r\n  \"message\" : \"Redis 서버가 연결되지 않았습니다.\",\r\n  \"code\" : \"REDIS_001\"\r\n}"
+                  }
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "200"
+          }
+        }
+      }
+    },
+    "/api/v1/users/nickname" : {
+      "patch" : {
+        "tags" : [ "api" ],
+        "operationId" : "update-User-Nickname-Request-",
+        "requestBody" : {
+          "content" : {
+            "application/json;charset=UTF-8" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/api-v1-friends-response486549215"
+              },
+              "examples" : {
+                "update-User-Nickname-Request-Failure" : {
+                  "value" : "{\r\n  \"nickname\" : \"newUserNickname\"\r\n}"
+                },
+                "update-User-Nickname-Request-Success" : {
+                  "value" : "{\r\n  \"nickname\" : \"newUserNickname\"\r\n}"
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "404" : {
+            "description" : "404",
+            "content" : {
+              "application/json;charset=UTF-8" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/api-v1-friends-response486549215"
+                },
+                "examples" : {
+                  "update-User-Nickname-Request-Failure" : {
+                    "value" : "{\r\n  \"message\" : \"사용자 닉네임을 찾을 수 없습니다.\",\r\n  \"code\" : \"USER_005\"\r\n}"
                   }
                 }
               }
