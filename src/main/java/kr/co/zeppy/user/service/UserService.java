@@ -87,10 +87,10 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public void registerByUsername(UserRegisterByUsernameRequest userRegisterByUsernameRequest) throws Exception {
+    public ApiResponse<UserRegisterByUsernameResponse> registerByUsername(UserRegisterByUsernameRequest userRegisterByUsernameRequest) throws Exception {
 
         if (userRepository.findByUsername(userRegisterByUsernameRequest.getUsername()).isPresent()) {
-            throw new Exception("이미 존재하는 아이디입니다.");
+            throw new ApplicationException(ApplicationError.USERNAME_DUPLICATED);
         }
 
         int leftLimit = 97; // letter 'a'
@@ -103,7 +103,6 @@ public class UserService {
                 .toString();
 
         String newUserTag = nickNameService.getUserTagFromNickName(userNickname);
-
         String userImageUrl = "https://zeppy-s3.s3.ap-northeast-2.amazonaws.com/user/profile-image/1profile";
 
         User user = User.builder()
@@ -117,6 +116,22 @@ public class UserService {
 
         user.passwordEncode(passwordEncoder);
         userRepository.save(user);
+
+        String accessToken = jwtService.createAccessToken(user.getUserTag());
+        String refreshToken = jwtService.createRefreshToken();
+        user.updateRefreshToken(refreshToken);
+
+        UserRegisterByUsernameResponse userRegisterByUsernameResponse = UserRegisterByUsernameResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(user.getRefreshToken())
+                .userId(user.getId())
+                .username(user.getUsername())
+                .nickname(user.getNickname())
+                .userTag(user.getUserTag())
+                .imageUrl(user.getImageUrl())
+                .build();
+
+        return ApiResponse.success(userRegisterByUsernameResponse);
     }
 
     public String register(String Token, UserRegisterRequest userRegisterRequest)

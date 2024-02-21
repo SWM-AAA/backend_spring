@@ -56,26 +56,11 @@ public class UserController {
     }
 
     @PostMapping("/test/register-by-username")
-    public UserRegisterByUsernameResponse registerByUsername(@RequestBody UserRegisterByUsernameRequest userRegisterByUsernameRequest)
+    public ResponseEntity<ApiResponse<UserRegisterByUsernameResponse>> registerByUsername(@RequestBody UserRegisterByUsernameRequest userRegisterByUsernameRequest)
             throws Exception {
-        userService.registerByUsername(userRegisterByUsernameRequest);
+        ApiResponse<UserRegisterByUsernameResponse> response = userService.registerByUsername(userRegisterByUsernameRequest);
 
-        User user = userRepository.findByUsername(userRegisterByUsernameRequest.getUsername())
-                .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
-
-        String accessToken = jwtService.createAccessToken(user.getUserTag());
-        String refreshToken = jwtService.createRefreshToken();
-        user.updateRefreshToken(refreshToken);
-
-        return UserRegisterByUsernameResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(user.getRefreshToken())
-                .userId(user.getId())
-                .username(user.getUsername())
-                .nickname(user.getNickname())
-                .userTag(user.getUserTag())
-                .imageUrl(user.getImageUrl())
-                .build();
+        return ResponseEntity.ok().body(response);
     }
 
     // todo : 사용자 이미지도 body에 포함시켜서 보내주기

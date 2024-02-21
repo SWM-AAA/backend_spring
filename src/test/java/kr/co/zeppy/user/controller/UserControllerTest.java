@@ -304,6 +304,31 @@ public class UserControllerTest extends ApiDocument {
     }
 
     /////////////////////////////////////////////////////////////////
+    // registerByUsername (Method : get) test code
+    /////////////////////////////////////////////////////////////////
+    @Test
+    void test_Register_By_Username_Success() {
+
+    }
+
+    private ResultActions Register_By_Username_Request() throws Exception {
+        return mockMvc.perform(RestDocumentationRequestBuilders.post(API_VERSION + RESOURCE_PATH + "/search/usertag")
+                .header("Authorization", "Bearer " + TOKEN)
+                .content(toJson(userTagRequest))
+                .contentType(MediaType.APPLICATION_JSON));
+    }
+
+    private void Register_By_Username_Request_Success(ResultActions resultActions) throws Exception {
+        printAndMakeSnippet(resultActions.andExpect(status().isOk())
+                        .andExpect(jsonPath("$.userId", is(userInfoResponse.getUserId().intValue())))
+                        .andExpect(jsonPath("$.nickname", is(userInfoResponse.getNickname())))
+                        .andExpect(jsonPath("$.userTag", is(userInfoResponse.getUserTag())))
+                        .andExpect(jsonPath("$.imageUrl", is(userInfoResponse.getImageUrl()))),
+                "userTag-Search-Success");
+        verify(userService, times(1)).findUserTag(any(UserTagRequest.class), anyLong());
+    }
+
+    /////////////////////////////////////////////////////////////////
     // usertag search testcode
     /////////////////////////////////////////////////////////////////
     @Test
