@@ -10,9 +10,13 @@ import lombok.AccessLevel;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserRegisterResponse {
+public class UserRegisterByUsernameResponse {
 
+    private String accessToken;
+    private String refreshToken;
     private Long userId;
+    private String username;
+    private String nickname;
     private String userTag;
     private String imageUrl;
 }

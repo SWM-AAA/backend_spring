@@ -1,20 +1,13 @@
 package kr.co.zeppy.user.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.AccessLevel;
+import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @Getter
-@Setter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserRegisterRequest {
+public class UserProfileImageRequest {
 
-    private String nickname;
     private MultipartFile profileImage;
 }

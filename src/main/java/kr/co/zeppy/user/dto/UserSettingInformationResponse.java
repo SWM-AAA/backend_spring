@@ -1,18 +1,16 @@
 package kr.co.zeppy.user.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.AccessLevel;
+import kr.co.zeppy.user.entity.SocialType;
+import lombok.*;
 
 @Getter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserRegisterResponse {
+public class UserSettingInformationResponse {
 
-    private Long userId;
+    private String nickname;
     private String userTag;
     private String imageUrl;
+    private SocialType socialType;
 }
