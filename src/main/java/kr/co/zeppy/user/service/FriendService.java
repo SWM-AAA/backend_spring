@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import kr.co.zeppy.global.dto.ApiResponse;
 import kr.co.zeppy.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -62,13 +63,14 @@ public class FriendService {
     public void deleteFriend(Long userId, DeleteFriendRequest deleteFriendRequest) {
         Long friendId = deleteFriendRequest.getFriendId();
 
-        Optional<Friendship> friendship = friendshipRepository.findByUserIdAndFriendIdAndStatus(userId, friendId, FriendshipStatus.ACCEPTED);
+        Optional<Friendship> friendship = friendshipRepository.
+                findByUserIdAndFriendIdAndStatus(userId, friendId, FriendshipStatus.ACCEPTED);
 
         friendship.ifPresent(friendshipRepository::delete);
     }
 
     // 나에게 친구추가 요청을 보낸 사용자 리스트를 확인
-    public List<UserFriendInfoResponse> checkFriendRequestToList(Long userId) {
+    public ApiResponse<List<UserFriendInfoResponse>> checkFriendRequestToList(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
         
@@ -82,8 +84,8 @@ public class FriendService {
                 friendRequestList.add(UserFriendInfoResponse.from(requester));
             }
         }
-    
-        return friendRequestList;
+
+        return ApiResponse.success(friendRequestList);
     }
 
     // 내가 친구추가를 보낸 사용자 리스트를 확인

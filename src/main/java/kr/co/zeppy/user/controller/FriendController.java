@@ -2,7 +2,9 @@ package kr.co.zeppy.user.controller;
 
 import java.util.List;
 
+import kr.co.zeppy.global.dto.ApiResponse;
 import kr.co.zeppy.user.repository.UserRepository;
+import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -57,11 +59,12 @@ public class FriendController {
 
     // 친구 추가 요청 확인하기
     @GetMapping("/v1/friends/requests")
-    public ResponseEntity<List<UserFriendInfoResponse>> checkFriendRequest(@UserId Long userId) {
-        List<UserFriendInfoResponse> friendRequestList = friendService.checkFriendRequestToList(userId);
+    public ResponseEntity<ApiResponse<List<UserFriendInfoResponse>>> checkFriendRequest(@UserId Long userId) {
+        ApiResponse<List<UserFriendInfoResponse>> response = friendService.checkFriendRequestToList(userId);
 
-        return ResponseEntity.ok().body(friendRequestList);
+        return ResponseEntity.ok().body(response);
     }
+
 
     // 친구 추가 요청 수락 및 거절하기
     @PostMapping("/v1/friends/response")
