@@ -1,0 +1,317 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "spring-rest-docs-guide",
+    "description" : "Spring REST Docs 테스트 생성물 생성시 추가생성되는 OpenAPI 문서이용",
+    "version" : "0.0.1-SNAPSHOT"
+  },
+  "servers" : [ {
+    "url" : "http://localhost:8080"
+  } ],
+  "tags" : [ ],
+  "paths" : {
+    "/api/v1/friends" : {
+      "get" : {
+        "tags" : [ "api" ],
+        "operationId" : "my-Friend-List-",
+        "responses" : {
+          "404" : {
+            "description" : "404",
+            "content" : {
+              "application/json;charset=UTF-8" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/api-v1-friends-response486549215"
+                },
+                "examples" : {
+                  "my-Friend-List-Failure" : {
+                    "value" : "{\r\n  \"message\" : \"사용자를 찾을 수 없습니다.\",\r\n  \"code\" : \"USER_004\"\r\n}"
+                  }
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json;charset=UTF-8" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/api-v1-friends-response486549215"
+                },
+                "examples" : {
+                  "my-Friend-List-Success" : {
+                    "value" : "[ {\r\n  \"userId\" : 1,\r\n  \"nickname\" : \"nickname\",\r\n  \"imageUrl\" : \"imageUrl\",\r\n  \"userTag\" : null\r\n} ]"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/friends/requests" : {
+      "get" : {
+        "tags" : [ "api" ],
+        "operationId" : "check-Friends-Request-",
+        "responses" : {
+          "404" : {
+            "description" : "404",
+            "content" : {
+              "application/json;charset=UTF-8" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/api-v1-friends-response486549215"
+                },
+                "examples" : {
+                  "check-Friends-Request-Failure" : {
+                    "value" : "{\r\n  \"message\" : \"사용자를 찾을 수 없습니다.\",\r\n  \"code\" : \"USER_004\"\r\n}"
+                  }
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json;charset=UTF-8" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/api-v1-friends-response486549215"
+                },
+                "examples" : {
+                  "check-Friends-Request-Success" : {
+                    "value" : "[ {\r\n  \"userId\" : 1,\r\n  \"nickname\" : \"nickname\",\r\n  \"imageUrl\" : \"imageUrl\",\r\n  \"userTag\" : null\r\n} ]"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "api" ],
+        "operationId" : "send-Friends-Request-",
+        "requestBody" : {
+          "content" : {
+            "application/json;charset=UTF-8" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/api-v1-friends-response486549215"
+              },
+              "examples" : {
+                "send-Friends-Request-Failure" : {
+                  "value" : "{\r\n  \"userId\" : 1\r\n}"
+                },
+                "send-Friends-Request-Success" : {
+                  "value" : "{\r\n  \"userId\" : 1\r\n}"
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "404" : {
+            "description" : "404",
+            "content" : {
+              "application/json;charset=UTF-8" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/api-v1-friends-response486549215"
+                },
+                "examples" : {
+                  "send-Friends-Request-Failure" : {
+                    "value" : "{\r\n  \"message\" : \"친구 요청을 찾을 수 없습니다.\",\r\n  \"code\" : \"FRIEND_001\"\r\n}"
+                  }
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "200"
+          }
+        }
+      }
+    },
+    "/api/v1/friends/response" : {
+      "post" : {
+        "tags" : [ "api" ],
+        "operationId" : "confirm-Friends-Request-",
+        "requestBody" : {
+          "content" : {
+            "application/json;charset=UTF-8" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/api-v1-friends-response486549215"
+              },
+              "examples" : {
+                "confirm-Friends-Request-Failure" : {
+                  "value" : "{\r\n  \"userId\" : 1,\r\n  \"accept\" : false\r\n}"
+                },
+                "confirm-Friends-Request-Success" : {
+                  "value" : "{\r\n  \"userId\" : 1,\r\n  \"accept\" : false\r\n}"
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "404" : {
+            "description" : "404",
+            "content" : {
+              "application/json;charset=UTF-8" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/api-v1-friends-response486549215"
+                },
+                "examples" : {
+                  "confirm-Friends-Request-Failure" : {
+                    "value" : "{\r\n  \"message\" : \"사용자를 찾을 수 없습니다.\",\r\n  \"code\" : \"USER_004\"\r\n}"
+                  }
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "200"
+          }
+        }
+      }
+    },
+    "/api/v1/users/location-and-battery" : {
+      "post" : {
+        "tags" : [ "api" ],
+        "operationId" : "update-Location-And-Battery-",
+        "requestBody" : {
+          "content" : {
+            "application/json;charset=UTF-8" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/api-v1-friends-response486549215"
+              },
+              "examples" : {
+                "update-Location-And-Battery-Failure" : {
+                  "value" : "{\r\n  \"latitude\" : \"37.123456\",\r\n  \"longitude\" : \"127.123456\",\r\n  \"battery\" : \"90\",\r\n  \"isCharging\" : false\r\n}"
+                },
+                "update-Location-And-Battery-Success" : {
+                  "value" : "{\r\n  \"latitude\" : \"37.123456\",\r\n  \"longitude\" : \"127.123456\",\r\n  \"battery\" : \"90\",\r\n  \"isCharging\" : false\r\n}"
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "503" : {
+            "description" : "503",
+            "content" : {
+              "application/json;charset=UTF-8" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/api-v1-friends-response486549215"
+                },
+                "examples" : {
+                  "update-Location-And-Battery-Failure" : {
+                    "value" : "{\r\n  \"message\" : \"Redis 서버가 연결되지 않았습니다.\",\r\n  \"code\" : \"REDIS_001\"\r\n}"
+                  }
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "200"
+          }
+        }
+      }
+    },
+    "/api/v1/friends/requests/send" : {
+      "get" : {
+        "tags" : [ "api" ],
+        "operationId" : "check-Sent-Friend-Request-",
+        "responses" : {
+          "404" : {
+            "description" : "404",
+            "content" : {
+              "application/json;charset=UTF-8" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/api-v1-friends-response486549215"
+                },
+                "examples" : {
+                  "check-Sent-Friend-Request-Failure" : {
+                    "value" : "{\r\n  \"message\" : \"사용자를 찾을 수 없습니다.\",\r\n  \"code\" : \"USER_004\"\r\n}"
+                  }
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json;charset=UTF-8" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/api-v1-friends-response486549215"
+                },
+                "examples" : {
+                  "check-Sent-Friend-Request-Success" : {
+                    "value" : "[ {\r\n  \"userId\" : 1,\r\n  \"nickname\" : \"nickname\",\r\n  \"imageUrl\" : \"imageUrl\",\r\n  \"userTag\" : null\r\n} ]"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/search/usertag" : {
+      "post" : {
+        "tags" : [ "api" ],
+        "operationId" : "userTag-Search-",
+        "requestBody" : {
+          "content" : {
+            "application/json;charset=UTF-8" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/api-v1-friends-response486549215"
+              },
+              "examples" : {
+                "userTag-Search-Failure" : {
+                  "value" : "{\r\n  \"userTag\" : \"newUserTag\"\r\n}"
+                },
+                "userTag-Search-Success" : {
+                  "value" : "{\r\n  \"userTag\" : \"newUserTag\"\r\n}"
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "400" : {
+            "description" : "400",
+            "content" : {
+              "application/json;charset=UTF-8" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/api-v1-friends-response486549215"
+                },
+                "examples" : {
+                  "userTag-Search-Failure" : {
+                    "value" : "{\r\n  \"message\" : \"UserTag가 올바르지 않습니다.\",\r\n  \"code\" : \"USER_006\"\r\n}"
+                  }
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json;charset=UTF-8" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/api-v1-friends-response486549215"
+                },
+                "examples" : {
+                  "userTag-Search-Success" : {
+                    "value" : "{\r\n  \"userId\" : 1,\r\n  \"nickname\" : \"userNickname\",\r\n  \"userTag\" : \"sampleUserTag\",\r\n  \"imageUrl\" : \"filename.jpg\",\r\n  \"relationship\" : true,\r\n  \"friend\" : false\r\n}"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "api-v1-friends-response486549215" : {
+        "type" : "object"
+      }
+    }
+  }
+}

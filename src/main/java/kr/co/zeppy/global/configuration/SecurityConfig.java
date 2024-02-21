@@ -48,14 +48,10 @@ public class SecurityConfig {
             "/api/healthcheck",
             "/api/test/**",
             "/api/v1/users/all-user-location-and-battery",
-            "/swagger-ui/index.html", // 이 부분을 업데이트
             "/swagger-ui/**",
             "/v3/api-docs/**",
-            "/v2/api-docs/**",
-            "/swagger-resources/**",
             "/webjars/**",
             "/docs/**",
-            "*",
     };
 
     @Bean
