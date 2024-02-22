@@ -1,6 +1,8 @@
 package kr.co.zeppy.user.controller;
 
+import akka.event.Logging;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import kr.co.zeppy.ApiDocument;
 import kr.co.zeppy.SecurityConfigTest;
 import kr.co.zeppy.global.aws.service.AwsS3Uploader;
@@ -355,7 +357,7 @@ public class UserControllerTest extends ApiDocument {
     }
 
     private ResultActions register_By_Username_Request() throws Exception {
-        return mockMvc.perform(RestDocumentationRequestBuilders.post(API_VERSION + RESOURCE_PATH + "/register-by-username")
+        return mockMvc.perform(RestDocumentationRequestBuilders.post("/api/test/register-by-username")
                 .content(toJson(userRegisterByUsernameRequest))
                 .contentType(MediaType.APPLICATION_JSON));
     }
@@ -373,30 +375,32 @@ public class UserControllerTest extends ApiDocument {
     }
 
     /////////////////////////////////////////////////////////////////
-    // usertag search testcode
+    // usertag search testcode (Method : post) || (url: /search/usertag)
     /////////////////////////////////////////////////////////////////
     @Test
     void test_UserTag_Search_Success() throws Exception {
         // given
+        ApiResponse<UserInfoResponse> response = ApiResponse.success(userInfoResponse);
         given(userService.findUserTag(any(UserTagRequest.class), anyLong())).willReturn(userInfoResponse);
 
         // when
         ResultActions resultActions = userTag_Search_Request();
 
         // then
-        userTag_Search_Request_Success(resultActions);
+        userTag_Search_Request_Success(resultActions, response);
     }
 
     @Test
     void test_UserTag_Search_Failure_InvalidFormat() throws Exception {
         // given
+        ApiResponse<ErrorResponse> response = ApiResponse.failure(ErrorResponse.fromException(invalidUserTagFormat));
         given(userService.findUserTag(any(UserTagRequest.class), anyLong())).willThrow(invalidUserTagFormat);
 
         // when
         ResultActions resultActions = userTag_Search_Request();
 
         // then
-        userTag_Search_Request_Failure(resultActions);
+        userTag_Search_Request_Failure(resultActions, response);
     }
 
     private ResultActions userTag_Search_Request() throws Exception {
@@ -406,19 +410,19 @@ public class UserControllerTest extends ApiDocument {
                 .contentType(MediaType.APPLICATION_JSON));
     }
 
-    private void userTag_Search_Request_Success(ResultActions resultActions) throws Exception {
+    private void userTag_Search_Request_Success(ResultActions resultActions, ApiResponse<UserInfoResponse> response) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isOk())
-                        .andExpect(jsonPath("$.userId", is(userInfoResponse.getUserId().intValue())))
-                        .andExpect(jsonPath("$.nickname", is(userInfoResponse.getNickname())))
-                        .andExpect(jsonPath("$.userTag", is(userInfoResponse.getUserTag())))
-                        .andExpect(jsonPath("$.imageUrl", is(userInfoResponse.getImageUrl()))),
+                        .andExpect(jsonPath("$.data.userId", is(response.getData().getUserId().intValue())))
+                        .andExpect(jsonPath("$.data.nickname", is(response.getData().getNickname())))
+                        .andExpect(jsonPath("$.data.userTag", is(response.getData().getUserTag())))
+                        .andExpect(jsonPath("$.data.imageUrl", is(response.getData().getImageUrl()))),
                 "userTag-Search-Success");
         verify(userService, times(1)).findUserTag(any(UserTagRequest.class), anyLong());
     }
 
-    private void userTag_Search_Request_Failure(ResultActions resultActions) throws Exception {
+    private void userTag_Search_Request_Failure(ResultActions resultActions, ApiResponse<ErrorResponse> response) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isBadRequest())
-                        .andExpect(content().json(toJson(ErrorResponse.fromException(invalidUserTagFormat)))),
+                .andExpect(content().json(toJson(response))),
                 "userTag-Search-Failure");
         verify(userService, times(1)).findUserTag(any(UserTagRequest.class), anyLong());
     }

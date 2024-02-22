@@ -55,7 +55,7 @@ public class UserController {
         return "jwtTest 요청 성공";
     }
 
-    @PostMapping("/v1/users/register-by-username")
+    @PostMapping("/test/register-by-username")
     public ResponseEntity<ApiResponse<UserRegisterByUsernameResponse>> registerByUsername(@RequestBody UserRegisterByUsernameRequest userRegisterByUsernameRequest)
             throws Exception {
         ApiResponse<UserRegisterByUsernameResponse> response = userService.registerByUsername(userRegisterByUsernameRequest);
@@ -123,10 +123,10 @@ public class UserController {
     // todo : testcode 미작성
     // usertag로 사용자 검색후 반환
     @PostMapping("/v1/users/search/usertag")
-    public ResponseEntity<UserInfoResponse> searchUserTag(@UserId Long userId, @RequestBody UserTagRequest userTagRequest) {
-        UserInfoResponse userInfoResponse = userService.findUserTag(userTagRequest, userId);
+    public ResponseEntity<ApiResponse<UserInfoResponse>> searchUserTag(@UserId Long userId, @RequestBody UserTagRequest userTagRequest) {
+        UserInfoResponse response = userService.findUserTag(userTagRequest, userId);
 
-        return ResponseEntity.ok(userInfoResponse);
+        return ResponseEntity.ok().body(ApiResponse.success(response));
     }
 
     // test
