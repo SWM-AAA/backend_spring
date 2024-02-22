@@ -2,7 +2,6 @@ package kr.co.zeppy.user.controller;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import jakarta.servlet.http.HttpServletResponse;
 import kr.co.zeppy.global.annotation.UserId;
 import kr.co.zeppy.global.aws.service.AwsS3Uploader;
 import kr.co.zeppy.global.dto.ApiResponse;

@@ -241,14 +241,13 @@ public class UserControllerTest extends ApiDocument {
     @Test
     void test_Update_User_Location_And_Battery_Failure() throws Exception {
         // given
-        ApiResponse<ErrorResponse> response = ApiResponse.failure(ErrorResponse.fromException(redisUserLocationUpdateException));
         willThrow(redisUserLocationUpdateException).given(redisService).updateLocationAndBattery(anyString(), any(LocationAndBatteryRequest.class));
 
         // when
         ResultActions resultActions = update_User_Location_And_Battery_Request();
 
         // then
-        update_User_Location_And_Battery_Request_Failure(resultActions, response);
+        update_User_Location_And_Battery_Request_Failure(resultActions);
     }
 
     private ResultActions update_User_Location_And_Battery_Request() throws Exception {
@@ -264,10 +263,10 @@ public class UserControllerTest extends ApiDocument {
         verify(redisService, times(1)).updateLocationAndBattery(anyString(), any(LocationAndBatteryRequest.class));
     }
 
-    private void update_User_Location_And_Battery_Request_Failure(ResultActions resultActions, ApiResponse<ErrorResponse> response) throws Exception {
+    private void update_User_Location_And_Battery_Request_Failure(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions
                         .andExpect(status().isServiceUnavailable())
-                        .andExpect(content().json(toJson(response))),
+                        .andExpect(content().json(toJson(ApiResponse.failure(ErrorResponse.fromException(redisUserLocationUpdateException))))),
                 "update-Location-And-Battery-Failure");
         verify(redisService, times(1)).updateLocationAndBattery(anyString(), any(LocationAndBatteryRequest.class));
     }
@@ -275,28 +274,28 @@ public class UserControllerTest extends ApiDocument {
     /////////////////////////////////////////////////////////////////
     // userRegister test code
     /////////////////////////////////////////////////////////////////
-    @Test
-    @Disabled
-    void test_User_Register_Success() throws Exception {
-        // given
-        Map<String, String> expectedResponse = new HashMap<>();
-        expectedResponse.put("accessToken", ACCESSTOKEN);
-        expectedResponse.put("userId", USER_ID);
-        expectedResponse.put("userTag", NEWUSERTAG);
-        expectedResponse.put("imageUrl", PROFILE_IMAGE_NAME);
-
-        given(userService.register(anyString(), any(UserRegisterRequest.class))).willReturn(NEWUSERTAG);
-        given(jwtService.createAccessToken(anyString())).willReturn(ACCESSTOKEN);
-        given(userRepository.findIdByUserTag(anyString())).willReturn(Optional.of(USER_LONG_ID));
-        given(userRepository.findImageUrlByUserTag(anyString())).willReturn(Optional.of(NEWUSERTAG));
-//        given(userService.userRegisterBody(ACCESSTOKEN, NEWUSERTAG, USER_ID, PROFILE_IMAGE_NAME)).willReturn(expectedResponse);
-
-        // when
-        ResultActions resultActions = user_Register_Request();
-
-        // then
-        user_Register_Request_Success(resultActions);
-    }
+//    @Test
+//    @Disabled
+//    void test_User_Register_Success() throws Exception {
+//        // given
+//        Map<String, String> expectedResponse = new HashMap<>();
+//        expectedResponse.put("accessToken", ACCESSTOKEN);
+//        expectedResponse.put("userId", USER_ID);
+//        expectedResponse.put("userTag", NEWUSERTAG);
+//        expectedResponse.put("imageUrl", PROFILE_IMAGE_NAME);
+//
+//        given(userService.register(anyString(), any(UserRegisterRequest.class))).willReturn(NEWUSERTAG);
+//        given(jwtService.createAccessToken(anyString())).willReturn(ACCESSTOKEN);
+//        given(userRepository.findIdByUserTag(anyString())).willReturn(Optional.of(USER_LONG_ID));
+//        given(userRepository.findImageUrlByUserTag(anyString())).willReturn(Optional.of(NEWUSERTAG));
+//        given(userService.userRegisterBody(NEWUSERTAG, USER_LONG_ID, PROFILE_IMAGE_NAME)).willReturn(userRegisterResponse);
+//
+//        // when
+//        ResultActions resultActions = user_Register_Request();
+//
+//        // then
+//        user_Register_Request_Success(resultActions);
+//    }
 
 
     @Test
@@ -320,19 +319,20 @@ public class UserControllerTest extends ApiDocument {
                 .contentType(MediaType.MULTIPART_FORM_DATA));
     }
 
-    private void user_Register_Request_Success(ResultActions resultActions) throws Exception {
+    private void user_Register_Request_Success(ResultActions resultActions, ApiResponse<UserRegisterResponse> response) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isOk())
                         // .andExpect(jsonPath("$.accessToken", is(ACCESSTOKEN)))
-                        .andExpect(jsonPath("$.userTag", is(NEWUSERTAG)))
-                        .andExpect(jsonPath("$.userId", is(USER_ID)))
-                        .andExpect(jsonPath("$.imageUrl", is(IMAGEURL))),
+                .andExpect(content().json(toJson(response))),
+//                        .andExpect(jsonPath("$.userTag", is(NEWUSERTAG)))
+//                        .andExpect(jsonPath("$.userId", is(USER_ID)))
+//                        .andExpect(jsonPath("$.imageUrl", is(IMAGEURL))),
                 "user-Register-Success");
         verify(userService, times(1)).register(anyString(), any(UserRegisterRequest.class));
     }
 
     private void user_Register_Request_Failure(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isInternalServerError())
-                        .andExpect(content().json(toJson(ErrorResponse.fromException(internalServerException)))),
+                .andExpect(content().json(toJson(ApiResponse.failure(ErrorResponse.fromException(internalServerException))))),
                 "user-Register-Failure");
         verify(userService, times(1)).register(anyString(), any(UserRegisterRequest.class));
     }
@@ -356,14 +356,13 @@ public class UserControllerTest extends ApiDocument {
     @Test
     void test_Register_By_Username_Failure() throws Exception {
         // given
-        ApiResponse<ErrorResponse> response = ApiResponse.failure(ErrorResponse.fromException(usernameDuplicatedException));
         doThrow(usernameDuplicatedException).when(userService).registerByUsername(any(UserRegisterByUsernameRequest.class));
 
         // when
         ResultActions resultActions = register_By_Username_Request();
 
         // then
-        register_By_Username_Failure(resultActions, response);
+        register_By_Username_Failure(resultActions);
     }
 
     private ResultActions register_By_Username_Request() throws Exception {
@@ -378,9 +377,9 @@ public class UserControllerTest extends ApiDocument {
                 "register-By-Username-Request-Success");
     }
 
-    void register_By_Username_Failure(ResultActions resultActions, ApiResponse<ErrorResponse> response) throws Exception {
+    void register_By_Username_Failure(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isConflict())
-                        .andExpect(content().json(toJson(response))),
+                .andExpect(content().json(toJson(ApiResponse.failure(ErrorResponse.fromException(usernameDuplicatedException))))),
                 "register-By-Username-Request-Failure");
     }
 
@@ -403,14 +402,13 @@ public class UserControllerTest extends ApiDocument {
     @Test
     void test_UserTag_Search_Failure_InvalidFormat() throws Exception {
         // given
-        ApiResponse<ErrorResponse> response = ApiResponse.failure(ErrorResponse.fromException(invalidUserTagFormat));
         given(userService.findUserTag(any(UserTagRequest.class), anyLong())).willThrow(invalidUserTagFormat);
 
         // when
         ResultActions resultActions = userTag_Search_Request();
 
         // then
-        userTag_Search_Request_Failure(resultActions, response);
+        userTag_Search_Request_Failure(resultActions);
     }
 
     private ResultActions userTag_Search_Request() throws Exception {
@@ -430,9 +428,9 @@ public class UserControllerTest extends ApiDocument {
         verify(userService, times(1)).findUserTag(any(UserTagRequest.class), anyLong());
     }
 
-    private void userTag_Search_Request_Failure(ResultActions resultActions, ApiResponse<ErrorResponse> response) throws Exception {
+    private void userTag_Search_Request_Failure(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isBadRequest())
-                .andExpect(content().json(toJson(response))),
+                .andExpect(content().json(toJson(ApiResponse.failure(ErrorResponse.fromException(invalidUserTagFormat))))),
                 "userTag-Search-Failure");
         verify(userService, times(1)).findUserTag(any(UserTagRequest.class), anyLong());
     }
@@ -456,14 +454,13 @@ public class UserControllerTest extends ApiDocument {
     @Test
     void test_get_User_Information_Failure() throws Exception {
         // given
-        ApiResponse<ErrorResponse> response = ApiResponse.failure(ErrorResponse.fromException(userTagNotFoundException));
         doThrow(userTagNotFoundException).when(userService).getUserInformation(anyLong());
 
         // when
         ResultActions resultActions = get_User_Information_Request();
 
         // then
-        get_User_Information_Failure(resultActions, response);
+        get_User_Information_Failure(resultActions);
     }
 
     private ResultActions get_User_Information_Request() throws Exception {
@@ -480,9 +477,9 @@ public class UserControllerTest extends ApiDocument {
                 "get-User-Information-Request-Success");
     }
 
-    void get_User_Information_Failure(ResultActions resultActions, ApiResponse<ErrorResponse> response) throws Exception {
+    void get_User_Information_Failure(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isNotFound())
-                .andExpect(content().json(toJson(response))),
+                .andExpect(content().json(toJson(ApiResponse.failure(ErrorResponse.fromException(userTagNotFoundException))))),
                 "get-User-Information-Request-Failure");
     }
 
@@ -513,14 +510,13 @@ public class UserControllerTest extends ApiDocument {
     @Test
     void test_update_User_Nickname_Failure() throws Exception {
         // given
-        ApiResponse<ErrorResponse> response = ApiResponse.failure(ErrorResponse.fromException(userNicknameNotFoundException));
         doThrow(userNicknameNotFoundException).when(userService).updateUserNickname(anyString(), any(UserNicknameRequest.class));
 
         // when
         ResultActions resultActions = update_User_Nickname_Request();
 
         // then
-        update_User_Nickname_Failure(resultActions, response);
+        update_User_Nickname_Failure(resultActions);
     }
 
     private ResultActions update_User_Nickname_Request() throws Exception {
@@ -540,9 +536,9 @@ public class UserControllerTest extends ApiDocument {
         verify(userService, times(1)).updateUserNickname(anyString(), any(UserNicknameRequest.class));
     }
 
-    void update_User_Nickname_Failure(ResultActions resultActions, ApiResponse<ErrorResponse> response) throws Exception {
+    void update_User_Nickname_Failure(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isNotFound())
-                        .andExpect(content().json(toJson(response))),
+                .andExpect(content().json(toJson(ApiResponse.failure(ErrorResponse.fromException(userNicknameNotFoundException))))),
                 "update-User-Nickname-Request-Failure");
         verify(userService, times(1)).updateUserNickname(anyString(), any(UserNicknameRequest.class));
     }
@@ -578,14 +574,13 @@ public class UserControllerTest extends ApiDocument {
     @Test
     void test_update_User_Image_Failure() throws Exception {
         // given
-        ApiResponse<ErrorResponse> response = ApiResponse.failure(ErrorResponse.fromException(internalServerException));
         doThrow(internalServerException).when(userService).updateUserImage(anyString(), any(MultipartFile.class));
 
         // when
         ResultActions resultActions = update_User_Image_Request();
 
         // then
-        update_User_Image_Failure(resultActions, response);
+        update_User_Image_Failure(resultActions);
     }
 
     private ResultActions update_User_Image_Request() throws Exception {
@@ -612,9 +607,9 @@ public class UserControllerTest extends ApiDocument {
         verify(userService, times(1)).updateUserImage(anyString(), any(MockMultipartFile.class));
     }
 
-    void update_User_Image_Failure(ResultActions resultActions, ApiResponse<ErrorResponse> response) throws Exception {
+    void update_User_Image_Failure(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isInternalServerError())
-                        .andExpect(content().json(toJson(response))),
+                .andExpect(content().json(toJson(ApiResponse.failure(ErrorResponse.fromException(internalServerException))))),
                 "update-User-Image-Failure");
         verify(userService, times(1)).updateUserImage(anyString(), any(MockMultipartFile.class));
     }
@@ -643,14 +638,13 @@ public class UserControllerTest extends ApiDocument {
     @WithMockUser
     void test_delete_User_Failure() throws Exception {
         // given
-        ApiResponse<ErrorResponse> response = ApiResponse.failure(ErrorResponse.fromException(internalServerException));
         doThrow(internalServerException).when(userService).deleteUser(anyString());
 
         // when
         ResultActions resultActions = delete_User_Request();
 
         // then
-        delete_User_Failure(resultActions, response);
+        delete_User_Failure(resultActions);
     }
 
     private ResultActions delete_User_Request() throws Exception {
@@ -666,9 +660,9 @@ public class UserControllerTest extends ApiDocument {
         verify(userService, times(1)).deleteUser(anyString());
     }
 
-    void delete_User_Failure(ResultActions resultActions, ApiResponse<ErrorResponse> response) throws Exception {
+    void delete_User_Failure(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isInternalServerError())
-                        .andExpect(content().json(toJson(response))),
+                .andExpect(content().json(toJson(ApiResponse.failure(ErrorResponse.fromException(internalServerException))))),
                 "remove-User-Failure");
         verify(userService, times(1)).deleteUser(anyString());
     }

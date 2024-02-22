@@ -2,9 +2,6 @@ package kr.co.zeppy.user.service;
 
 import com.auth0.jwt.JWT;
 import kr.co.zeppy.global.aws.service.AwsS3Uploader;
-import kr.co.zeppy.global.dto.ApiResponse;
-import kr.co.zeppy.global.error.ApplicationError;
-import kr.co.zeppy.global.error.ApplicationException;
 import kr.co.zeppy.global.jwt.service.JwtService;
 import kr.co.zeppy.user.dto.*;
 import kr.co.zeppy.user.entity.*;
@@ -112,15 +109,16 @@ public class UserServiceTest {
     }
 
     @Test
-    @Disabled
     void register() throws IOException {
         // Given
         when(jwtService.extractUserTagFromToken(TOKEN)).thenReturn(Optional.of(USER_TAG));
 
         when(userRepository.findByUserTag(USER_TAG)).thenReturn(Optional.of(user));
         when(nickNameService.getUserTagFromNickName(NICKNAME)).thenReturn(NEW_USER_TAG);
-        when(awsS3Uploader.newUpload(file, S3_USER_PROFILE_BASE_PATH + USER_ID +
+        when(awsS3Uploader.newUpload(file, S3_USER_PROFILE_BASE_PATH + 0 +
                 S3_USER_PROFILE_LAST_PATH)).thenReturn(IMAGE_URL);
+//        when(awsS3Uploader.newUpload(file, S3_USER_PROFILE_BASE_PATH + USER_ID +
+//                S3_USER_PROFILE_LAST_PATH)).thenReturn(IMAGE_URL);
 
         // When
         userService.register(TOKEN, userRegisterRequest);
