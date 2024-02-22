@@ -216,11 +216,11 @@ public class UserController {
     // todo : 테스트 용도로 S3에 업로드할 때 파일 이름 다르게 하는 코드 작성
     // 사용자의 이미지를 변경하는 함수
     @PatchMapping("/v1/users/image")
-    public ResponseEntity<String> updateMyImage(@RequestHeader("Authorization") String token,
+    public ResponseEntity<ApiResponse<UserSettingInformationResponse>> updateMyImage(@RequestHeader("Authorization") String token,
                                                 @RequestPart("File") MultipartFile profileImage) throws IOException {
-        String newImageUrl = userService.updateUserImage(token, profileImage);
 
-        return ResponseEntity.ok().body(newImageUrl);
+        UserSettingInformationResponse response = userService.updateUserImage(token, profileImage);
+        return ResponseEntity.ok().body(ApiResponse.success(response));
     }
 
     // 사용자 탈퇴

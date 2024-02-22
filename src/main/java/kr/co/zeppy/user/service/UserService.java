@@ -246,7 +246,7 @@ public class UserService {
     }
 
     // 이미지 변경
-    public String updateUserImage(String token, MultipartFile file) throws IOException {
+    public UserSettingInformationResponse updateUserImage(String token, MultipartFile file) throws IOException {
 
         Long userId = jwtService.getLongUserIdFromToken(token);
 
@@ -262,7 +262,12 @@ public class UserService {
         user.updateImageUrl(newFileName);
         userRepository.save(user);
 
-        return user.getImageUrl();
+        return UserSettingInformationResponse.builder()
+                .nickname(user.getNickname())
+                .userTag(user.getUserTag())
+                .imageUrl(user.getImageUrl())
+                .socialType(user.getSocialType())
+                .build();
     }
 
     // 사용자 탈퇴

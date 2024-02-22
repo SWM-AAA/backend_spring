@@ -10,6 +10,61 @@
   } ],
   "tags" : [ ],
   "paths" : {
+    "/api/test/register-by-username" : {
+      "post" : {
+        "tags" : [ "api" ],
+        "operationId" : "register-By-Username-Request-",
+        "requestBody" : {
+          "content" : {
+            "application/json;charset=UTF-8" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/api-v1-friends-response486549215"
+              },
+              "examples" : {
+                "register-By-Username-Request-Failure" : {
+                  "value" : "{\r\n  \"username\" : \"username\",\r\n  \"password\" : \"password\"\r\n}"
+                },
+                "register-By-Username-Request-Success" : {
+                  "value" : "{\r\n  \"username\" : \"username\",\r\n  \"password\" : \"password\"\r\n}"
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "409" : {
+            "description" : "409",
+            "content" : {
+              "application/json;charset=UTF-8" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/api-v1-friends-response486549215"
+                },
+                "examples" : {
+                  "register-By-Username-Request-Failure" : {
+                    "value" : "{\r\n  \"success\" : false,\r\n  \"data\" : null,\r\n  \"error\" : {\r\n    \"message\" : \"이미 존재하는 유저네임입니다.\",\r\n    \"code\" : \"COMMON_004\"\r\n  }\r\n}"
+                  }
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json;charset=UTF-8" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/api-v1-friends-response486549215"
+                },
+                "examples" : {
+                  "register-By-Username-Request-Success" : {
+                    "value" : "{\r\n  \"success\" : true,\r\n  \"data\" : {\r\n    \"accessToken\" : \"accessToken\",\r\n    \"refreshToken\" : \"refreshToken\",\r\n    \"userId\" : 1,\r\n    \"username\" : \"username\",\r\n    \"nickname\" : \"userNickname\",\r\n    \"userTag\" : \"userNickname#0001\",\r\n    \"imageUrl\" : \"userImageUrl\"\r\n  },\r\n  \"error\" : null\r\n}"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/friends" : {
       "get" : {
         "tags" : [ "api" ],
@@ -49,6 +104,42 @@
       }
     },
     "/api/v1/users" : {
+      "get" : {
+        "tags" : [ "api" ],
+        "operationId" : "get-User-Information-Request-",
+        "responses" : {
+          "404" : {
+            "description" : "404",
+            "content" : {
+              "application/json;charset=UTF-8" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/api-v1-friends-response486549215"
+                },
+                "examples" : {
+                  "get-User-Information-Request-Failure" : {
+                    "value" : "{\r\n  \"success\" : false,\r\n  \"data\" : null,\r\n  \"error\" : {\r\n    \"message\" : \"사용자 User Tag를 찾을 수 없습니다.\",\r\n    \"code\" : \"USER_002\"\r\n  }\r\n}"
+                  }
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json;charset=UTF-8" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/api-v1-friends-response486549215"
+                },
+                "examples" : {
+                  "get-User-Information-Request-Success" : {
+                    "value" : "{\r\n  \"success\" : true,\r\n  \"data\" : {\r\n    \"nickname\" : \"userNickname\",\r\n    \"userTag\" : \"userNickname#0001\",\r\n    \"imageUrl\" : \"userImageUrl\",\r\n    \"socialType\" : \"KAKAO\"\r\n  },\r\n  \"error\" : null\r\n}"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "patch" : {
         "tags" : [ "api" ],
         "operationId" : "remove-User-",
@@ -62,7 +153,7 @@
                 },
                 "examples" : {
                   "remove-User-Failure" : {
-                    "value" : "{\r\n  \"message\" : \"서버 내부 에러가 발생하였습니다.\",\r\n  \"code\" : \"SERVER_001\"\r\n}"
+                    "value" : "{\r\n  \"success\" : false,\r\n  \"data\" : null,\r\n  \"error\" : {\r\n    \"message\" : \"서버 내부 에러가 발생하였습니다.\",\r\n    \"code\" : \"SERVER_001\"\r\n  }\r\n}"
                   }
                 }
               }
@@ -210,7 +301,7 @@
                 },
                 "examples" : {
                   "update-User-Image-Failure" : {
-                    "value" : "{\r\n  \"message\" : \"서버 내부 에러가 발생하였습니다.\",\r\n  \"code\" : \"SERVER_001\"\r\n}"
+                    "value" : "{\r\n  \"success\" : false,\r\n  \"data\" : null,\r\n  \"error\" : {\r\n    \"message\" : \"서버 내부 에러가 발생하였습니다.\",\r\n    \"code\" : \"SERVER_001\"\r\n  }\r\n}"
                   }
                 }
               }
@@ -253,7 +344,7 @@
                 },
                 "examples" : {
                   "update-Location-And-Battery-Failure" : {
-                    "value" : "{\r\n  \"message\" : \"Redis 서버가 연결되지 않았습니다.\",\r\n  \"code\" : \"REDIS_001\"\r\n}"
+                    "value" : "{\r\n  \"success\" : false,\r\n  \"data\" : null,\r\n  \"error\" : {\r\n    \"message\" : \"Redis 서버가 연결되지 않았습니다.\",\r\n    \"code\" : \"REDIS_001\"\r\n  }\r\n}"
                   }
                 }
               }
@@ -296,7 +387,7 @@
                 },
                 "examples" : {
                   "update-User-Nickname-Request-Failure" : {
-                    "value" : "{\r\n  \"message\" : \"사용자 닉네임을 찾을 수 없습니다.\",\r\n  \"code\" : \"USER_005\"\r\n}"
+                    "value" : "{\r\n  \"success\" : false,\r\n  \"data\" : null,\r\n  \"error\" : {\r\n    \"message\" : \"사용자 닉네임을 찾을 수 없습니다.\",\r\n    \"code\" : \"USER_005\"\r\n  }\r\n}"
                   }
                 }
               }
@@ -377,7 +468,7 @@
                 },
                 "examples" : {
                   "userTag-Search-Failure" : {
-                    "value" : "{\r\n  \"message\" : \"UserTag가 올바르지 않습니다.\",\r\n  \"code\" : \"USER_006\"\r\n}"
+                    "value" : "{\r\n  \"success\" : false,\r\n  \"data\" : null,\r\n  \"error\" : {\r\n    \"message\" : \"UserTag가 올바르지 않습니다.\",\r\n    \"code\" : \"USER_006\"\r\n  }\r\n}"
                   }
                 }
               }
@@ -392,7 +483,7 @@
                 },
                 "examples" : {
                   "userTag-Search-Success" : {
-                    "value" : "{\r\n  \"userId\" : 1,\r\n  \"nickname\" : \"userNickname\",\r\n  \"userTag\" : \"sampleUserTag\",\r\n  \"imageUrl\" : \"filename.jpg\",\r\n  \"relationship\" : true,\r\n  \"friend\" : false\r\n}"
+                    "value" : "{\r\n  \"success\" : true,\r\n  \"data\" : {\r\n    \"userId\" : 1,\r\n    \"nickname\" : \"userNickname\",\r\n    \"userTag\" : \"sampleUserTag\",\r\n    \"imageUrl\" : \"filename.jpg\",\r\n    \"relationship\" : true,\r\n    \"friend\" : false\r\n  },\r\n  \"error\" : null\r\n}"
                   }
                 }
               }

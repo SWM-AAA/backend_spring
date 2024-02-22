@@ -231,13 +231,14 @@ public class UserControllerTest extends ApiDocument {
     @Test
     void test_Update_User_Location_And_Battery_Failure() throws Exception {
         // given
+        ApiResponse<ErrorResponse> response = ApiResponse.failure(ErrorResponse.fromException(redisUserLocationUpdateException));
         willThrow(redisUserLocationUpdateException).given(redisService).updateLocationAndBattery(anyString(), any(LocationAndBatteryRequest.class));
 
         // when
         ResultActions resultActions = update_User_Location_And_Battery_Request();
 
         // then
-        update_User_Location_And_Battery_Request_Failure(resultActions);
+        update_User_Location_And_Battery_Request_Failure(resultActions, response);
     }
 
     private ResultActions update_User_Location_And_Battery_Request() throws Exception {
@@ -253,10 +254,10 @@ public class UserControllerTest extends ApiDocument {
         verify(redisService, times(1)).updateLocationAndBattery(anyString(), any(LocationAndBatteryRequest.class));
     }
 
-    private void update_User_Location_And_Battery_Request_Failure(ResultActions resultActions) throws Exception {
+    private void update_User_Location_And_Battery_Request_Failure(ResultActions resultActions, ApiResponse<ErrorResponse> response) throws Exception {
         printAndMakeSnippet(resultActions
                         .andExpect(status().isServiceUnavailable())
-                        .andExpect(content().json(toJson(ErrorResponse.fromException(redisUserLocationUpdateException)))),
+                        .andExpect(content().json(toJson(response))),
                 "update-Location-And-Battery-Failure");
         verify(redisService, times(1)).updateLocationAndBattery(anyString(), any(LocationAndBatteryRequest.class));
     }
@@ -497,13 +498,14 @@ public class UserControllerTest extends ApiDocument {
     @Test
     void test_update_User_Nickname_Failure() throws Exception {
         // given
+        ApiResponse<ErrorResponse> response = ApiResponse.failure(ErrorResponse.fromException(userNicknameNotFoundException));
         doThrow(userNicknameNotFoundException).when(userService).updateUserNickname(anyString(), any(UserNicknameRequest.class));
 
         // when
         ResultActions resultActions = update_User_Nickname_Request();
 
         // then
-        update_User_Nickname_Failure(resultActions);
+        update_User_Nickname_Failure(resultActions, response);
     }
 
     private ResultActions update_User_Nickname_Request() throws Exception {
@@ -523,9 +525,9 @@ public class UserControllerTest extends ApiDocument {
         verify(userService, times(1)).updateUserNickname(anyString(), any(UserNicknameRequest.class));
     }
 
-    void update_User_Nickname_Failure(ResultActions resultActions) throws Exception {
+    void update_User_Nickname_Failure(ResultActions resultActions, ApiResponse<ErrorResponse> response) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isNotFound())
-                        .andExpect(content().json(toJson(ErrorResponse.fromException(userNicknameNotFoundException)))),
+                        .andExpect(content().json(toJson(response))),
                 "update-User-Nickname-Request-Failure");
         verify(userService, times(1)).updateUserNickname(anyString(), any(UserNicknameRequest.class));
     }
@@ -537,29 +539,38 @@ public class UserControllerTest extends ApiDocument {
     @Test
     void test_update_User_Image_Success() throws Exception {
         // given
-//        when(userService.updateUserImage(anyString(), any(MockMultipartFile.class))).thenReturn(NEW_IMAGE_URL);
+        userSettingInformationResponse = UserSettingInformationResponse.builder()
+                .nickname(USER_NICKNAME)
+                .userTag(USER_TAG)
+                .imageUrl(NEW_IMAGE_URL)
+                .socialType(USER_SOCIAL_TYPE)
+                .build();
+
+        ApiResponse<UserSettingInformationResponse> response = ApiResponse.success(userSettingInformationResponse);
+
         doAnswer(invocation -> {
             user.updateImageUrl(NEW_IMAGE_URL);
-            return null;
+            return userSettingInformationResponse;
         }).when(userService).updateUserImage(anyString(), any(MockMultipartFile.class));
 
         // when
         ResultActions resultActions = update_User_Image_Request();
 
         // then
-        update_User_Image_Success(resultActions);
+        update_User_Image_Success(resultActions, response);
     }
 
     @Test
     void test_update_User_Image_Failure() throws Exception {
         // given
+        ApiResponse<ErrorResponse> response = ApiResponse.failure(ErrorResponse.fromException(internalServerException));
         doThrow(internalServerException).when(userService).updateUserImage(anyString(), any(MultipartFile.class));
 
         // when
         ResultActions resultActions = update_User_Image_Request();
 
         // then
-        update_User_Image_Failure(resultActions);
+        update_User_Image_Failure(resultActions, response);
     }
 
     private ResultActions update_User_Image_Request() throws Exception {
@@ -579,15 +590,16 @@ public class UserControllerTest extends ApiDocument {
         );
     }
 
-    void update_User_Image_Success(ResultActions resultActions) throws Exception {
-        printAndMakeSnippet(resultActions.andExpect(status().isOk()),
+    void update_User_Image_Success(ResultActions resultActions, ApiResponse<UserSettingInformationResponse> response) throws Exception {
+        printAndMakeSnippet(resultActions.andExpect(status().isOk())
+                .andExpect(content().json(toJson(response))),
                 "update-User-Image-Success");
         verify(userService, times(1)).updateUserImage(anyString(), any(MockMultipartFile.class));
     }
 
-    void update_User_Image_Failure(ResultActions resultActions) throws Exception {
+    void update_User_Image_Failure(ResultActions resultActions, ApiResponse<ErrorResponse> response) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isInternalServerError())
-                        .andExpect(content().json(toJson(ErrorResponse.fromException(internalServerException)))),
+                        .andExpect(content().json(toJson(response))),
                 "update-User-Image-Failure");
         verify(userService, times(1)).updateUserImage(anyString(), any(MockMultipartFile.class));
     }
@@ -615,13 +627,14 @@ public class UserControllerTest extends ApiDocument {
     @WithMockUser
     void test_delete_User_Failure() throws Exception {
         // given
+        ApiResponse<ErrorResponse> response = ApiResponse.failure(ErrorResponse.fromException(internalServerException));
         doThrow(internalServerException).when(userService).deleteUser(anyString());
 
         // when
         ResultActions resultActions = delete_User_Request();
 
         // then
-        delete_User_Failure(resultActions);
+        delete_User_Failure(resultActions, response);
     }
 
     private ResultActions delete_User_Request() throws Exception {
@@ -636,9 +649,9 @@ public class UserControllerTest extends ApiDocument {
         verify(userService, times(1)).deleteUser(anyString());
     }
 
-    void delete_User_Failure(ResultActions resultActions) throws Exception {
+    void delete_User_Failure(ResultActions resultActions, ApiResponse<ErrorResponse> response) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isInternalServerError())
-                        .andExpect(content().json(toJson(ErrorResponse.fromException(internalServerException)))),
+                        .andExpect(content().json(toJson(response))),
                 "remove-User-Failure");
         verify(userService, times(1)).deleteUser(anyString());
     }
