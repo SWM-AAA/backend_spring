@@ -225,9 +225,9 @@ public class UserController {
 
     // 사용자 탈퇴
     @PatchMapping("/v1/users")
-    public ResponseEntity<Void> deleteMe(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<ApiResponse<Void>> deleteMe(@RequestHeader("Authorization") String token) {
 
         userService.deleteUser(token);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body(ApiResponse.success(null));
     }
 }

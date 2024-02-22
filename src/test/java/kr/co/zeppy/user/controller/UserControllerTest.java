@@ -611,6 +611,7 @@ public class UserControllerTest extends ApiDocument {
     @WithMockUser
     void test_delete_User_Success() throws Exception {
         // given
+        ApiResponse<Void> response = ApiResponse.success(null);
         doAnswer(invocation -> {
             userRepository.delete(any());
             return null;
@@ -620,7 +621,7 @@ public class UserControllerTest extends ApiDocument {
         ResultActions resultActions = delete_User_Request();
 
         // then
-        delete_User_Success(resultActions);
+        delete_User_Success(resultActions, response);
     }
 
     @Test
@@ -643,8 +644,9 @@ public class UserControllerTest extends ApiDocument {
                         .header(AUTHORIZATION_HEADER, "Bearer " + ACCESSTOKEN));
     }
 
-    void delete_User_Success(ResultActions resultActions) throws Exception {
-        printAndMakeSnippet(resultActions.andExpect(status().isOk()),
+    void delete_User_Success(ResultActions resultActions, ApiResponse<Void> response) throws Exception {
+        printAndMakeSnippet(resultActions.andExpect(status().isOk())
+                .andExpect(content().json(toJson(response))),
                 "remove-User-Request-Success");
         verify(userService, times(1)).deleteUser(anyString());
     }
