@@ -179,12 +179,10 @@ public class UserController {
 
     // test
     @GetMapping("/test/users/all-user-information")
-    public ResponseEntity<List<UserPinInformationResponse>> getAllUserInformationTest() {
+    public ResponseEntity<ApiResponse<List<UserPinInformationResponse>>> getAllUserInformationTest() {
+
         List<UserPinInformationResponse> allUserInformation = userService.getAllUserInformation();
-
-        ApiResponse apiResponse = ApiResponse.success(allUserInformation);
-
-        return ResponseEntity.ok().body(allUserInformation);
+        return ResponseEntity.ok().body(ApiResponse.success(allUserInformation));
     }
 
 
