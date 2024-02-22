@@ -171,3 +171,20 @@ include::{snippets}/my-Friend-List-Failure/http-request.adoc[]
 
 .Response
 include::{snippets}/my-Friend-List-Failure/http-response.adoc[]
+
+=== Chat 관련 기능
+==== 채팅방 생성 기능
+---
+===== Success
+.Request
+include::{snippets}/create-Chat-Room-Request-Success/http-request.adoc[]
+
+.Response
+include::{snippets}/create-Chat-Room-Request-Success/http-response.adoc[]
+
+===== Failure
+.Request
+include::{snippets}/create-Chat-Room-Request-Failure/http-request.adoc[]
+
+.Response
+include::{snippets}/create-Chat-Room-Request-Failure/http-response.adoc[]

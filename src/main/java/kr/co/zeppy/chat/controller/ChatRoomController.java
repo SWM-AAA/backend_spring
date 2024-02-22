@@ -4,6 +4,7 @@ import kr.co.zeppy.chat.dto.ChatRoomCreateRequest;
 import kr.co.zeppy.chat.dto.ChatRoomResponse;
 import kr.co.zeppy.chat.entity.ChatRoom;
 import kr.co.zeppy.chat.service.ChatRoomService;
+import kr.co.zeppy.global.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -20,9 +21,9 @@ public class ChatRoomController {
     private final ChatRoomService chatRoomService;
 
     @PostMapping("/v1/chatRoom")
-    public ResponseEntity<ChatRoomResponse> createChatRoom(@RequestBody ChatRoomCreateRequest chatRoomCreateRequest) {
-        ChatRoomResponse chatRoomResponse = chatRoomService.createChatRoom(chatRoomCreateRequest.getUserIdList());
+    public ResponseEntity<ApiResponse<ChatRoomResponse>> createChatRoom(@RequestBody ChatRoomCreateRequest chatRoomCreateRequest) {
+        ChatRoomResponse response = chatRoomService.createChatRoom(chatRoomCreateRequest.getUserIdList());
 
-        return ResponseEntity.ok().body(chatRoomResponse);
+        return ResponseEntity.ok().body(ApiResponse.success(response));
     }
 }

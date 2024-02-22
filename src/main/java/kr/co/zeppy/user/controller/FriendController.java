@@ -60,9 +60,9 @@ public class FriendController {
     // 친구 추가 요청 확인하기
     @GetMapping("/v1/friends/requests")
     public ResponseEntity<ApiResponse<List<UserFriendInfoResponse>>> checkFriendRequest(@UserId Long userId) {
-        ApiResponse<List<UserFriendInfoResponse>> response = friendService.checkFriendRequestToList(userId);
+        List<UserFriendInfoResponse> response = friendService.checkFriendRequestToList(userId);
 
-        return ResponseEntity.ok().body(response);
+        return ResponseEntity.ok().body(ApiResponse.success(response));
     }
 
 
@@ -85,16 +85,17 @@ public class FriendController {
 
     
     @GetMapping("/v1/friends")
-    public ResponseEntity<List<UserFriendInfoResponse>> myFriendList(@UserId Long userId) {
-        List<UserFriendInfoResponse> friendRequestList = friendService.giveUserFriendList(userId);
+    public ResponseEntity<ApiResponse<List<UserFriendInfoResponse>>> myFriendList(@UserId Long userId) {
+        List<UserFriendInfoResponse> response = friendService.giveUserFriendList(userId);
 
-        return ResponseEntity.ok().body(friendRequestList);
+        return ResponseEntity.ok().body(ApiResponse.success(response));
     }
 
     // todo : testcode 미작성
     // 친구 위치와 배터리 반환하는 함수
     @GetMapping("/v1/users/friend-location-and-battery")
-    public ResponseEntity<FriendLocationAndBatteryResponse> getFriendLocationAndBattery(@UserId Long userId) throws Exception {
+    public ResponseEntity<FriendLocationAndBatteryResponse> getFriendLocationAndBattery(@UserId Long userId)
+            throws Exception {
 
         return ResponseEntity.ok().body(redisService.getFriendLocationAndBattery(userId));
     }
