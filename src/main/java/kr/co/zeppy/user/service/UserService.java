@@ -222,7 +222,7 @@ public class UserService {
     }
 
     // 닉네임 변경
-    public Map<String, String> updateUserNickname(String token, UserNicknameRequest userNicknameRequest) {
+    public UpdateNicknameResponse updateUserNickname(String token, UserNicknameRequest userNicknameRequest) {
 
         Long userId = jwtService.getLongUserIdFromToken(token);
 
@@ -235,14 +235,20 @@ public class UserService {
         String newUserTag = nickNameService.getUserTagFromNickName(newNickname);
 
         Map<String, String> tokenMap = jwtService.reissueToken(newUserTag);
-        String newRefreshToken = tokenMap.get(REFRESHTOKEN);
 
         user.updateNickname(newNickname);
         user.updateUserTag(newUserTag);
-        user.updateRefreshToken(newRefreshToken);
+        user.updateRefreshToken(tokenMap.get(REFRESHTOKEN));
         userRepository.save(user);
 
-        return tokenMap;
+        return UpdateNicknameResponse.builder()
+                .accessToken(tokenMap.get(ACCESSTOKEN))
+                .refreshToken(user.getRefreshToken())
+                .nickname(user.getNickname())
+                .userTag(user.getUserTag())
+                .imageUrl(user.getImageUrl())
+                .socialType(user.getSocialType())
+                .build();
     }
 
     // 이미지 변경

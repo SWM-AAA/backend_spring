@@ -202,15 +202,22 @@ public class UserController {
 
     // 사용자의 닉네임을 변경하는 함수
     @PatchMapping("/v1/users/nickname")
-    public ResponseEntity<Map<String, String>> updateMyNickname(@RequestHeader("Authorization") String token,
+    public ResponseEntity<ApiResponse<UserSettingInformationResponse>> updateMyNickname(@RequestHeader("Authorization") String token,
                                                                 @RequestBody UserNicknameRequest userNicknameRequest) {
-        Map<String, String> tokenMap = userService.updateUserNickname(token, userNicknameRequest);
+        UpdateNicknameResponse updateNicknameResponse = userService.updateUserNickname(token, userNicknameRequest);
         HttpHeaders responseHeader = new HttpHeaders();
-        responseHeader.add("Authorization", "Bearer " + tokenMap.get("accessToken"));
-        responseHeader.add("Authorization-refresh", "Bearer " + tokenMap.get("refreshToken"));
 
-        return new ResponseEntity<>(responseHeader, HttpStatus.OK);
-//        return ResponseEntity.ok().body(tokenMap);
+        UserSettingInformationResponse response = UserSettingInformationResponse.builder()
+                .nickname(updateNicknameResponse.getNickname())
+                .userTag(updateNicknameResponse.getUserTag())
+                .imageUrl(updateNicknameResponse.getImageUrl())
+                .socialType(updateNicknameResponse.getSocialType())
+                .build();
+
+        responseHeader.add("Authorization", "Bearer " + updateNicknameResponse.getAccessToken());
+        responseHeader.add("Authorization-refresh", "Bearer " + updateNicknameResponse.getRefreshToken());
+
+        return new ResponseEntity<>(ApiResponse.success(response), responseHeader, HttpStatus.OK);
     }
 
     // todo : 테스트 용도로 S3에 업로드할 때 파일 이름 다르게 하는 코드 작성
