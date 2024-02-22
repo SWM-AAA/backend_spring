@@ -176,7 +176,8 @@ public class UserControllerTest extends ApiDocument {
 
         userRegisterResponse = UserRegisterResponse.builder()
                 .userId(USER_LONG_ID)
-                .userTag(VALID_USER_TAG)
+                .userTag(NEWUSERTAG)
+//                .userTag(VALID_USER_TAG)
                 .imageUrl(FILE_NAME)
                 .build();
 
@@ -291,19 +292,18 @@ public class UserControllerTest extends ApiDocument {
     // userRegister test code
     /////////////////////////////////////////////////////////////////
     @Test
-    @Disabled
     void test_User_Register_Success() throws Exception {
         // given
-        Map<String, String> expectedResponse = new HashMap<>();
-        expectedResponse.put("accessToken", ACCESSTOKEN);
-        expectedResponse.put("userId", USER_ID);
-        expectedResponse.put("userTag", NEWUSERTAG);
-        expectedResponse.put("imageUrl", PROFILE_IMAGE_NAME);
+//        Map<String, String> expectedResponse = new HashMap<>();
+//        expectedResponse.put("accessToken", ACCESSTOKEN);
+//        expectedResponse.put("userId", USER_ID);
+//        expectedResponse.put("userTag", NEWUSERTAG);
+//        expectedResponse.put("imageUrl", PROFILE_IMAGE_NAME);
 
         given(userService.register(anyString(), any(UserRegisterRequest.class))).willReturn(NEWUSERTAG);
         given(jwtService.createAccessToken(anyString())).willReturn(ACCESSTOKEN);
         given(userRepository.findIdByUserTag(anyString())).willReturn(Optional.of(USER_LONG_ID));
-        given(userRepository.findImageUrlByUserTag(anyString())).willReturn(Optional.of(NEWUSERTAG));
+        given(userRepository.findImageUrlByUserTag(anyString())).willReturn(Optional.of(PROFILE_IMAGE_NAME));
         given(userService.userRegisterBody(NEWUSERTAG, USER_LONG_ID, PROFILE_IMAGE_NAME)).willReturn(userRegisterResponse);
 
         // when
@@ -313,9 +313,7 @@ public class UserControllerTest extends ApiDocument {
         user_Register_Request_Success(resultActions);
     }
 
-
     @Test
-    @Disabled
     void test_User_Register_Failure() throws Exception {
         // given
         willThrow(new RuntimeException("User registration failed")).given(userService).register(anyString(), any(UserRegisterRequest.class));
@@ -336,11 +334,10 @@ public class UserControllerTest extends ApiDocument {
     }
 
     private void user_Register_Request_Success(ResultActions resultActions) throws Exception {
-        printAndMakeSnippet(resultActions.andExpect(status().isOk()),
-                        // .andExpect(jsonPath("$.accessToken", is(ACCESSTOKEN)))
-//                        .andExpect(jsonPath("$.userTag", is(NEWUSERTAG)))
-//                        .andExpect(jsonPath("$.userId", is(USER_ID)))
-//                        .andExpect(jsonPath("$.imageUrl", is(IMAGEURL))),
+        printAndMakeSnippet(resultActions.andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.userTag", is(NEWUSERTAG)))
+                .andExpect(jsonPath("$.data.userId", is(USER_LONG_ID.intValue())))
+                .andExpect(jsonPath("$.data.imageUrl", is(FILE_NAME))),
                 "user-Register-Success");
         verify(userService, times(1)).register(anyString(), any(UserRegisterRequest.class));
     }
