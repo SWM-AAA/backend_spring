@@ -65,7 +65,7 @@ public class UserController {
 
     // todo : 사용자 이미지도 body에 포함시켜서 보내주기
     @PostMapping("/v1/users/register")
-    public ResponseEntity<UserRegisterResponse> userRegister(@RequestHeader("Authorization") String token,
+    public ResponseEntity<ApiResponse<UserRegisterResponse>> userRegister(@RequestHeader("Authorization") String token,
                                                              @ModelAttribute UserRegisterRequest userRegisterRequest)
             throws IOException {
 
@@ -80,7 +80,7 @@ public class UserController {
 
         UserRegisterResponse userRegisterResponse = userService.userRegisterBody(newUserTag, userId, userImageUrl);
 
-        return ResponseEntity.ok(userRegisterResponse);
+        return ResponseEntity.ok().body(ApiResponse.success(userRegisterResponse));
     }
 
     // test controller
