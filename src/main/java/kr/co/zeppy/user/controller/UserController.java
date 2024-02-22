@@ -58,9 +58,9 @@ public class UserController {
     @PostMapping("/test/register-by-username")
     public ResponseEntity<ApiResponse<UserRegisterByUsernameResponse>> registerByUsername(@RequestBody UserRegisterByUsernameRequest userRegisterByUsernameRequest)
             throws Exception {
-        ApiResponse<UserRegisterByUsernameResponse> response = userService.registerByUsername(userRegisterByUsernameRequest);
 
-        return ResponseEntity.ok().body(response);
+        UserRegisterByUsernameResponse response = userService.registerByUsername(userRegisterByUsernameRequest);
+        return ResponseEntity.ok().body(ApiResponse.success(response));
     }
 
     // todo : 사용자 이미지도 body에 포함시켜서 보내주기
@@ -197,9 +197,9 @@ public class UserController {
     // 사용자 정보를 불러오는 함수
     @GetMapping("/v1/users")
     public ResponseEntity<ApiResponse<UserSettingInformationResponse>> getMyInformation(@UserId Long userId) {
-        ApiResponse<UserSettingInformationResponse> response = userService.getUserInformation(userId);
 
-        return ResponseEntity.ok().body(response);
+        UserSettingInformationResponse response = userService.getUserInformation(userId);
+        return ResponseEntity.ok().body(ApiResponse.success(response));
     }
 
     // 사용자의 닉네임을 변경하는 함수

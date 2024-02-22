@@ -333,7 +333,7 @@ public class UserControllerTest extends ApiDocument {
     void test_Register_By_Username_Success() throws Exception {
         // given
         ApiResponse<UserRegisterByUsernameResponse> response = ApiResponse.success(userRegisterByUsernameResponse);
-        when(userService.registerByUsername(any(UserRegisterByUsernameRequest.class))).thenReturn(response);
+        when(userService.registerByUsername(any(UserRegisterByUsernameRequest.class))).thenReturn(userRegisterByUsernameResponse);
 
         // when
         ResultActions resultActions = register_By_Username_Request();
@@ -345,8 +345,7 @@ public class UserControllerTest extends ApiDocument {
     @Test
     void test_Register_By_Username_Failure() throws Exception {
         // given
-        ErrorResponse errorResponse = ErrorResponse.fromException(usernameDuplicatedException);
-        ApiResponse<ErrorResponse> response = ApiResponse.failure(errorResponse);
+        ApiResponse<ErrorResponse> response = ApiResponse.failure(ErrorResponse.fromException(usernameDuplicatedException));
         doThrow(usernameDuplicatedException).when(userService).registerByUsername(any(UserRegisterByUsernameRequest.class));
 
         // when
@@ -434,7 +433,7 @@ public class UserControllerTest extends ApiDocument {
     void test_get_User_Information_Success() throws Exception {
         // given
         ApiResponse<UserSettingInformationResponse> response = ApiResponse.success(userSettingInformationResponse);
-        when(userService.getUserInformation(anyLong())).thenReturn(response);
+        when(userService.getUserInformation(anyLong())).thenReturn(userSettingInformationResponse);
 
         // when
         ResultActions resultActions = get_User_Information_Request();
@@ -446,8 +445,7 @@ public class UserControllerTest extends ApiDocument {
     @Test
     void test_get_User_Information_Failure() throws Exception {
         // given
-        ErrorResponse errorResponse = ErrorResponse.fromException(userTagNotFoundException);
-        ApiResponse<ErrorResponse> response = ApiResponse.failure(errorResponse);
+        ApiResponse<ErrorResponse> response = ApiResponse.failure(ErrorResponse.fromException(userTagNotFoundException));
         doThrow(userTagNotFoundException).when(userService).getUserInformation(anyLong());
 
         // when

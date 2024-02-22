@@ -152,14 +152,14 @@ public class UserServiceTest {
         when(jwtService.createRefreshToken()).thenReturn(USER_REFRESH_TOKEN);
 
         // When
-        ApiResponse<UserRegisterByUsernameResponse> response = userService.registerByUsername(userRegisterByUsernameRequest);
+        UserRegisterByUsernameResponse response = userService.registerByUsername(userRegisterByUsernameRequest);
 
         // Then
         verify(userRepository).save(any(User.class));
         assertAll(
-                () -> assertEquals(USERNAME, response.getData().getUsername()),
-                () -> assertEquals(USER_TAG, response.getData().getUserTag()),
-                () -> assertEquals(USER_REFRESH_TOKEN, response.getData().getRefreshToken())
+                () -> assertEquals(USERNAME, response.getUsername()),
+                () -> assertEquals(USER_TAG, response.getUserTag()),
+                () -> assertEquals(USER_REFRESH_TOKEN, response.getRefreshToken())
         );
     }
 
@@ -180,14 +180,13 @@ public class UserServiceTest {
         when(userRepository.findById(INIT_USERID)).thenReturn(Optional.of(user));
 
         // When
-        ApiResponse<UserSettingInformationResponse> response = userService.getUserInformation(INIT_USERID);
+        UserSettingInformationResponse response = userService.getUserInformation(INIT_USERID);
 
         // Then
-        assertTrue(response.isSuccess());
-        assertEquals(user.getNickname(), response.getData().getNickname());
-        assertEquals(user.getUserTag(), response.getData().getUserTag());
-        assertEquals(user.getImageUrl(), response.getData().getImageUrl());
-        assertEquals(user.getSocialType(), response.getData().getSocialType());
+        assertEquals(user.getNickname(), response.getNickname());
+        assertEquals(user.getUserTag(), response.getUserTag());
+        assertEquals(user.getImageUrl(), response.getImageUrl());
+        assertEquals(user.getSocialType(), response.getSocialType());
     }
 
     @Test

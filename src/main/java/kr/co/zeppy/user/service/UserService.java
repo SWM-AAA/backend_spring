@@ -87,7 +87,7 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public ApiResponse<UserRegisterByUsernameResponse> registerByUsername(UserRegisterByUsernameRequest userRegisterByUsernameRequest) throws Exception {
+    public UserRegisterByUsernameResponse registerByUsername(UserRegisterByUsernameRequest userRegisterByUsernameRequest) throws Exception {
 
         if (userRepository.findByUsername(userRegisterByUsernameRequest.getUsername()).isPresent()) {
             throw new ApplicationException(ApplicationError.USERNAME_DUPLICATED);
@@ -121,7 +121,7 @@ public class UserService {
         String refreshToken = jwtService.createRefreshToken();
         user.updateRefreshToken(refreshToken);
 
-        UserRegisterByUsernameResponse userRegisterByUsernameResponse = UserRegisterByUsernameResponse.builder()
+        return UserRegisterByUsernameResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(user.getRefreshToken())
                 .userId(user.getId())
@@ -130,8 +130,6 @@ public class UserService {
                 .userTag(user.getUserTag())
                 .imageUrl(user.getImageUrl())
                 .build();
-
-        return ApiResponse.success(userRegisterByUsernameResponse);
     }
 
     public String register(String Token, UserRegisterRequest userRegisterRequest)
@@ -210,19 +208,17 @@ public class UserService {
     }
 
     // 환경 설정에서 사용자의 기본 정보 불러오는 함수
-    public ApiResponse<UserSettingInformationResponse> getUserInformation(Long userId) {
+    public UserSettingInformationResponse getUserInformation(Long userId) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApplicationException(ApplicationError.USER_TAG_NOT_FOUND));
 
-        UserSettingInformationResponse userSettingInformationResponse = UserSettingInformationResponse.builder()
+        return UserSettingInformationResponse.builder()
                 .userTag(user.getUserTag())
                 .nickname(user.getNickname())
                 .imageUrl(user.getImageUrl())
                 .socialType(user.getSocialType())
                 .build();
-
-        return ApiResponse.success(userSettingInformationResponse);
     }
 
     // 닉네임 변경
