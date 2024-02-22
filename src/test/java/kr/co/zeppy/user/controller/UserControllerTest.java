@@ -166,7 +166,7 @@ public class UserControllerTest extends ApiDocument {
                 .userId(USER_LONG_ID)
                 .nickname(NICKNAME)
                 .userTag(VALID_USER_TAG)
-                .imageUrl(FILE_NAME)
+                .imageUrl(IMAGEURL)
                 .isRelationship(true)
                 .build();
 
@@ -178,7 +178,7 @@ public class UserControllerTest extends ApiDocument {
                 .userId(USER_LONG_ID)
                 .userTag(NEWUSERTAG)
 //                .userTag(VALID_USER_TAG)
-                .imageUrl(FILE_NAME)
+                .imageUrl(IMAGEURL)
                 .build();
 
         userNicknameRequest = UserNicknameRequest.builder()
@@ -337,7 +337,7 @@ public class UserControllerTest extends ApiDocument {
         printAndMakeSnippet(resultActions.andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.userTag", is(NEWUSERTAG)))
                 .andExpect(jsonPath("$.data.userId", is(USER_LONG_ID.intValue())))
-                .andExpect(jsonPath("$.data.imageUrl", is(FILE_NAME))),
+                .andExpect(jsonPath("$.data.imageUrl", is(IMAGEURL))),
                 "user-Register-Success");
         verify(userService, times(1)).register(anyString(), any(UserRegisterRequest.class));
     }
@@ -655,7 +655,7 @@ public class UserControllerTest extends ApiDocument {
     void delete_User_Failure(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isInternalServerError())
                 .andExpect(content().json(toJson(ApiResponse.failure(ErrorResponse.fromException(internalServerException))))),
-                "remove-User-Failure");
+                "remove-User-Request-Failure");
         verify(userService, times(1)).deleteUser(anyString());
     }
 }
