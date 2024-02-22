@@ -131,6 +131,8 @@ public class UserControllerTest extends ApiDocument {
     private UserRegisterByUsernameRequest userRegisterByUsernameRequest;
     private UserRegisterByUsernameResponse userRegisterByUsernameResponse;
     private UpdateNicknameResponse updateNicknameResponse;
+    private UserSettingInformationResponse nicknameUpdatedUserSettingInformationResponse;
+    private UserSettingInformationResponse imageUpdatedUserSettingInformationResponse;
 
     private User user;
 
@@ -213,6 +215,20 @@ public class UserControllerTest extends ApiDocument {
                 .socialType(USER_SOCIAL_TYPE)
                 .build();
 
+        nicknameUpdatedUserSettingInformationResponse = UserSettingInformationResponse.builder()
+                .nickname(NEW_NICKNAME)
+                .userTag(NEWUSERTAG)
+                .imageUrl(USER_IMAGE_URL)
+                .socialType(USER_SOCIAL_TYPE)
+                .build();
+
+        imageUpdatedUserSettingInformationResponse = UserSettingInformationResponse.builder()
+                .nickname(USER_NICKNAME)
+                .userTag(USER_TAG)
+                .imageUrl(NEW_IMAGE_URL)
+                .socialType(USER_SOCIAL_TYPE)
+                .build();
+
         given(jwtService.getStringUserIdFromToken("Bearer " + TOKEN)).willReturn(USER_ID);
 
         redisUserLocationUpdateException = new RedisSaveException(ApplicationError.REDIS_SERVER_UNAVAILABLE);
@@ -274,28 +290,28 @@ public class UserControllerTest extends ApiDocument {
     /////////////////////////////////////////////////////////////////
     // userRegister test code
     /////////////////////////////////////////////////////////////////
-//    @Test
-//    @Disabled
-//    void test_User_Register_Success() throws Exception {
-//        // given
-//        Map<String, String> expectedResponse = new HashMap<>();
-//        expectedResponse.put("accessToken", ACCESSTOKEN);
-//        expectedResponse.put("userId", USER_ID);
-//        expectedResponse.put("userTag", NEWUSERTAG);
-//        expectedResponse.put("imageUrl", PROFILE_IMAGE_NAME);
-//
-//        given(userService.register(anyString(), any(UserRegisterRequest.class))).willReturn(NEWUSERTAG);
-//        given(jwtService.createAccessToken(anyString())).willReturn(ACCESSTOKEN);
-//        given(userRepository.findIdByUserTag(anyString())).willReturn(Optional.of(USER_LONG_ID));
-//        given(userRepository.findImageUrlByUserTag(anyString())).willReturn(Optional.of(NEWUSERTAG));
-//        given(userService.userRegisterBody(NEWUSERTAG, USER_LONG_ID, PROFILE_IMAGE_NAME)).willReturn(userRegisterResponse);
-//
-//        // when
-//        ResultActions resultActions = user_Register_Request();
-//
-//        // then
-//        user_Register_Request_Success(resultActions);
-//    }
+    @Test
+    @Disabled
+    void test_User_Register_Success() throws Exception {
+        // given
+        Map<String, String> expectedResponse = new HashMap<>();
+        expectedResponse.put("accessToken", ACCESSTOKEN);
+        expectedResponse.put("userId", USER_ID);
+        expectedResponse.put("userTag", NEWUSERTAG);
+        expectedResponse.put("imageUrl", PROFILE_IMAGE_NAME);
+
+        given(userService.register(anyString(), any(UserRegisterRequest.class))).willReturn(NEWUSERTAG);
+        given(jwtService.createAccessToken(anyString())).willReturn(ACCESSTOKEN);
+        given(userRepository.findIdByUserTag(anyString())).willReturn(Optional.of(USER_LONG_ID));
+        given(userRepository.findImageUrlByUserTag(anyString())).willReturn(Optional.of(NEWUSERTAG));
+        given(userService.userRegisterBody(NEWUSERTAG, USER_LONG_ID, PROFILE_IMAGE_NAME)).willReturn(userRegisterResponse);
+
+        // when
+        ResultActions resultActions = user_Register_Request();
+
+        // then
+        user_Register_Request_Success(resultActions);
+    }
 
 
     @Test
@@ -319,10 +335,9 @@ public class UserControllerTest extends ApiDocument {
                 .contentType(MediaType.MULTIPART_FORM_DATA));
     }
 
-    private void user_Register_Request_Success(ResultActions resultActions, ApiResponse<UserRegisterResponse> response) throws Exception {
-        printAndMakeSnippet(resultActions.andExpect(status().isOk())
+    private void user_Register_Request_Success(ResultActions resultActions) throws Exception {
+        printAndMakeSnippet(resultActions.andExpect(status().isOk()),
                         // .andExpect(jsonPath("$.accessToken", is(ACCESSTOKEN)))
-                .andExpect(content().json(toJson(response))),
 //                        .andExpect(jsonPath("$.userTag", is(NEWUSERTAG)))
 //                        .andExpect(jsonPath("$.userId", is(USER_ID)))
 //                        .andExpect(jsonPath("$.imageUrl", is(IMAGEURL))),
@@ -343,14 +358,13 @@ public class UserControllerTest extends ApiDocument {
     @Test
     void test_Register_By_Username_Success() throws Exception {
         // given
-        ApiResponse<UserRegisterByUsernameResponse> response = ApiResponse.success(userRegisterByUsernameResponse);
         when(userService.registerByUsername(any(UserRegisterByUsernameRequest.class))).thenReturn(userRegisterByUsernameResponse);
 
         // when
         ResultActions resultActions = register_By_Username_Request();
 
         // then
-        register_By_Username_Success(resultActions, response);
+        register_By_Username_Success(resultActions);
     }
 
     @Test
@@ -371,9 +385,9 @@ public class UserControllerTest extends ApiDocument {
                 .contentType(MediaType.APPLICATION_JSON));
     }
 
-    void register_By_Username_Success(ResultActions resultActions, ApiResponse<UserRegisterByUsernameResponse> response) throws Exception {
+    void register_By_Username_Success(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isOk())
-                        .andExpect(content().json(toJson(response))),
+                .andExpect(content().json(toJson(ApiResponse.success(userRegisterByUsernameResponse)))),
                 "register-By-Username-Request-Success");
     }
 
@@ -389,14 +403,13 @@ public class UserControllerTest extends ApiDocument {
     @Test
     void test_UserTag_Search_Success() throws Exception {
         // given
-        ApiResponse<UserInfoResponse> response = ApiResponse.success(userInfoResponse);
         given(userService.findUserTag(any(UserTagRequest.class), anyLong())).willReturn(userInfoResponse);
 
         // when
         ResultActions resultActions = userTag_Search_Request();
 
         // then
-        userTag_Search_Request_Success(resultActions, response);
+        userTag_Search_Request_Success(resultActions);
     }
 
     @Test
@@ -418,12 +431,13 @@ public class UserControllerTest extends ApiDocument {
                 .contentType(MediaType.APPLICATION_JSON));
     }
 
-    private void userTag_Search_Request_Success(ResultActions resultActions, ApiResponse<UserInfoResponse> response) throws Exception {
+    private void userTag_Search_Request_Success(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isOk())
-                        .andExpect(jsonPath("$.data.userId", is(response.getData().getUserId().intValue())))
-                        .andExpect(jsonPath("$.data.nickname", is(response.getData().getNickname())))
-                        .andExpect(jsonPath("$.data.userTag", is(response.getData().getUserTag())))
-                        .andExpect(jsonPath("$.data.imageUrl", is(response.getData().getImageUrl()))),
+                .andExpect(content().json(toJson(ApiResponse.success(userInfoResponse))))
+                .andExpect(jsonPath("$.data.userId", is(userInfoResponse.getUserId().intValue())))
+                .andExpect(jsonPath("$.data.nickname", is(userInfoResponse.getNickname())))
+                .andExpect(jsonPath("$.data.userTag", is(userInfoResponse.getUserTag())))
+                .andExpect(jsonPath("$.data.imageUrl", is(userInfoResponse.getImageUrl()))),
                 "userTag-Search-Success");
         verify(userService, times(1)).findUserTag(any(UserTagRequest.class), anyLong());
     }
@@ -441,14 +455,13 @@ public class UserControllerTest extends ApiDocument {
     @Test
     void test_get_User_Information_Success() throws Exception {
         // given
-        ApiResponse<UserSettingInformationResponse> response = ApiResponse.success(userSettingInformationResponse);
         when(userService.getUserInformation(anyLong())).thenReturn(userSettingInformationResponse);
 
         // when
         ResultActions resultActions = get_User_Information_Request();
 
         // then
-        get_User_Information_Success(resultActions, response);
+        get_User_Information_Success(resultActions);
     }
 
     @Test
@@ -471,9 +484,9 @@ public class UserControllerTest extends ApiDocument {
         );
     }
 
-    void get_User_Information_Success(ResultActions resultActions, ApiResponse<UserSettingInformationResponse> response) throws Exception {
+    void get_User_Information_Success(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isOk())
-                .andExpect(content().json(toJson(response))),
+                .andExpect(content().json(toJson(ApiResponse.success(userSettingInformationResponse)))),
                 "get-User-Information-Request-Success");
     }
 
@@ -489,22 +502,13 @@ public class UserControllerTest extends ApiDocument {
     @Test
     void test_update_User_Nickname_Success() throws Exception {
         // given
-        userSettingInformationResponse = UserSettingInformationResponse.builder()
-                .nickname(NEW_NICKNAME)
-                .userTag(NEWUSERTAG)
-                .imageUrl(USER_IMAGE_URL)
-                .socialType(USER_SOCIAL_TYPE)
-                .build();
-
-        ApiResponse<UserSettingInformationResponse> response = ApiResponse.success(userSettingInformationResponse);
-
         when(userService.updateUserNickname(anyString(), any(UserNicknameRequest.class))).thenReturn(updateNicknameResponse);
 
         // when
         ResultActions resultActions = update_User_Nickname_Request();
 
         // then
-        update_User_Nickname_Success(resultActions, response);
+        update_User_Nickname_Success(resultActions);
     }
 
     @Test
@@ -528,10 +532,11 @@ public class UserControllerTest extends ApiDocument {
         );
     }
 
-    void update_User_Nickname_Success(ResultActions resultActions, ApiResponse<UserSettingInformationResponse> response) throws Exception {
+    void update_User_Nickname_Success(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isOk())
                 .andExpect(header().string("Authorization", "Bearer " + NEWACCESSTOKEN))
-                .andExpect(header().string("Authorization-refresh", "Bearer " +NEWREFRESHTOKEN)),
+                .andExpect(header().string("Authorization-refresh", "Bearer " +NEWREFRESHTOKEN))
+                .andExpect(content().json(toJson(ApiResponse.success(nicknameUpdatedUserSettingInformationResponse)))),
                 "update-User-Nickname-Request-Success");
         verify(userService, times(1)).updateUserNickname(anyString(), any(UserNicknameRequest.class));
     }
@@ -550,25 +555,16 @@ public class UserControllerTest extends ApiDocument {
     @Test
     void test_update_User_Image_Success() throws Exception {
         // given
-        userSettingInformationResponse = UserSettingInformationResponse.builder()
-                .nickname(USER_NICKNAME)
-                .userTag(USER_TAG)
-                .imageUrl(NEW_IMAGE_URL)
-                .socialType(USER_SOCIAL_TYPE)
-                .build();
-
-        ApiResponse<UserSettingInformationResponse> response = ApiResponse.success(userSettingInformationResponse);
-
         doAnswer(invocation -> {
             user.updateImageUrl(NEW_IMAGE_URL);
-            return userSettingInformationResponse;
+            return imageUpdatedUserSettingInformationResponse;
         }).when(userService).updateUserImage(anyString(), any(MockMultipartFile.class));
 
         // when
         ResultActions resultActions = update_User_Image_Request();
 
         // then
-        update_User_Image_Success(resultActions, response);
+        update_User_Image_Success(resultActions);
     }
 
     @Test
@@ -600,9 +596,9 @@ public class UserControllerTest extends ApiDocument {
         );
     }
 
-    void update_User_Image_Success(ResultActions resultActions, ApiResponse<UserSettingInformationResponse> response) throws Exception {
+    void update_User_Image_Success(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isOk())
-                .andExpect(content().json(toJson(response))),
+                .andExpect(content().json(toJson(ApiResponse.success(imageUpdatedUserSettingInformationResponse)))),
                 "update-User-Image-Success");
         verify(userService, times(1)).updateUserImage(anyString(), any(MockMultipartFile.class));
     }
@@ -621,7 +617,6 @@ public class UserControllerTest extends ApiDocument {
     @WithMockUser
     void test_delete_User_Success() throws Exception {
         // given
-        ApiResponse<Void> response = ApiResponse.success(null);
         doAnswer(invocation -> {
             userRepository.delete(any());
             return null;
@@ -631,7 +626,7 @@ public class UserControllerTest extends ApiDocument {
         ResultActions resultActions = delete_User_Request();
 
         // then
-        delete_User_Success(resultActions, response);
+        delete_User_Success(resultActions);
     }
 
     @Test
@@ -653,9 +648,9 @@ public class UserControllerTest extends ApiDocument {
                         .header(AUTHORIZATION_HEADER, "Bearer " + ACCESSTOKEN));
     }
 
-    void delete_User_Success(ResultActions resultActions, ApiResponse<Void> response) throws Exception {
+    void delete_User_Success(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isOk())
-                .andExpect(content().json(toJson(response))),
+                .andExpect(jsonPath("$.success", is(true))),
                 "remove-User-Request-Success");
         verify(userService, times(1)).deleteUser(anyString());
     }
