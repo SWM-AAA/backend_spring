@@ -89,8 +89,8 @@ public class UserControllerTest extends ApiDocument {
     private static final String USER_REFRESH_TOKEN = "userRefreshToken";
     private static final String NEW_NICKNAME = "newUserNickname";
     private static final String NEW_IMAGE_URL = "newImageURL";
-    private static final String NEWACCESSTOKEN = "Bearer newAccessToken";
-    private static final String NEWREFRESHTOKEN = "Bearer newRefreshToken";
+    private static final String NEWACCESSTOKEN = "newAccessToken";
+    private static final String NEWREFRESHTOKEN = "newRefreshToken";
     private static final String USERNAME = "username";
     private static final String PASSWORD = "password";
 
@@ -130,6 +130,7 @@ public class UserControllerTest extends ApiDocument {
     private UserSettingInformationResponse userSettingInformationResponse;
     private UserRegisterByUsernameRequest userRegisterByUsernameRequest;
     private UserRegisterByUsernameResponse userRegisterByUsernameResponse;
+    private UpdateNicknameResponse updateNicknameResponse;
 
     private User user;
 
@@ -201,6 +202,15 @@ public class UserControllerTest extends ApiDocument {
                 .nickname(USER_NICKNAME)
                 .userTag(USER_TAG)
                 .imageUrl(USER_IMAGE_URL)
+                .build();
+
+        updateNicknameResponse = UpdateNicknameResponse.builder()
+                .accessToken(NEWACCESSTOKEN)
+                .refreshToken(NEWREFRESHTOKEN)
+                .nickname(NEW_NICKNAME)
+                .userTag(NEWUSERTAG)
+                .imageUrl(USER_IMAGE_URL)
+                .socialType(USER_SOCIAL_TYPE)
                 .build();
 
         given(jwtService.getStringUserIdFromToken("Bearer " + TOKEN)).willReturn(USER_ID);
@@ -482,17 +492,22 @@ public class UserControllerTest extends ApiDocument {
     @Test
     void test_update_User_Nickname_Success() throws Exception {
         // given
-        Map<String, String> tokenMap = new HashMap<>();
-        tokenMap.put(ACCESSTOKEN, "newAccessToken");
-        tokenMap.put(REFRESHTOKEN, "newRefreshToken");
+        userSettingInformationResponse = UserSettingInformationResponse.builder()
+                .nickname(NEW_NICKNAME)
+                .userTag(NEWUSERTAG)
+                .imageUrl(USER_IMAGE_URL)
+                .socialType(USER_SOCIAL_TYPE)
+                .build();
 
-        when(userService.updateUserNickname(anyString(), any(UserNicknameRequest.class))).thenReturn(tokenMap);
+        ApiResponse<UserSettingInformationResponse> response = ApiResponse.success(userSettingInformationResponse);
+
+        when(userService.updateUserNickname(anyString(), any(UserNicknameRequest.class))).thenReturn(updateNicknameResponse);
 
         // when
         ResultActions resultActions = update_User_Nickname_Request();
 
         // then
-        update_User_Nickname_Success(resultActions);
+        update_User_Nickname_Success(resultActions, response);
     }
 
     @Test
@@ -517,10 +532,10 @@ public class UserControllerTest extends ApiDocument {
         );
     }
 
-    void update_User_Nickname_Success(ResultActions resultActions) throws Exception {
+    void update_User_Nickname_Success(ResultActions resultActions, ApiResponse<UserSettingInformationResponse> response) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isOk())
-                .andExpect(header().string("Authorization", NEWACCESSTOKEN))
-                .andExpect(header().string("Authorization-refresh", NEWREFRESHTOKEN)),
+                .andExpect(header().string("Authorization", "Bearer " + NEWACCESSTOKEN))
+                .andExpect(header().string("Authorization-refresh", "Bearer " +NEWREFRESHTOKEN)),
                 "update-User-Nickname-Request-Success");
         verify(userService, times(1)).updateUserNickname(anyString(), any(UserNicknameRequest.class));
     }

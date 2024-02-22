@@ -205,7 +205,6 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserSettingInformationResponse>> updateMyNickname(@RequestHeader("Authorization") String token,
                                                                 @RequestBody UserNicknameRequest userNicknameRequest) {
         UpdateNicknameResponse updateNicknameResponse = userService.updateUserNickname(token, userNicknameRequest);
-        HttpHeaders responseHeader = new HttpHeaders();
 
         UserSettingInformationResponse response = UserSettingInformationResponse.builder()
                 .nickname(updateNicknameResponse.getNickname())
@@ -214,6 +213,7 @@ public class UserController {
                 .socialType(updateNicknameResponse.getSocialType())
                 .build();
 
+        HttpHeaders responseHeader = new HttpHeaders();
         responseHeader.add("Authorization", "Bearer " + updateNicknameResponse.getAccessToken());
         responseHeader.add("Authorization-refresh", "Bearer " + updateNicknameResponse.getRefreshToken());
 
