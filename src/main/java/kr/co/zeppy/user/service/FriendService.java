@@ -70,22 +70,22 @@ public class FriendService {
     }
 
     // 나에게 친구추가 요청을 보낸 사용자 리스트를 확인
-    public ApiResponse<List<UserFriendInfoResponse>> checkFriendRequestToList(Long userId) {
+    public List<UserFriendInfoResponse> checkFriendRequestToList(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
         
         Set<Friendship> receivedFriendRequests = user.getReceivedFriendships();
     
-        List<UserFriendInfoResponse> friendRequestList = new ArrayList<>();
+        List<UserFriendInfoResponse> response = new ArrayList<>();
     
         for (Friendship request : receivedFriendRequests) {
             if (request.getStatus() == FriendshipStatus.PENDING) {
                 User requester = request.getUser(); // 요청을 보낸 사용자
-                friendRequestList.add(UserFriendInfoResponse.from(requester));
+                response.add(UserFriendInfoResponse.from(requester));
             }
         }
 
-        return ApiResponse.success(friendRequestList);
+        return response;
     }
 
     // 내가 친구추가를 보낸 사용자 리스트를 확인

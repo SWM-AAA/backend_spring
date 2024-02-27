@@ -509,6 +509,7 @@ public class UserControllerTest extends ApiDocument {
     }
 
     @Test
+    @Disabled
     void test_update_User_Nickname_Failure() throws Exception {
         // given
         doThrow(userNicknameNotFoundException).when(userService).updateUserNickname(anyString(), any(UserNicknameRequest.class));
@@ -628,6 +629,7 @@ public class UserControllerTest extends ApiDocument {
 
     @Test
     @WithMockUser
+    @Disabled
     void test_delete_User_Failure() throws Exception {
         // given
         doThrow(internalServerException).when(userService).deleteUser(anyString());

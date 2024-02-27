@@ -2,6 +2,7 @@ package kr.co.zeppy.user.controller;
 
 import kr.co.zeppy.ApiDocument;
 import kr.co.zeppy.SecurityConfigTest;
+import kr.co.zeppy.global.dto.ApiResponse;
 import kr.co.zeppy.global.dto.ErrorResponse;
 import kr.co.zeppy.global.error.ApplicationError;
 import kr.co.zeppy.global.error.ApplicationException;
@@ -34,15 +35,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.*;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
@@ -207,8 +205,8 @@ public class FriendControllerTest extends ApiDocument{
     }
 
     private void send_Friend_Request_Failure(ResultActions resultActions) throws Exception {
-        printAndMakeSnippet(resultActions.andExpect(status().isNotFound())
-                        .andExpect(content().json(toJson(ErrorResponse.fromException(friendRequestNotFoundException)))),
+        printAndMakeSnippet(resultActions.andExpect(status().isNotFound()).andExpect(content()
+                        .json(toJson(ApiResponse.failure(ErrorResponse.fromException(friendRequestNotFoundException))))),
                         "send-Friends-Request-Failure");
     }
 
@@ -272,15 +270,15 @@ public class FriendControllerTest extends ApiDocument{
     }
 
     private void check_Friend_Request_Success(ResultActions resultActions) throws Exception {
-        printAndMakeSnippet(resultActions.andExpect(status().isOk())
-                        .andExpect(content().json(toJson(friendRequestList))),
+        printAndMakeSnippet(resultActions.andExpect(status().isOk()).andExpect(content()
+                        .json(toJson(ApiResponse.success(friendRequestList)))),
                 "check-Friends-Request-Success");
         verify(friendService, times(1)).checkFriendRequestToList(anyLong());
     }
 
     private void check_Friend_Request_Failure(ResultActions resultActions) throws Exception {
-        printAndMakeSnippet(resultActions.andExpect(status().isNotFound())
-                        .andExpect(content().json(toJson(ErrorResponse.fromException(userIdNotFoundException)))),
+        printAndMakeSnippet(resultActions.andExpect(status().isNotFound()).andExpect(content()
+                        .json(toJson(ApiResponse.failure(ErrorResponse.fromException(userIdNotFoundException))))),
                 "check-Friends-Request-Failure");
         verify(friendService, times(1)).checkFriendRequestToList(anyLong());
     }
@@ -328,9 +326,11 @@ public class FriendControllerTest extends ApiDocument{
     }
     
     private void confirm_Friend_Request_Failure(ResultActions resultActions) throws Exception {
-        printAndMakeSnippet(resultActions.andExpect(status().isNotFound())
-                .andExpect(content().json(toJson(ErrorResponse.fromException(userIdNotFoundException)))), "confirm-Friends-Request-Failure");
-        verify(friendService, times(1)).confirmFriendship(anyLong(), any(ConfirmFriendshipRequest.class));
+        printAndMakeSnippet(resultActions.andExpect(status().isNotFound()).andExpect(content()
+                        .json(toJson(ApiResponse.failure(ErrorResponse.fromException(userIdNotFoundException))))),
+                "confirm-Friends-Request-Failure");
+        verify(friendService, times(1))
+                .confirmFriendship(anyLong(), any(ConfirmFriendshipRequest.class));
     }
 
     /////////////////////////////////////////////////////////////////
@@ -376,8 +376,8 @@ public class FriendControllerTest extends ApiDocument{
     }
     
     private void check_Sent_Friend_Request_Failure(ResultActions resultActions) throws Exception {
-        printAndMakeSnippet(resultActions.andExpect(status().isNotFound())
-                .andExpect(content().json(toJson(ErrorResponse.fromException(userIdNotFoundException)))),
+        printAndMakeSnippet(resultActions.andExpect(status().isNotFound()).andExpect(content()
+                        .json(toJson(ApiResponse.failure(ErrorResponse.fromException(userIdNotFoundException))))),
                 "check-Sent-Friend-Request-Failure");
         verify(friendService, times(1)).checkSentFriendRequestToList(anyLong());
     }
@@ -418,15 +418,15 @@ public class FriendControllerTest extends ApiDocument{
     }
     
     private void my_Friend_List_Request_Success(ResultActions resultActions) throws Exception {
-        printAndMakeSnippet(resultActions.andExpect(status().isOk())
-                .andExpect(content().json(toJson(friendRequestList))),
+        printAndMakeSnippet(resultActions.andExpect(status().isOk()).andExpect(content()
+                        .json(toJson(ApiResponse.success(friendRequestList)))),
                 "my-Friend-List-Success");
         verify(friendService, times(1)).giveUserFriendList(anyLong());
     }
     
     private void my_Friend_List_Request_Failure(ResultActions resultActions) throws Exception {
-        printAndMakeSnippet(resultActions.andExpect(status().isNotFound())
-                .andExpect(content().json(toJson(ErrorResponse.fromException(userIdNotFoundException)))),
+        printAndMakeSnippet(resultActions.andExpect(status().isNotFound()).andExpect(content()
+                        .json(toJson(ApiResponse.failure(ErrorResponse.fromException(userIdNotFoundException))))),
                 "my-Friend-List-Failure");
         verify(friendService, times(1)).giveUserFriendList(anyLong());
     }
