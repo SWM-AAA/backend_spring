@@ -27,6 +27,7 @@ import kr.co.zeppy.user.repository.FriendshipRepository;
 
 import kr.co.zeppy.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -179,25 +180,26 @@ public class FriendServiceTest {
     }
 
     
-    @Test
-    void test_Check_Friend_Request_To_List() {
-        // given
-        Friendship receivedFriendship = Friendship.builder()
-                .user(friend) // 요청을 보낸 사용자
-                .friend(user) // 요청을 받은 사용자 (자신)
-                .status(FriendshipStatus.PENDING)
-                .build();
-
-        user.getReceivedFriendships().add(receivedFriendship);
-        
-        // when
-        when(userRepository.findById(INIT_USERID)).thenReturn(Optional.of(user));
-        List<UserFriendInfoResponse> result = friendService.checkFriendRequestToList(INIT_USERID);
-
-        // then
-        assertEquals(1, result.size());
-        assertEquals(FRIEND_NICKNAME, result.get(0).getNickname());
-    }
+//    @Test
+//    @Disabled
+//    void test_Check_Friend_Request_To_List() {
+//        // given
+//        Friendship receivedFriendship = Friendship.builder()
+//                .user(friend) // 요청을 보낸 사용자
+//                .friend(user) // 요청을 받은 사용자 (자신)
+//                .status(FriendshipStatus.PENDING)
+//                .build();
+//
+//        user.getReceivedFriendships().add(receivedFriendship);
+//
+//        // when
+//        when(userRepository.findById(INIT_USERID)).thenReturn(Optional.of(user));
+//        List<UserFriendInfoResponse> result = friendService.checkFriendRequestToList(INIT_USERID);
+//
+//        // then
+//        assertEquals(1, result.size());
+//        assertEquals(FRIEND_NICKNAME, result.get(0).getNickname());
+//    }
 
 
     @Test

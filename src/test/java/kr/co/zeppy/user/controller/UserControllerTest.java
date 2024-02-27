@@ -1,9 +1,12 @@
 package kr.co.zeppy.user.controller;
 
+import akka.event.Logging;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import kr.co.zeppy.ApiDocument;
 import kr.co.zeppy.SecurityConfigTest;
 import kr.co.zeppy.global.aws.service.AwsS3Uploader;
+import kr.co.zeppy.global.dto.ApiResponse;
 import kr.co.zeppy.global.dto.ErrorResponse;
 import kr.co.zeppy.global.error.ApplicationError;
 import kr.co.zeppy.global.error.ApplicationException;
@@ -86,8 +89,10 @@ public class UserControllerTest extends ApiDocument {
     private static final String USER_REFRESH_TOKEN = "userRefreshToken";
     private static final String NEW_NICKNAME = "newUserNickname";
     private static final String NEW_IMAGE_URL = "newImageURL";
-    private static final String NEWACCESSTOKEN = "Bearer newAccessToken";
-    private static final String NEWREFRESHTOKEN = "Bearer newRefreshToken";
+    private static final String NEWACCESSTOKEN = "newAccessToken";
+    private static final String NEWREFRESHTOKEN = "newRefreshToken";
+    private static final String USERNAME = "username";
+    private static final String PASSWORD = "password";
 
     @MockBean
     private RedisService redisService;
@@ -113,6 +118,8 @@ public class UserControllerTest extends ApiDocument {
     private ApplicationException internalServerException;
     private ApplicationException invalidUserTagFormat;
     private ApplicationException userNicknameNotFoundException;
+    private ApplicationException userTagNotFoundException;
+    private ApplicationException usernameDuplicatedException;
 
     private LocationAndBatteryRequest locationAndBatteryRequest;
     private UserRegisterRequest userRegisterRequest;
@@ -120,6 +127,12 @@ public class UserControllerTest extends ApiDocument {
     private UserTagRequest userTagRequest;
     private UserRegisterResponse userRegisterResponse;
     private UserNicknameRequest userNicknameRequest;
+    private UserSettingInformationResponse userSettingInformationResponse;
+    private UserRegisterByUsernameRequest userRegisterByUsernameRequest;
+    private UserRegisterByUsernameResponse userRegisterByUsernameResponse;
+    private UpdateNicknameResponse updateNicknameResponse;
+    private UserSettingInformationResponse nicknameUpdatedUserSettingInformationResponse;
+    private UserSettingInformationResponse imageUpdatedUserSettingInformationResponse;
 
     private User user;
 
@@ -153,7 +166,7 @@ public class UserControllerTest extends ApiDocument {
                 .userId(USER_LONG_ID)
                 .nickname(NICKNAME)
                 .userTag(VALID_USER_TAG)
-                .imageUrl(FILE_NAME)
+                .imageUrl(IMAGEURL)
                 .isRelationship(true)
                 .build();
 
@@ -163,12 +176,58 @@ public class UserControllerTest extends ApiDocument {
 
         userRegisterResponse = UserRegisterResponse.builder()
                 .userId(USER_LONG_ID)
-                .userTag(VALID_USER_TAG)
-                .imageUrl(FILE_NAME)
+                .userTag(NEWUSERTAG)
+//                .userTag(VALID_USER_TAG)
+                .imageUrl(IMAGEURL)
                 .build();
 
         userNicknameRequest = UserNicknameRequest.builder()
                 .nickname(NEW_NICKNAME)
+                .build();
+
+        userSettingInformationResponse = UserSettingInformationResponse.builder()
+                .nickname(USER_NICKNAME)
+                .userTag(USER_TAG)
+                .imageUrl(USER_IMAGE_URL)
+                .socialType(USER_SOCIAL_TYPE)
+                .build();
+
+        userRegisterByUsernameRequest = UserRegisterByUsernameRequest.builder()
+                .username(USERNAME)
+                .password(PASSWORD)
+                .build();
+
+        userRegisterByUsernameResponse = UserRegisterByUsernameResponse.builder()
+                .accessToken(ACCESSTOKEN)
+                .refreshToken(REFRESHTOKEN)
+                .userId(USER_LONG_ID)
+                .username(USERNAME)
+                .nickname(USER_NICKNAME)
+                .userTag(USER_TAG)
+                .imageUrl(USER_IMAGE_URL)
+                .build();
+
+        updateNicknameResponse = UpdateNicknameResponse.builder()
+                .accessToken(NEWACCESSTOKEN)
+                .refreshToken(NEWREFRESHTOKEN)
+                .nickname(NEW_NICKNAME)
+                .userTag(NEWUSERTAG)
+                .imageUrl(USER_IMAGE_URL)
+                .socialType(USER_SOCIAL_TYPE)
+                .build();
+
+        nicknameUpdatedUserSettingInformationResponse = UserSettingInformationResponse.builder()
+                .nickname(NEW_NICKNAME)
+                .userTag(NEWUSERTAG)
+                .imageUrl(USER_IMAGE_URL)
+                .socialType(USER_SOCIAL_TYPE)
+                .build();
+
+        imageUpdatedUserSettingInformationResponse = UserSettingInformationResponse.builder()
+                .nickname(USER_NICKNAME)
+                .userTag(USER_TAG)
+                .imageUrl(NEW_IMAGE_URL)
+                .socialType(USER_SOCIAL_TYPE)
                 .build();
 
         given(jwtService.getStringUserIdFromToken("Bearer " + TOKEN)).willReturn(USER_ID);
@@ -177,6 +236,8 @@ public class UserControllerTest extends ApiDocument {
         internalServerException = new ApplicationException(ApplicationError.INTERNAL_SERVER_ERROR);
         invalidUserTagFormat = new ApplicationException(ApplicationError.INVALID_USER_TAG_FORMAT);
         userNicknameNotFoundException = new ApplicationException(ApplicationError.USER_NICKNAME_NOT_FOUND);
+        userTagNotFoundException = new ApplicationException(ApplicationError.USER_TAG_NOT_FOUND);
+        usernameDuplicatedException = new ApplicationException(ApplicationError.USERNAME_DUPLICATED);
     }
 
     /////////////////////////////////////////////////////////////////
@@ -222,7 +283,7 @@ public class UserControllerTest extends ApiDocument {
     private void update_User_Location_And_Battery_Request_Failure(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions
                         .andExpect(status().isServiceUnavailable())
-                        .andExpect(content().json(toJson(ErrorResponse.fromException(redisUserLocationUpdateException)))),
+                        .andExpect(content().json(toJson(ApiResponse.failure(ErrorResponse.fromException(redisUserLocationUpdateException))))),
                 "update-Location-And-Battery-Failure");
         verify(redisService, times(1)).updateLocationAndBattery(anyString(), any(LocationAndBatteryRequest.class));
     }
@@ -231,20 +292,19 @@ public class UserControllerTest extends ApiDocument {
     // userRegister test code
     /////////////////////////////////////////////////////////////////
     @Test
-    @Disabled
     void test_User_Register_Success() throws Exception {
         // given
-        Map<String, String> expectedResponse = new HashMap<>();
-        expectedResponse.put("accessToken", ACCESSTOKEN);
-        expectedResponse.put("userId", USER_ID);
-        expectedResponse.put("userTag", NEWUSERTAG);
-        expectedResponse.put("imageUrl", PROFILE_IMAGE_NAME);
+//        Map<String, String> expectedResponse = new HashMap<>();
+//        expectedResponse.put("accessToken", ACCESSTOKEN);
+//        expectedResponse.put("userId", USER_ID);
+//        expectedResponse.put("userTag", NEWUSERTAG);
+//        expectedResponse.put("imageUrl", PROFILE_IMAGE_NAME);
 
         given(userService.register(anyString(), any(UserRegisterRequest.class))).willReturn(NEWUSERTAG);
         given(jwtService.createAccessToken(anyString())).willReturn(ACCESSTOKEN);
         given(userRepository.findIdByUserTag(anyString())).willReturn(Optional.of(USER_LONG_ID));
-        given(userRepository.findImageUrlByUserTag(anyString())).willReturn(Optional.of(NEWUSERTAG));
-//        given(userService.userRegisterBody(ACCESSTOKEN, NEWUSERTAG, USER_ID, PROFILE_IMAGE_NAME)).willReturn(expectedResponse);
+        given(userRepository.findImageUrlByUserTag(anyString())).willReturn(Optional.of(PROFILE_IMAGE_NAME));
+        given(userService.userRegisterBody(NEWUSERTAG, USER_LONG_ID, PROFILE_IMAGE_NAME)).willReturn(userRegisterResponse);
 
         // when
         ResultActions resultActions = user_Register_Request();
@@ -253,9 +313,7 @@ public class UserControllerTest extends ApiDocument {
         user_Register_Request_Success(resultActions);
     }
 
-
     @Test
-    @Disabled
     void test_User_Register_Failure() throws Exception {
         // given
         willThrow(new RuntimeException("User registration failed")).given(userService).register(anyString(), any(UserRegisterRequest.class));
@@ -277,23 +335,67 @@ public class UserControllerTest extends ApiDocument {
 
     private void user_Register_Request_Success(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isOk())
-                        // .andExpect(jsonPath("$.accessToken", is(ACCESSTOKEN)))
-                        .andExpect(jsonPath("$.userTag", is(NEWUSERTAG)))
-                        .andExpect(jsonPath("$.userId", is(USER_ID)))
-                        .andExpect(jsonPath("$.imageUrl", is(IMAGEURL))),
+                .andExpect(jsonPath("$.data.userTag", is(NEWUSERTAG)))
+                .andExpect(jsonPath("$.data.userId", is(USER_LONG_ID.intValue())))
+                .andExpect(jsonPath("$.data.imageUrl", is(IMAGEURL))),
                 "user-Register-Success");
         verify(userService, times(1)).register(anyString(), any(UserRegisterRequest.class));
     }
 
     private void user_Register_Request_Failure(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isInternalServerError())
-                        .andExpect(content().json(toJson(ErrorResponse.fromException(internalServerException)))),
+                .andExpect(content().json(toJson(ApiResponse.failure(ErrorResponse.fromException(internalServerException))))),
                 "user-Register-Failure");
         verify(userService, times(1)).register(anyString(), any(UserRegisterRequest.class));
     }
 
     /////////////////////////////////////////////////////////////////
-    // usertag search testcode
+    // registerByUsername (Method : post) test code || (url : /test/register-by-username)
+    /////////////////////////////////////////////////////////////////
+    @Test
+    void test_Register_By_Username_Success() throws Exception {
+        // given
+        when(userService.registerByUsername(any(UserRegisterByUsernameRequest.class))).thenReturn(userRegisterByUsernameResponse);
+
+        // when
+        ResultActions resultActions = register_By_Username_Request();
+
+        // then
+        register_By_Username_Success(resultActions);
+    }
+
+    @Test
+    void test_Register_By_Username_Failure() throws Exception {
+        // given
+        doThrow(usernameDuplicatedException).when(userService).registerByUsername(any(UserRegisterByUsernameRequest.class));
+
+        // when
+        ResultActions resultActions = register_By_Username_Request();
+
+        // then
+        register_By_Username_Failure(resultActions);
+    }
+
+    private ResultActions register_By_Username_Request() throws Exception {
+        return mockMvc.perform(RestDocumentationRequestBuilders.post("/api/test/register-by-username")
+                .content(toJson(userRegisterByUsernameRequest))
+                .contentType(MediaType.APPLICATION_JSON));
+    }
+
+    void register_By_Username_Success(ResultActions resultActions) throws Exception {
+        printAndMakeSnippet(resultActions.andExpect(status().isOk())
+                .andExpect(content().json(toJson(ApiResponse.success(userRegisterByUsernameResponse)))),
+                "register-By-Username-Request-Success");
+    }
+
+    void register_By_Username_Failure(ResultActions resultActions) throws Exception {
+        printAndMakeSnippet(resultActions.andExpect(status().isBadRequest())
+                .andExpect(content().json(toJson(ApiResponse.failure(ErrorResponse.fromException(usernameDuplicatedException))))),
+                "register-By-Username-Request-Failure");
+    }
+
+    /////////////////////////////////////////////////////////////////
+    // usertag search testcode (Method : post) || (url: /search/usertag)
     /////////////////////////////////////////////////////////////////
     @Test
     void test_UserTag_Search_Success() throws Exception {
@@ -328,19 +430,67 @@ public class UserControllerTest extends ApiDocument {
 
     private void userTag_Search_Request_Success(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isOk())
-                        .andExpect(jsonPath("$.userId", is(userInfoResponse.getUserId().intValue())))
-                        .andExpect(jsonPath("$.nickname", is(userInfoResponse.getNickname())))
-                        .andExpect(jsonPath("$.userTag", is(userInfoResponse.getUserTag())))
-                        .andExpect(jsonPath("$.imageUrl", is(userInfoResponse.getImageUrl()))),
+                .andExpect(content().json(toJson(ApiResponse.success(userInfoResponse))))
+                .andExpect(jsonPath("$.data.userId", is(userInfoResponse.getUserId().intValue())))
+                .andExpect(jsonPath("$.data.nickname", is(userInfoResponse.getNickname())))
+                .andExpect(jsonPath("$.data.userTag", is(userInfoResponse.getUserTag())))
+                .andExpect(jsonPath("$.data.imageUrl", is(userInfoResponse.getImageUrl()))),
                 "userTag-Search-Success");
         verify(userService, times(1)).findUserTag(any(UserTagRequest.class), anyLong());
     }
 
     private void userTag_Search_Request_Failure(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isBadRequest())
-                        .andExpect(content().json(toJson(ErrorResponse.fromException(invalidUserTagFormat)))),
+                .andExpect(content().json(toJson(ApiResponse.failure(ErrorResponse.fromException(invalidUserTagFormat))))),
                 "userTag-Search-Failure");
         verify(userService, times(1)).findUserTag(any(UserTagRequest.class), anyLong());
+    }
+
+    /////////////////////////////////////////////////////////////////
+    // getUserInformation (Method : get) test code
+    /////////////////////////////////////////////////////////////////
+    @Test
+    void test_get_User_Information_Success() throws Exception {
+        // given
+        when(userService.getUserInformation(anyLong())).thenReturn(userSettingInformationResponse);
+
+        // when
+        ResultActions resultActions = get_User_Information_Request();
+
+        // then
+        get_User_Information_Success(resultActions);
+    }
+
+    @Test
+    void test_get_User_Information_Failure() throws Exception {
+        // given
+        doThrow(userTagNotFoundException).when(userService).getUserInformation(anyLong());
+
+        // when
+        ResultActions resultActions = get_User_Information_Request();
+
+        // then
+        get_User_Information_Failure(resultActions);
+    }
+
+    private ResultActions get_User_Information_Request() throws Exception {
+        return mockMvc.perform(
+                RestDocumentationRequestBuilders.get(API_VERSION + RESOURCE_PATH)
+                        .header(AUTHORIZATION_HEADER, "Bearer " + TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+        );
+    }
+
+    void get_User_Information_Success(ResultActions resultActions) throws Exception {
+        printAndMakeSnippet(resultActions.andExpect(status().isOk())
+                .andExpect(content().json(toJson(ApiResponse.success(userSettingInformationResponse)))),
+                "get-User-Information-Request-Success");
+    }
+
+    void get_User_Information_Failure(ResultActions resultActions) throws Exception {
+        printAndMakeSnippet(resultActions.andExpect(status().isNotFound())
+                .andExpect(content().json(toJson(ApiResponse.failure(ErrorResponse.fromException(userTagNotFoundException))))),
+                "get-User-Information-Request-Failure");
     }
 
     /////////////////////////////////////////////////////////////////
@@ -349,14 +499,10 @@ public class UserControllerTest extends ApiDocument {
     @Test
     void test_update_User_Nickname_Success() throws Exception {
         // given
-        Map<String, String> tokenMap = new HashMap<>();
-        tokenMap.put(ACCESSTOKEN, "newAccessToken");
-        tokenMap.put(REFRESHTOKEN, "newRefreshToken");
-
-        when(userService.updateUserNickname(anyString(), any(UserNicknameRequest.class))).thenReturn(tokenMap);
+        when(userService.updateUserNickname(anyString(), any(UserNicknameRequest.class))).thenReturn(updateNicknameResponse);
 
         // when
-        ResultActions resultActions = update_User_Nickname();
+        ResultActions resultActions = update_User_Nickname_Request();
 
         // then
         update_User_Nickname_Success(resultActions);
@@ -368,13 +514,13 @@ public class UserControllerTest extends ApiDocument {
         doThrow(userNicknameNotFoundException).when(userService).updateUserNickname(anyString(), any(UserNicknameRequest.class));
 
         // when
-        ResultActions resultActions = update_User_Nickname();
+        ResultActions resultActions = update_User_Nickname_Request();
 
         // then
         update_User_Nickname_Failure(resultActions);
     }
 
-    private ResultActions update_User_Nickname() throws Exception {
+    private ResultActions update_User_Nickname_Request() throws Exception {
         return mockMvc.perform(
                 RestDocumentationRequestBuilders.patch(API_VERSION + RESOURCE_PATH + "/nickname")
                         .header(AUTHORIZATION_HEADER, "Bearer " + TOKEN)
@@ -385,15 +531,16 @@ public class UserControllerTest extends ApiDocument {
 
     void update_User_Nickname_Success(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isOk())
-                .andExpect(header().string("Authorization", NEWACCESSTOKEN))
-                .andExpect(header().string("Authorization-refresh", NEWREFRESHTOKEN)),
+                .andExpect(header().string("Authorization", "Bearer " + NEWACCESSTOKEN))
+                .andExpect(header().string("Authorization-refresh", "Bearer " +NEWREFRESHTOKEN))
+                .andExpect(content().json(toJson(ApiResponse.success(nicknameUpdatedUserSettingInformationResponse)))),
                 "update-User-Nickname-Request-Success");
         verify(userService, times(1)).updateUserNickname(anyString(), any(UserNicknameRequest.class));
     }
 
     void update_User_Nickname_Failure(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isNotFound())
-                        .andExpect(content().json(toJson(ErrorResponse.fromException(userNicknameNotFoundException)))),
+                .andExpect(content().json(toJson(ApiResponse.failure(ErrorResponse.fromException(userNicknameNotFoundException))))),
                 "update-User-Nickname-Request-Failure");
         verify(userService, times(1)).updateUserNickname(anyString(), any(UserNicknameRequest.class));
     }
@@ -405,14 +552,13 @@ public class UserControllerTest extends ApiDocument {
     @Test
     void test_update_User_Image_Success() throws Exception {
         // given
-//        when(userService.updateUserImage(anyString(), any(MockMultipartFile.class))).thenReturn(NEW_IMAGE_URL);
         doAnswer(invocation -> {
             user.updateImageUrl(NEW_IMAGE_URL);
-            return null;
+            return imageUpdatedUserSettingInformationResponse;
         }).when(userService).updateUserImage(anyString(), any(MockMultipartFile.class));
 
         // when
-        ResultActions resultActions = update_User_Image();
+        ResultActions resultActions = update_User_Image_Request();
 
         // then
         update_User_Image_Success(resultActions);
@@ -424,13 +570,13 @@ public class UserControllerTest extends ApiDocument {
         doThrow(internalServerException).when(userService).updateUserImage(anyString(), any(MultipartFile.class));
 
         // when
-        ResultActions resultActions = update_User_Image();
+        ResultActions resultActions = update_User_Image_Request();
 
         // then
         update_User_Image_Failure(resultActions);
     }
 
-    private ResultActions update_User_Image() throws Exception {
+    private ResultActions update_User_Image_Request() throws Exception {
         MockMultipartHttpServletRequestBuilder builder = RestDocumentationRequestBuilders.multipart(API_VERSION + RESOURCE_PATH + "/image");
         builder.with(new RequestPostProcessor() {
             @Override
@@ -448,14 +594,15 @@ public class UserControllerTest extends ApiDocument {
     }
 
     void update_User_Image_Success(ResultActions resultActions) throws Exception {
-        printAndMakeSnippet(resultActions.andExpect(status().isOk()),
+        printAndMakeSnippet(resultActions.andExpect(status().isOk())
+                .andExpect(content().json(toJson(ApiResponse.success(imageUpdatedUserSettingInformationResponse)))),
                 "update-User-Image-Success");
         verify(userService, times(1)).updateUserImage(anyString(), any(MockMultipartFile.class));
     }
 
     void update_User_Image_Failure(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isInternalServerError())
-                        .andExpect(content().json(toJson(ErrorResponse.fromException(internalServerException)))),
+                .andExpect(content().json(toJson(ApiResponse.failure(ErrorResponse.fromException(internalServerException))))),
                 "update-User-Image-Failure");
         verify(userService, times(1)).updateUserImage(anyString(), any(MockMultipartFile.class));
     }
@@ -473,7 +620,7 @@ public class UserControllerTest extends ApiDocument {
         }).when(userService).deleteUser(anyString());
 
         // when
-        ResultActions resultActions = delete_User();
+        ResultActions resultActions = delete_User_Request();
 
         // then
         delete_User_Success(resultActions);
@@ -486,28 +633,29 @@ public class UserControllerTest extends ApiDocument {
         doThrow(internalServerException).when(userService).deleteUser(anyString());
 
         // when
-        ResultActions resultActions = delete_User();
+        ResultActions resultActions = delete_User_Request();
 
         // then
         delete_User_Failure(resultActions);
     }
 
-    private ResultActions delete_User() throws Exception {
+    private ResultActions delete_User_Request() throws Exception {
         return mockMvc.perform(
                 RestDocumentationRequestBuilders.patch(API_VERSION + RESOURCE_PATH)
                         .header(AUTHORIZATION_HEADER, "Bearer " + ACCESSTOKEN));
     }
 
     void delete_User_Success(ResultActions resultActions) throws Exception {
-        printAndMakeSnippet(resultActions.andExpect(status().isOk()),
+        printAndMakeSnippet(resultActions.andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true))),
                 "remove-User-Request-Success");
         verify(userService, times(1)).deleteUser(anyString());
     }
 
     void delete_User_Failure(ResultActions resultActions) throws Exception {
         printAndMakeSnippet(resultActions.andExpect(status().isInternalServerError())
-                        .andExpect(content().json(toJson(ErrorResponse.fromException(internalServerException)))),
-                "remove-User-Failure");
+                .andExpect(content().json(toJson(ApiResponse.failure(ErrorResponse.fromException(internalServerException))))),
+                "remove-User-Request-Failure");
         verify(userService, times(1)).deleteUser(anyString());
     }
 }

@@ -2,6 +2,7 @@ package kr.co.zeppy.user.service;
 
 import jakarta.transaction.Transactional;
 import kr.co.zeppy.global.aws.service.AwsS3Uploader;
+import kr.co.zeppy.global.dto.ApiResponse;
 import kr.co.zeppy.global.error.ApplicationError;
 import kr.co.zeppy.global.error.ApplicationException;
 import kr.co.zeppy.global.jwt.service.JwtService;
@@ -12,6 +13,8 @@ import kr.co.zeppy.user.repository.NickNameRepository;
 import kr.co.zeppy.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -84,10 +87,10 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public void registerByUsername(UserRegisterByUsernameRequest userRegisterByUsernameRequest) throws Exception {
+    public UserRegisterByUsernameResponse registerByUsername(UserRegisterByUsernameRequest userRegisterByUsernameRequest) throws Exception {
 
         if (userRepository.findByUsername(userRegisterByUsernameRequest.getUsername()).isPresent()) {
-            throw new Exception("이미 존재하는 아이디입니다.");
+            throw new ApplicationException(ApplicationError.USERNAME_DUPLICATED);
         }
 
         int leftLimit = 97; // letter 'a'
@@ -100,7 +103,6 @@ public class UserService {
                 .toString();
 
         String newUserTag = nickNameService.getUserTagFromNickName(userNickname);
-
         String userImageUrl = "https://zeppy-s3.s3.ap-northeast-2.amazonaws.com/user/profile-image/1profile";
 
         User user = User.builder()
@@ -114,6 +116,20 @@ public class UserService {
 
         user.passwordEncode(passwordEncoder);
         userRepository.save(user);
+
+        String accessToken = jwtService.createAccessToken(user.getUserTag());
+        String refreshToken = jwtService.createRefreshToken();
+        user.updateRefreshToken(refreshToken);
+
+        return UserRegisterByUsernameResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(user.getRefreshToken())
+                .userId(user.getId())
+                .username(user.getUsername())
+                .nickname(user.getNickname())
+                .userTag(user.getUserTag())
+                .imageUrl(user.getImageUrl())
+                .build();
     }
 
     public String register(String Token, UserRegisterRequest userRegisterRequest)
@@ -206,7 +222,7 @@ public class UserService {
     }
 
     // 닉네임 변경
-    public Map<String, String> updateUserNickname(String token, UserNicknameRequest userNicknameRequest) {
+    public UpdateNicknameResponse updateUserNickname(String token, UserNicknameRequest userNicknameRequest) {
 
         Long userId = jwtService.getLongUserIdFromToken(token);
 
@@ -219,18 +235,24 @@ public class UserService {
         String newUserTag = nickNameService.getUserTagFromNickName(newNickname);
 
         Map<String, String> tokenMap = jwtService.reissueToken(newUserTag);
-        String newRefreshToken = tokenMap.get(REFRESHTOKEN);
 
         user.updateNickname(newNickname);
         user.updateUserTag(newUserTag);
-        user.updateRefreshToken(newRefreshToken);
+        user.updateRefreshToken(tokenMap.get(REFRESHTOKEN));
         userRepository.save(user);
 
-        return tokenMap;
+        return UpdateNicknameResponse.builder()
+                .accessToken(tokenMap.get(ACCESSTOKEN))
+                .refreshToken(user.getRefreshToken())
+                .nickname(user.getNickname())
+                .userTag(user.getUserTag())
+                .imageUrl(user.getImageUrl())
+                .socialType(user.getSocialType())
+                .build();
     }
 
     // 이미지 변경
-    public String updateUserImage(String token, MultipartFile file) throws IOException {
+    public UserSettingInformationResponse updateUserImage(String token, MultipartFile file) throws IOException {
 
         Long userId = jwtService.getLongUserIdFromToken(token);
 
@@ -246,7 +268,12 @@ public class UserService {
         user.updateImageUrl(newFileName);
         userRepository.save(user);
 
-        return user.getImageUrl();
+        return UserSettingInformationResponse.builder()
+                .nickname(user.getNickname())
+                .userTag(user.getUserTag())
+                .imageUrl(user.getImageUrl())
+                .socialType(user.getSocialType())
+                .build();
     }
 
     // 사용자 탈퇴

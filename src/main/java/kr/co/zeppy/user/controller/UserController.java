@@ -2,9 +2,9 @@ package kr.co.zeppy.user.controller;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import jakarta.servlet.http.HttpServletResponse;
 import kr.co.zeppy.global.annotation.UserId;
 import kr.co.zeppy.global.aws.service.AwsS3Uploader;
+import kr.co.zeppy.global.dto.ApiResponse;
 import kr.co.zeppy.global.error.ApplicationError;
 import kr.co.zeppy.global.error.ApplicationException;
 import kr.co.zeppy.global.jwt.service.JwtService;
@@ -55,31 +55,16 @@ public class UserController {
     }
 
     @PostMapping("/test/register-by-username")
-    public UserRegisterByUsernameResponse registerByUsername(@RequestBody UserRegisterByUsernameRequest userRegisterByUsernameRequest)
+    public ResponseEntity<ApiResponse<UserRegisterByUsernameResponse>> registerByUsername(@RequestBody UserRegisterByUsernameRequest userRegisterByUsernameRequest)
             throws Exception {
-        userService.registerByUsername(userRegisterByUsernameRequest);
 
-        User user = userRepository.findByUsername(userRegisterByUsernameRequest.getUsername())
-                .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
-
-        String accessToken = jwtService.createAccessToken(user.getUserTag());
-        String refreshToken = jwtService.createRefreshToken();
-        user.updateRefreshToken(refreshToken);
-
-        return UserRegisterByUsernameResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(user.getRefreshToken())
-                .userId(user.getId())
-                .username(user.getUsername())
-                .nickname(user.getNickname())
-                .userTag(user.getUserTag())
-                .imageUrl(user.getImageUrl())
-                .build();
+        UserRegisterByUsernameResponse response = userService.registerByUsername(userRegisterByUsernameRequest);
+        return ResponseEntity.ok().body(ApiResponse.success(response));
     }
 
     // todo : 사용자 이미지도 body에 포함시켜서 보내주기
     @PostMapping("/v1/users/register")
-    public ResponseEntity<UserRegisterResponse> userRegister(@RequestHeader("Authorization") String token,
+    public ResponseEntity<ApiResponse<UserRegisterResponse>> userRegister(@RequestHeader("Authorization") String token,
                                                              @ModelAttribute UserRegisterRequest userRegisterRequest)
             throws IOException {
 
@@ -94,7 +79,7 @@ public class UserController {
 
         UserRegisterResponse userRegisterResponse = userService.userRegisterBody(newUserTag, userId, userImageUrl);
 
-        return ResponseEntity.ok(userRegisterResponse);
+        return ResponseEntity.ok().body(ApiResponse.success(userRegisterResponse));
     }
 
     // test controller
@@ -137,10 +122,10 @@ public class UserController {
     // todo : testcode 미작성
     // usertag로 사용자 검색후 반환
     @PostMapping("/v1/users/search/usertag")
-    public ResponseEntity<UserInfoResponse> searchUserTag(@UserId Long userId, @RequestBody UserTagRequest userTagRequest) {
-        UserInfoResponse userInfoResponse = userService.findUserTag(userTagRequest, userId);
+    public ResponseEntity<ApiResponse<UserInfoResponse>> searchUserTag(@UserId Long userId, @RequestBody UserTagRequest userTagRequest) {
+        UserInfoResponse response = userService.findUserTag(userTagRequest, userId);
 
-        return ResponseEntity.ok(userInfoResponse);
+        return ResponseEntity.ok().body(ApiResponse.success(response));
     }
 
     // test
@@ -193,10 +178,10 @@ public class UserController {
 
     // test
     @GetMapping("/test/users/all-user-information")
-    public ResponseEntity<List<UserPinInformationResponse>> getAllUserInformationTest() {
-        List<UserPinInformationResponse> allUserInformation = userService.getAllUserInformation();
+    public ResponseEntity<ApiResponse<List<UserPinInformationResponse>>> getAllUserInformationTest() {
 
-        return ResponseEntity.ok().body(allUserInformation);
+        List<UserPinInformationResponse> allUserInformation = userService.getAllUserInformation();
+        return ResponseEntity.ok().body(ApiResponse.success(allUserInformation));
     }
 
 
@@ -207,41 +192,48 @@ public class UserController {
     }
 
     // 사용자 정보를 불러오는 함수
-    @GetMapping("/test/users")
-    public ResponseEntity<UserSettingInformationResponse> getMyInformation(@UserId Long userId) {
-        UserSettingInformationResponse userSettingInformationResponse = userService.getUserInformation(userId);
+    @GetMapping("/v1/users")
+    public ResponseEntity<ApiResponse<UserSettingInformationResponse>> getMyInformation(@UserId Long userId) {
 
-        return ResponseEntity.ok().body(userSettingInformationResponse);
+        UserSettingInformationResponse response = userService.getUserInformation(userId);
+        return ResponseEntity.ok().body(ApiResponse.success(response));
     }
 
     // 사용자의 닉네임을 변경하는 함수
     @PatchMapping("/v1/users/nickname")
-    public ResponseEntity<Map<String, String>> updateMyNickname(@RequestHeader("Authorization") String token,
+    public ResponseEntity<ApiResponse<UserSettingInformationResponse>> updateMyNickname(@RequestHeader("Authorization") String token,
                                                                 @RequestBody UserNicknameRequest userNicknameRequest) {
-        Map<String, String> tokenMap = userService.updateUserNickname(token, userNicknameRequest);
-        HttpHeaders responseHeader = new HttpHeaders();
-        responseHeader.add("Authorization", "Bearer " + tokenMap.get("accessToken"));
-        responseHeader.add("Authorization-refresh", "Bearer " + tokenMap.get("refreshToken"));
+        UpdateNicknameResponse updateNicknameResponse = userService.updateUserNickname(token, userNicknameRequest);
 
-        return new ResponseEntity<>(responseHeader, HttpStatus.OK);
-//        return ResponseEntity.ok().body(tokenMap);
+        UserSettingInformationResponse response = UserSettingInformationResponse.builder()
+                .nickname(updateNicknameResponse.getNickname())
+                .userTag(updateNicknameResponse.getUserTag())
+                .imageUrl(updateNicknameResponse.getImageUrl())
+                .socialType(updateNicknameResponse.getSocialType())
+                .build();
+
+        HttpHeaders responseHeader = new HttpHeaders();
+        responseHeader.add("Authorization", "Bearer " + updateNicknameResponse.getAccessToken());
+        responseHeader.add("Authorization-refresh", "Bearer " + updateNicknameResponse.getRefreshToken());
+
+        return new ResponseEntity<>(ApiResponse.success(response), responseHeader, HttpStatus.OK);
     }
 
     // todo : 테스트 용도로 S3에 업로드할 때 파일 이름 다르게 하는 코드 작성
     // 사용자의 이미지를 변경하는 함수
     @PatchMapping("/v1/users/image")
-    public ResponseEntity<String> updateMyImage(@RequestHeader("Authorization") String token,
+    public ResponseEntity<ApiResponse<UserSettingInformationResponse>> updateMyImage(@RequestHeader("Authorization") String token,
                                                 @RequestPart("File") MultipartFile profileImage) throws IOException {
-        String newImageUrl = userService.updateUserImage(token, profileImage);
 
-        return ResponseEntity.ok().body(newImageUrl);
+        UserSettingInformationResponse response = userService.updateUserImage(token, profileImage);
+        return ResponseEntity.ok().body(ApiResponse.success(response));
     }
 
     // 사용자 탈퇴
     @PatchMapping("/v1/users")
-    public ResponseEntity<Void> deleteMe(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<ApiResponse<Void>> deleteMe(@RequestHeader("Authorization") String token) {
 
         userService.deleteUser(token);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body(ApiResponse.success(null));
     }
 }

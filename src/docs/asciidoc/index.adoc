@@ -39,7 +39,7 @@ status code: 500
 == 기능
 
 === User 관련 기능
-==== User 초기 가입 - 닉네입, 프로필 사진 변경
+==== User 초기 가입 - 닉네임, 프로필 사진 변경
 ----
 /api/v1/users/register
 ----
@@ -75,6 +75,63 @@ include::{snippets}/update-Location-And-Battery-Failure/http-request.adoc[]
 
 .Response
 include::{snippets}/update-Location-And-Battery-Failure/http-response.adoc[]
+
+
+==== User 닉네임 변경
+----
+/api/v1/users/register
+----
+===== Success
+.Request
+include::{snippets}/update-User-Nickname-Request-Success/http-request.adoc[]
+
+.Response
+include::{snippets}/update-User-Nickname-Request-Success/http-response.adoc[]
+
+===== Failure
+.Request
+include::{snippets}/update-User-Nickname-Request-Failure/http-request.adoc[]
+
+.Response
+include::{snippets}/update-User-Nickname-Request-Failure/http-response.adoc[]
+
+
+==== User 프로필 사진 변경
+----
+/api/v1/users/image
+----
+===== Success
+.Request
+include::{snippets}/update-User-Image-Success/http-request.adoc[]
+
+.Response
+include::{snippets}/update-User-Image-Success/http-response.adoc[]
+
+===== Failure
+.Request
+include::{snippets}/update-User-Image-Failure/http-request.adoc[]
+
+.Response
+include::{snippets}/update-User-Image-Failure/http-response.adoc[]
+
+
+==== User 회원 탈퇴
+----
+/api/v1/users
+----
+===== Success
+.Request
+include::{snippets}/remove-User-Request-Success/http-request.adoc[]
+
+.Response
+include::{snippets}/remove-User-Request-Success/http-response.adoc[]
+
+===== Failure
+.Request
+include::{snippets}/remove-User-Request-Failure/http-request.adoc[]
+
+.Response
+include::{snippets}/remove-User-Request-Failure/http-response.adoc[]
 
 
 === Friend 관련 기능

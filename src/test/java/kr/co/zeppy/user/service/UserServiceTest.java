@@ -1,28 +1,31 @@
 package kr.co.zeppy.user.service;
 
+import com.auth0.jwt.JWT;
 import kr.co.zeppy.global.aws.service.AwsS3Uploader;
 import kr.co.zeppy.global.jwt.service.JwtService;
-import kr.co.zeppy.user.dto.UserNicknameRequest;
-import kr.co.zeppy.user.dto.UserRegisterRequest;
+import kr.co.zeppy.user.dto.*;
 import kr.co.zeppy.user.entity.*;
 import kr.co.zeppy.user.repository.FriendshipRepository;
 import kr.co.zeppy.user.repository.NickNameRepository;
 import kr.co.zeppy.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -59,6 +62,8 @@ public class UserServiceTest {
     private static final String USER_TAG = "testUserTag#0001";
     private static final String NEW_USER_TAG = "newUserTag";
     private static final String NICKNAME = "newNickname";
+    private static final String USERNAME = "userName";
+    private static final String PASSWORD = "password";
 
     private static final String NEW_NICKNAME = "changedNickname";
     private static final Long USER_ID = 1L;
@@ -78,9 +83,13 @@ public class UserServiceTest {
 
 
     private UserRegisterRequest userRegisterRequest;
+    private UserRegisterByUsernameRequest userRegisterByUsernameRequest;
     private User user;
     private MultipartFile file;
     private List<Friendship> friendshipList;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     public void setup(){
@@ -88,6 +97,10 @@ public class UserServiceTest {
         userRegisterRequest = UserRegisterRequest.builder()
                 .nickname(NICKNAME)
                 .profileImage(file)
+                .build();
+        userRegisterByUsernameRequest = UserRegisterByUsernameRequest.builder()
+                .username(USERNAME)
+                .password(PASSWORD)
                 .build();
 
         user = mock(User.class);
@@ -102,8 +115,10 @@ public class UserServiceTest {
 
         when(userRepository.findByUserTag(USER_TAG)).thenReturn(Optional.of(user));
         when(nickNameService.getUserTagFromNickName(NICKNAME)).thenReturn(NEW_USER_TAG);
-        when(awsS3Uploader.newUpload(file, S3_USER_PROFILE_BASE_PATH + USER_ID +
+        when(awsS3Uploader.newUpload(file, S3_USER_PROFILE_BASE_PATH + 0 +
                 S3_USER_PROFILE_LAST_PATH)).thenReturn(IMAGE_URL);
+//        when(awsS3Uploader.newUpload(file, S3_USER_PROFILE_BASE_PATH + USER_ID +
+//                S3_USER_PROFILE_LAST_PATH)).thenReturn(IMAGE_URL);
 
         // When
         userService.register(TOKEN, userRegisterRequest);
@@ -112,6 +127,64 @@ public class UserServiceTest {
         verify(user).updateUserTag(NEW_USER_TAG);
         verify(user).updateNickname(NICKNAME);
         verify(user).updateImageUrl(IMAGE_URL);
+    }
+
+    @Test
+    void registerByUsername() throws Exception {
+        // Given
+        user = User.builder()
+                .id(INIT_USERID)
+                .nickname(USER_NICKNAME)
+                .imageUrl(USER_IMAGE_URL)
+                .userTag(USER_TAG)
+                .role(USER_ROLE)
+                .socialType(USER_SOCIAL_TYPE)
+                .socialId(USER_SOCIAL_ID)
+                .refreshToken(USER_REFRESH_TOKEN)
+                .build();
+
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
+        when(nickNameService.getUserTagFromNickName(anyString())).thenReturn(USER_TAG);
+        when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
+        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(jwtService.createRefreshToken()).thenReturn(USER_REFRESH_TOKEN);
+
+        // When
+        UserRegisterByUsernameResponse response = userService.registerByUsername(userRegisterByUsernameRequest);
+
+        // Then
+        verify(userRepository).save(any(User.class));
+        assertAll(
+                () -> assertEquals(USERNAME, response.getUsername()),
+                () -> assertEquals(USER_TAG, response.getUserTag()),
+                () -> assertEquals(USER_REFRESH_TOKEN, response.getRefreshToken())
+        );
+    }
+
+    @Test
+    void getUserInformation() {
+        // Given
+        user = User.builder()
+                .id(INIT_USERID)
+                .nickname(USER_NICKNAME)
+                .imageUrl(USER_IMAGE_URL)
+                .userTag(USER_TAG)
+                .role(USER_ROLE)
+                .socialType(USER_SOCIAL_TYPE)
+                .socialId(USER_SOCIAL_ID)
+                .refreshToken(USER_REFRESH_TOKEN)
+                .build();
+
+        when(userRepository.findById(INIT_USERID)).thenReturn(Optional.of(user));
+
+        // When
+        UserSettingInformationResponse response = userService.getUserInformation(INIT_USERID);
+
+        // Then
+        assertEquals(user.getNickname(), response.getNickname());
+        assertEquals(user.getUserTag(), response.getUserTag());
+        assertEquals(user.getImageUrl(), response.getImageUrl());
+        assertEquals(user.getSocialType(), response.getSocialType());
     }
 
     @Test
