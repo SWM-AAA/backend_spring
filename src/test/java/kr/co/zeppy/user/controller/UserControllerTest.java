@@ -389,7 +389,7 @@ public class UserControllerTest extends ApiDocument {
     }
 
     void register_By_Username_Failure(ResultActions resultActions) throws Exception {
-        printAndMakeSnippet(resultActions.andExpect(status().isConflict())
+        printAndMakeSnippet(resultActions.andExpect(status().isBadRequest())
                 .andExpect(content().json(toJson(ApiResponse.failure(ErrorResponse.fromException(usernameDuplicatedException))))),
                 "register-By-Username-Request-Failure");
     }
