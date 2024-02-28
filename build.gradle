@@ -1,3 +1,7 @@
+import com.sun.security.ntlm.Server
+import org.hidetake.gradle.swagger.generator.GenerateSwaggerUI
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.0.1'
@@ -25,6 +29,12 @@ repositories {
 	mavenCentral()
 }
 
+//swaggerSources {
+//	sample {
+//		setInputFile(file("${project.buildDir}/api-spec/openapi3.yaml"))
+//	}
+//}
+
 ext.profile = (!project.hasProperty('profile') || !profile) ? 'local' : profile
 
 ext {
@@ -37,8 +47,8 @@ tasks.named("test") {
 		useJUnitPlatform()
 		environment "DB_NAME", "zeppy_db"
 		environment "POSTGRESQL_PORT", "5432"
-		environment "POSTGRESQL_LOCAL_USERNAME", "test"
-		environment "POSTGRESQL_LOCAL_PASSWORD", "test"
+		environment "POSTGRESQL_LOCAL_USERNAME", "postgres"
+		environment "POSTGRESQL_LOCAL_PASSWORD", "0102"
 	}
 }
 
@@ -66,11 +76,11 @@ openapi3 {
 	title = 'spring-rest-docs-guide'
 	description = 'Spring REST Docs 테스트 생성물 생성시 추가생성되는 OpenAPI 문서이용'
 	version = "${project.version}"
-	outputFileNamePrefix = 'open-api-3.0.1'
-	format = 'json'
+//	outputFileNamePrefix = 'open-api-3.0.1'
+	format = 'yaml'
 
 	// add
-	outputDirectory = 'build/resources/main/static/docs'
+//	outputDirectory = 'build/resources/main/static/docs'
 }
 
 tasks.register("apiBuild", GradleBuild) {
@@ -88,6 +98,10 @@ gitProperties {
 }
 
 bootJar {
+//	dependsOn generateSwaggerUISample
+//	from("${generateSwaggerUISample.outputDir}") {
+//		into 'static/docs'
+//	}
 	dependsOn(':openapi3')
 	dependsOn asciidoctor
 	duplicatesStrategy = DuplicatesStrategy.INCLUDE
@@ -98,9 +112,9 @@ bootJar {
 	from("${asciidoctor.outputDir}") {
 		into "BOOT-INF/classes/static/docs"
 	}
-	from("build/api-spec") {
-		into "BOOT-INF/classes/static/swagger"
-	}
+//	from("build/api-spec") {
+//		into "BOOT-INF/classes/static/swagger"
+//	}
 
 	archiveFileName.set "application.jar"
 }
@@ -108,7 +122,26 @@ bootJar {
 tasks.withType(GenerateSwaggerUI) {
 	dependsOn 'openapi3'
 
-	delete file('src/main/resources/static/docs/')
+	doFirst {
+		def swaggerUIFile = file("${openapi3.outputDirectory}/openapi3.yaml")
+
+		def securitySchemesContent = "  securitySchemes:\n" +  \
+                                      "    APIKey:\n" +  \
+                                      "      type: apiKey\n" +  \
+                                      "      name: Authorization\n" +  \
+                                      "      in: header\n" + \
+                                      "security:\n" +
+				"  - APIKey: []  # Apply the security scheme here"
+
+		swaggerUIFile.append securitySchemesContent
+	}
+
+//	delete file('src/main/resources/static/docs/')
+//	copy {
+//		from "build/resources/main/static/docs"
+//		into "src/main/resources/static/docs/"
+//	}
+	delete file("src/main/resources/static/docs/")
 	copy {
 		from "build/resources/main/static/docs"
 		into "src/main/resources/static/docs/"
@@ -178,4 +211,5 @@ dependencies {
 	// websocket
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
+	swaggerUI 'org.webjars:swagger-ui:4.11.1'
 }

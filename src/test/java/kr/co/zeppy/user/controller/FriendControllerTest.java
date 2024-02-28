@@ -53,7 +53,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 @WithMockUser(username = "test", roles = "USER")
 @WebMvcTest(FriendController.class)
 @Import(SecurityConfigTest.class)
-@Disabled
 public class FriendControllerTest extends ApiDocument{
     private static final String API_VERSION = "/api/v1";
     private static final String RESOURCE_PATH = "/friends";
