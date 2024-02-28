@@ -126,8 +126,8 @@ tasks.withType(GenerateSwaggerUI) {
 		def swaggerUIFile = file("${openapi3.outputDirectory}/openapi3.yaml")
 
 		def securitySchemesContent = "  securitySchemes:\n" +  \
-                                      "    APIKey:\n" +  \
-                                      "      type: apiKey\n" +  \
+                                      "    Bearer Auth:\n" +  \
+                                      "      type: http, Bearer\n" +  \
                                       "      name: Authorization\n" +  \
                                       "      in: header\n" + \
                                       "security:\n" +
@@ -136,11 +136,6 @@ tasks.withType(GenerateSwaggerUI) {
 		swaggerUIFile.append securitySchemesContent
 	}
 
-//	delete file('src/main/resources/static/docs/')
-//	copy {
-//		from "build/resources/main/static/docs"
-//		into "src/main/resources/static/docs/"
-//	}
 	delete file("src/main/resources/static/docs/")
 	copy {
 		from "build/resources/main/static/docs"
