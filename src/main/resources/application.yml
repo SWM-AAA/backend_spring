@@ -9,7 +9,7 @@ springdoc:
   api-docs:
     enabled: true
   swagger-ui:
-    url: /docs/openapi.yml
+    url: /docs/openapi.yaml
     enabled: true
     tagsSorter: alpha
     operations-sorter: alpha
