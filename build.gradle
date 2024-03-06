@@ -1,12 +1,14 @@
+import com.sun.security.ntlm.Server
+import org.hidetake.gradle.swagger.generator.GenerateSwaggerUI
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.0.1'
 	id 'io.spring.dependency-management' version '1.1.0'
 	id "org.asciidoctor.jvm.convert" version "3.3.2"
-	// add //
 	id "com.gorylenko.gradle-git-properties" version "2.4.1"
 	id "com.epages.restdocs-api-spec" version "0.18.4"
-	// add //
 	id 'org.hidetake.swagger.generator' version '2.18.2'
 }
 
@@ -25,7 +27,13 @@ repositories {
 	mavenCentral()
 }
 
-ext.profile = (!project.hasProperty('profile') || !profile) ? 'local' : profile
+swaggerSources {
+	sample {
+		setInputFile(file("${project.buildDir}/api-spec/openapi3.yaml"))
+	}
+}
+
+ext.profile = (!project.hasProperty('profile') || !profile) ? 'dev' : profile
 
 ext {
 	snippetsDir = file('build/generated-snippets')
@@ -33,7 +41,6 @@ ext {
 
 tasks.named("test") {
 	if (profile == 'local') {
-//		outputs.dir snippetsDir
 		useJUnitPlatform()
 		environment "DB_NAME", "zeppy_db"
 		environment "POSTGRESQL_PORT", "5432"
@@ -66,11 +73,7 @@ openapi3 {
 	title = 'spring-rest-docs-guide'
 	description = 'Spring REST Docs 테스트 생성물 생성시 추가생성되는 OpenAPI 문서이용'
 	version = "${project.version}"
-	outputFileNamePrefix = 'open-api-3.0.1'
-	format = 'json'
-
-	// add
-	outputDirectory = 'build/resources/main/static/docs'
+	format = 'yaml'
 }
 
 tasks.register("apiBuild", GradleBuild) {
@@ -88,18 +91,16 @@ gitProperties {
 }
 
 bootJar {
+	dependsOn generateSwaggerUISample
+	from("${generateSwaggerUISample.outputDir}") {
+		into 'static/docs'
+	}
 	dependsOn(':openapi3')
 	dependsOn asciidoctor
 	duplicatesStrategy = DuplicatesStrategy.INCLUDE
 
-//	from("swagger-ui") {
-//		into "BOOT-INF/classes/static/swagger"
-//	}
 	from("${asciidoctor.outputDir}") {
 		into "BOOT-INF/classes/static/docs"
-	}
-	from("build/api-spec") {
-		into "BOOT-INF/classes/static/swagger"
 	}
 
 	archiveFileName.set "application.jar"
@@ -108,13 +109,27 @@ bootJar {
 tasks.withType(GenerateSwaggerUI) {
 	dependsOn 'openapi3'
 
-	delete file('src/main/resources/static/docs/')
+	doFirst {
+		def swaggerUIFile = file("${openapi3.outputDirectory}/openapi3.yaml")
+
+		def securitySchemesContent = "  securitySchemes:\n" +  \
+                                  "    BearerAuth:\n" +  \
+                                  "      type: http\n" +  \
+                                  "      scheme: bearer\n" +  \
+                                  "      bearerFormat: JWT\n" +  \
+                                  "      description: 'Enter your Bearer token in the format **Bearer &lt;token&gt;**'\n" + \
+                                  "security:\n" +
+				"  - BearerAuth: []  # Apply the security scheme here"
+
+		swaggerUIFile.append securitySchemesContent
+	}
+
+	delete file("src/main/resources/static/docs/")
 	copy {
-		from "build/resources/main/static/docs"
+		from "build/api-spec"
 		into "src/main/resources/static/docs/"
 	}
 }
-
 
 // 리소스 디렉토리 추가
 sourceSets {
@@ -131,13 +146,7 @@ java {
 
 dependencies {
 	// add //
-//	implementation("org.springdoc:springdoc-openapi-ui:1.6.11")
-//	implementation("org.springdoc:springdoc-openapi-webmvc-core:1.6.11")
-//	implementation 'javax.xml.bind:jaxb-api:2.3.0'
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
-//	implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '2.0.2'
-
-//	testImplementation("com.epages:restdocs-api-spec:0.18.4")
 	testImplementation("com.epages:restdocs-api-spec-mockmvc:0.18.4")
 	// add //
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -166,7 +175,6 @@ dependencies {
 	// spring boot oauth2 library
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
-//	implementation 'org.springdoc:springdoc-openapi-ui:1.6.11'
 	implementation 'com.epages:restdocs-api-spec-openapi3-generator:0.17.1'
 
 	implementation 'org.hibernate.validator:hibernate-validator:7.0.2.Final'
@@ -178,4 +186,5 @@ dependencies {
 	// websocket
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
+	swaggerUI 'org.webjars:swagger-ui:4.11.1'
 }
