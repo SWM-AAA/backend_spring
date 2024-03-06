@@ -33,7 +33,7 @@ swaggerSources {
 	}
 }
 
-ext.profile = (!project.hasProperty('profile') || !profile) ? 'local' : profile
+ext.profile = (!project.hasProperty('profile') || !profile) ? 'dev' : profile
 
 ext {
 	snippetsDir = file('build/generated-snippets')
