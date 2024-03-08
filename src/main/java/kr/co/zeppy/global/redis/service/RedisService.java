@@ -5,13 +5,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import kr.co.zeppy.global.redis.dto.*;
 import kr.co.zeppy.user.repository.UserRepository;
 import org.springframework.data.redis.core.RedisTemplate;
 import kr.co.zeppy.global.error.ApplicationError;
 import kr.co.zeppy.global.error.ApplicationException;
-import kr.co.zeppy.global.redis.dto.FriendLocationAndBattery;
-import kr.co.zeppy.global.redis.dto.FriendLocationAndBatteryResponse;
-import kr.co.zeppy.global.redis.dto.LocationAndBatteryRequest;
 import kr.co.zeppy.user.entity.User;
 import kr.co.zeppy.user.repository.FriendshipRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +32,9 @@ public class RedisService {
     private final UserRepository userRepository;
     private final FriendshipRepository friendshipRepository;
     private final ObjectMapper objectMapper;
-    
+
+    private static final String BATTERY_POSTFIX = "_battery";
+    private static final String LOCATION_POSTFIX = "_location";
 
     public void updateLocationAndBattery(String userId, LocationAndBatteryRequest locationAndBatteryRequest) {
         String key = USER_PREFIX + userId;
@@ -47,6 +47,27 @@ public class RedisService {
         }
     }
 
+    public void updateLocation(String userId, LocationRequest locationRequest) {
+        String key = USER_PREFIX + userId + LOCATION_POSTFIX;
+        try {
+            String jsonValue = objectMapper.writeValueAsString(locationRequest);
+            redisTemplate.opsForValue().set(key, jsonValue);
+
+        } catch (Exception e) {
+            throw new ApplicationException(ApplicationError.REDIS_SERVER_UNAVAILABLE);
+        }
+    }
+
+    public void updateBattery(String userId, BatteryRequest batteryRequest) {
+        String key = USER_PREFIX + userId + BATTERY_POSTFIX;
+        try {
+            String jsonValue = objectMapper.writeValueAsString(batteryRequest);
+            redisTemplate.opsForValue().set(key, jsonValue);
+
+        } catch (Exception e) {
+            throw new ApplicationException(ApplicationError.REDIS_SERVER_UNAVAILABLE);
+        }
+    }
     
     public Map<String, Map<String, LocationAndBatteryRequest>> getAllUsersLocationAndBattery() {
         List<User> allUsers = userRepository.findAll();

@@ -8,7 +8,9 @@ import kr.co.zeppy.global.dto.ApiResponse;
 import kr.co.zeppy.global.error.ApplicationError;
 import kr.co.zeppy.global.error.ApplicationException;
 import kr.co.zeppy.global.jwt.service.JwtService;
+import kr.co.zeppy.global.redis.dto.BatteryRequest;
 import kr.co.zeppy.global.redis.dto.LocationAndBatteryRequest;
+import kr.co.zeppy.global.redis.dto.LocationRequest;
 import kr.co.zeppy.global.redis.service.RedisService;
 import kr.co.zeppy.user.dto.*;
 import kr.co.zeppy.user.entity.User;
@@ -117,6 +119,29 @@ public class UserController {
         redisService.updateLocationAndBattery(userId, locationAndBatteryRequest);
 
         return ResponseEntity.ok().build();
+    }
+
+
+    // test
+    @PostMapping("/test/location")
+    public ResponseEntity<ApiResponse<String>> updateUserLocation(@RequestHeader("Authorization") String token,
+                                                            @RequestBody LocationRequest locationRequest) {
+
+        String userId = jwtService.getStringUserIdFromToken(token);
+        redisService.updateLocation(userId, locationRequest);
+
+        return ResponseEntity.ok().body(ApiResponse.success("Location Update Success"));
+    }
+
+    // test
+    @PostMapping("/test/battery")
+    public ResponseEntity<ApiResponse<String>> updateUserBattery(@RequestHeader("Authorization") String token,
+                                                                 @RequestBody BatteryRequest batteryRequest) {
+
+        String userId = jwtService.getStringUserIdFromToken(token);
+        redisService.updateBattery(userId, batteryRequest);
+
+        return ResponseEntity.ok().body(ApiResponse.success("Battery Update Success"));
     }
 
     // todo : testcode 미작성
