@@ -103,7 +103,7 @@ bootJar {
 		into "BOOT-INF/classes/static/docs"
 	}
 
-	archiveFileName.set "application.jar"
+//	archiveFileName.set "application.jar"
 }
 
 tasks.withType(GenerateSwaggerUI) {
