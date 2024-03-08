@@ -40,13 +40,11 @@ ext {
 }
 
 tasks.named("test") {
-	if (profile == 'local') {
-		useJUnitPlatform()
-		environment "DB_NAME", "zeppy_db"
-		environment "POSTGRESQL_PORT", "5432"
-		environment "POSTGRESQL_LOCAL_USERNAME", "test"
-		environment "POSTGRESQL_LOCAL_PASSWORD", "test"
-	}
+	useJUnitPlatform()
+	environment "DB_NAME", "zeppy_db"
+	environment "POSTGRESQL_PORT", "5432"
+	environment "POSTGRESQL_LOCAL_USERNAME", "test"
+	environment "POSTGRESQL_LOCAL_PASSWORD", "test"
 }
 
 tasks.register("restDocsTest", Test) {
@@ -66,9 +64,9 @@ tasks.named("asciidoctor") {
 	inputs.dir snippetsDir
 	configurations "asciidoctorExt"
 	baseDirFollowsSourceDir() // 원본파일작업은 .adoc 디렉터리 기준
-	attributes (
-			'snippets': snippetsDir
-	)
+//	attributes (
+//			'snippets': snippetsDir
+//	)
 }
 
 openapi3 {
