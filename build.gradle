@@ -66,6 +66,9 @@ tasks.named("asciidoctor") {
 	inputs.dir snippetsDir
 	configurations "asciidoctorExt"
 	baseDirFollowsSourceDir() // 원본파일작업은 .adoc 디렉터리 기준
+	attributes (
+			'snippets': snippetsDir
+	)
 }
 
 openapi3 {
