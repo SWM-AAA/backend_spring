@@ -64,10 +64,14 @@ tasks.named("asciidoctor") {
 	inputs.dir snippetsDir
 	configurations "asciidoctorExt"
 	baseDirFollowsSourceDir() // 원본파일작업은 .adoc 디렉터리 기준
+//	attributes (
+//			'snippets': snippetsDir
+//	)
 }
 
 openapi3 {
-	server = 'http://localhost:8080'
+//	server = 'http://localhost:8080'
+	server = 'https://zeppy.co.kr'
 	title = 'spring-rest-docs-guide'
 	description = 'Spring REST Docs 테스트 생성물 생성시 추가생성되는 OpenAPI 문서이용'
 	version = "${project.version}"
@@ -101,7 +105,7 @@ bootJar {
 		into "BOOT-INF/classes/static/docs"
 	}
 
-	archiveFileName.set "application.jar"
+//	archiveFileName.set "application.jar"
 }
 
 tasks.withType(GenerateSwaggerUI) {
