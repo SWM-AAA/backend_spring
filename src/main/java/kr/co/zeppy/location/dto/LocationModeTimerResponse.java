@@ -9,7 +9,7 @@ import lombok.*;
 public class LocationModeTimerResponse {
 
     private Integer shortest;
-    private Integer second_shortest;
+    private Integer secondShortest;
     private Integer medium;
     private Integer longest;
 }

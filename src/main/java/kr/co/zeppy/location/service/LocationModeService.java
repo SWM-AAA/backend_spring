@@ -17,7 +17,7 @@ public class LocationModeService {
     public LocationModeTimerResponse getTimes() {
         return LocationModeTimerResponse.builder()
                 .shortest(2)
-                .second_shortest(4)
+                .secondShortest(4)
                 .medium(8)
                 .longest(24)
                 .build();
