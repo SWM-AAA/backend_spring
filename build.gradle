@@ -128,10 +128,12 @@ tasks.withType(GenerateSwaggerUI) {
 		swaggerUIFile.append securitySchemesContent
 	}
 
-	delete file("src/main/resources/static/docs/")
-	copy {
-		from "build/api-spec"
-		into "src/main/resources/static/docs/"
+	doLast {
+		delete file("src/main/resources/static/docs/")
+		copy {
+			from "build/api-spec"
+			into "src/main/resources/static/docs/"
+		}
 	}
 }
 
