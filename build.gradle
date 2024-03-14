@@ -16,6 +16,8 @@ group = 'com.aaa'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_17
 
+buildDir = "${projectDir}/build"
+
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
