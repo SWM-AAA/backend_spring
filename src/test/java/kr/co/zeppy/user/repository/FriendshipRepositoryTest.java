@@ -2,7 +2,6 @@ package kr.co.zeppy.user.repository;
 
 import com.amazonaws.auth.profile.ProfilesConfigFile;
 import kr.co.zeppy.user.entity.*;
-import org.apache.catalina.valves.rewrite.RewriteCond;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
