@@ -15,11 +15,10 @@ import java.util.*;
 public class LocationModeService {
 
     public LocationModeTimerResponse getTimes() {
+
+        List<Integer> timeList = Arrays.asList(2, 4, 8, 24);
         return LocationModeTimerResponse.builder()
-                .shortest(2)
-                .secondShortest(4)
-                .medium(8)
-                .longest(24)
+                .times(timeList)
                 .build();
     }
 }

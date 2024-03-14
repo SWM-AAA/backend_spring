@@ -27,10 +27,10 @@ public class LocationModeServiceTest {
 
         // Then
         assertAll(
-                () -> assertEquals(response.getShortest(), 2),
-                () -> assertEquals(response.getSecondShortest(), 4),
-                () -> assertEquals(response.getMedium(), 8),
-                () -> assertEquals(response.getLongest(), 24)
+                () -> assertEquals(response.getTimes().get(0), 2),
+                () -> assertEquals(response.getTimes().get(1), 4),
+                () -> assertEquals(response.getTimes().get(2), 8),
+                () -> assertEquals(response.getTimes().get(3), 24)
         );
     }
 }

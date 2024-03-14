@@ -66,6 +66,7 @@ public class LocationModeControllerTest extends ApiDocument{
     @MockBean
     private LocationModeService locationModeService;
 
+    private List<Integer> timeList;
     private LocationModeTimerResponse locationModeTimerResponse;
 
     private ApplicationException internalServerException;
@@ -85,11 +86,9 @@ public class LocationModeControllerTest extends ApiDocument{
                 .refreshToken(USER_REFRESH_TOKEN)
                 .build();
 
+        timeList = Arrays.asList(2, 4, 8, 24);
         locationModeTimerResponse = LocationModeTimerResponse.builder()
-                .shortest(2)
-                .secondShortest(4)
-                .medium(8)
-                .longest(24)
+                .times(timeList)
                 .build();
 
         internalServerException = new ApplicationException(ApplicationError.INTERNAL_SERVER_ERROR);
