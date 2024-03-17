@@ -84,6 +84,7 @@ public class LocationModeControllerTest extends ApiDocument{
                 .socialType(USER_SOCIAL_TYPE)
                 .socialId(USER_SOCIAL_ID)
                 .refreshToken(USER_REFRESH_TOKEN)
+                .activated(true)
                 .build();
 
         timeList = Arrays.asList(2, 4, 8, 24);

@@ -1,6 +1,8 @@
 package kr.co.zeppy.location.controller;
 
+import kr.co.zeppy.global.annotation.UserId;
 import kr.co.zeppy.global.dto.ApiResponse;
+import kr.co.zeppy.location.dto.CurrentLocationModeResponse;
 import kr.co.zeppy.location.dto.LocationModeTimerResponse;
 import kr.co.zeppy.location.service.LocationModeService;
 import kr.co.zeppy.user.dto.UserRegisterByUsernameRequest;
@@ -24,6 +26,13 @@ public class LocationModeController {
     public ResponseEntity<ApiResponse<LocationModeTimerResponse>> getLocationModeTimes() {
 
         LocationModeTimerResponse response = locationModeService.getTimes();
+        return ResponseEntity.ok().body(ApiResponse.success(response));
+    }
+
+    @GetMapping("/v1/mode/friends")
+    public ResponseEntity<ApiResponse<CurrentLocationModeResponse>> getCurrentLocationMode(@UserId Long userId) {
+
+        CurrentLocationModeResponse response = locationModeService.getLocationMode(userId);
         return ResponseEntity.ok().body(ApiResponse.success(response));
     }
 }

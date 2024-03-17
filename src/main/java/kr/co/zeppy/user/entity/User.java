@@ -21,8 +21,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Entity
 @Builder
 @Table(name = "USERS")
-@DynamicInsert
-@DynamicUpdate
 @AllArgsConstructor
 public class User extends BaseModel {
 

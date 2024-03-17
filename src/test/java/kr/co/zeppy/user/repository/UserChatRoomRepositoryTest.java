@@ -49,6 +49,7 @@ class UserChatRoomRepositoryTest {
                 .socialType(SocialType.KAKAO)
                 .socialId("12344")
                 .refreshToken("token0")
+                .activated(true)
                 .build();
         entityManager.persist(user);
 

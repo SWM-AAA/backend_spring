@@ -1,4 +1,4 @@
-package kr.co.zeppy.location.entity;
+package kr.co.zeppy.location.dto;
 
 import lombok.*;
 

@@ -1,6 +1,5 @@
 package kr.co.zeppy.location.dto;
 
-import kr.co.zeppy.location.entity.FriendInfo;
 import lombok.*;
 
 import java.util.List;

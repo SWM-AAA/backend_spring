@@ -93,6 +93,7 @@ public class FriendServiceTest {
                 .socialType(USER_SOCIAL_TYPE)
                 .socialId(USER_SOCIAL_ID)
                 .refreshToken(USER_REFRESH_TOKEN)
+                .activated(true)
                 .build();
                 
         friend = User.builder()
@@ -104,6 +105,7 @@ public class FriendServiceTest {
                 .socialType(FRIEND_SOCIAL_TYPE)
                 .socialId(FRIEND_SOCIAL_ID)
                 .refreshToken(FRIEND_REFRESH_TOKEN)
+                .activated(true)
                 .build();
 
         request = ConfirmFriendshipRequest.builder()
@@ -130,6 +132,7 @@ public class FriendServiceTest {
                 .socialType(FRIEND_SOCIAL_TYPE)
                 .socialId(FRIEND_SOCIAL_ID)
                 .refreshToken(FRIEND_REFRESH_TOKEN)
+                .activated(true)
                 .build();
         friend_3 = User.builder()
                 .id(FRIENDID_4) // 4
@@ -140,6 +143,7 @@ public class FriendServiceTest {
                 .socialType(FRIEND_SOCIAL_TYPE)
                 .socialId(FRIEND_SOCIAL_ID)
                 .refreshToken(FRIEND_REFRESH_TOKEN)
+                .activated(true)
                 .build(); 
 
         friendship1 = Friendship.builder()
