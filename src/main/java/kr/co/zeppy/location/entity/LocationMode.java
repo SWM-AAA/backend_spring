@@ -9,9 +9,11 @@ import lombok.*;
 @Entity
 @Builder
 @AllArgsConstructor
+@Table(name = "LOCATION_MODES")
 public class LocationMode {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "location_mode_id")
     private Long id;
 
@@ -26,9 +28,9 @@ public class LocationMode {
     @Enumerated(EnumType.STRING)
     private LocationModeStatus status;
 
-    public void toAccurate() { this.status = LocationModeStatus.ACCURATE; }
+    public void changeToAccurate() { this.status = LocationModeStatus.ACCURATE; }
 
-    public void toAmbiguous() { this.status = LocationModeStatus.AMBIGUOUS; }
+    public void changeToAmbiguous() { this.status = LocationModeStatus.AMBIGUOUS; }
 
-    public void toPinned() { this.status = LocationModeStatus.PINNED; }
+    public void changeToPinned() { this.status = LocationModeStatus.PINNED; }
 }

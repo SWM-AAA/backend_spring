@@ -3,6 +3,11 @@ package kr.co.zeppy.user.service;
 import java.util.*;
 
 import kr.co.zeppy.global.dto.ApiResponse;
+import kr.co.zeppy.location.dto.FriendInfo;
+import kr.co.zeppy.location.entity.LocationMode;
+import kr.co.zeppy.location.entity.LocationModeStatus;
+import kr.co.zeppy.location.repository.LocationModeRepository;
+import kr.co.zeppy.location.service.LocationModeService;
 import kr.co.zeppy.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +36,8 @@ public class FriendService {
     private final JwtService jwtService;
     private final FriendshipRepository friendshipRepository;
     private final UserRepository userRepository;
+    private final LocationModeService locationModeService;
+    private final LocationModeRepository locationModeRepository;
 
 
     // user 친구 추가 기능
@@ -129,6 +136,27 @@ public class FriendService {
         if (isAccept) {
             acceptFriendship(friendship);
             friendshipRepository.save(friendship);
+
+            // user는 친구 요청을 수락한 사용자, friend는 친구 요청을 보낸 사용자
+            LocationMode locationModeUser = LocationMode.builder()
+                    .user(user)
+                    .friend(friend)
+                    .status(LocationModeStatus.ACCURATE)
+                    .build();
+
+            LocationMode locationModeFriend = LocationMode.builder()
+                    .user(friend)
+                    .friend(user)
+                    .status(LocationModeStatus.ACCURATE)
+                    .build();
+
+            // 내가 지정한 친구의 모드
+            locationModeRepository.save(locationModeUser);
+            locationModeRepository.save(locationModeFriend);
+
+            // 친구가 지정한 나의 모드
+            user.addAccurateFriends(locationModeFriend);
+            friend.addAccurateFriends(locationModeUser);
         } else {
             declineFriendship(friendship);
             friendshipRepository.delete(friendship);
