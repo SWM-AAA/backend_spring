@@ -136,8 +136,7 @@ public class FriendService {
         if (isAccept) {
             acceptFriendship(friendship);
             friendshipRepository.save(friendship);
-            locationModeService.setAccurateFriend(user, friend);
-            locationModeService.setAccurateFriend(friend, user);
+            locationModeService.setAccurateFriend(userId, friendId);
         } else {
             declineFriendship(friendship);
             friendshipRepository.delete(friendship);

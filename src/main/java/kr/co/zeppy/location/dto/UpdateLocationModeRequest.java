@@ -1,6 +1,5 @@
 package kr.co.zeppy.location.dto;
 
-import kr.co.zeppy.user.entity.User;
 import lombok.*;
 
 import java.util.List;
@@ -11,7 +10,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UpdateLocationModeRequest {
 
-    private List<User> accurateFriends;
-    private List<User> ambiguousFriends;
-    private List<User> pinnedFriends;
+    private List<Long> accurate;
+    private List<Long> ambiguous;
+    private List<Long> pinned;
 }

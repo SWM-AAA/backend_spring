@@ -1,9 +1,9 @@
 package kr.co.zeppy.location.service;
 
 import jakarta.transaction.Transactional;
-import kr.co.zeppy.global.annotation.UserId;
 import kr.co.zeppy.global.error.ApplicationError;
 import kr.co.zeppy.global.error.ApplicationException;
+import kr.co.zeppy.global.redis.service.RedisService;
 import kr.co.zeppy.location.dto.CurrentLocationModeResponse;
 import kr.co.zeppy.location.dto.FriendInfo;
 import kr.co.zeppy.location.dto.LocationModeTimerResponse;
@@ -12,7 +12,6 @@ import kr.co.zeppy.location.entity.LocationMode;
 import kr.co.zeppy.location.entity.LocationModeStatus;
 import kr.co.zeppy.location.repository.LocationModeRepository;
 import kr.co.zeppy.user.entity.User;
-import kr.co.zeppy.user.repository.FriendshipRepository;
 import kr.co.zeppy.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +27,7 @@ public class LocationModeService {
 
     private final LocationModeRepository locationModeRepository;
     private final UserRepository userRepository;
+    private final RedisService redisService;
 
     public LocationModeTimerResponse getTimes() {
 
@@ -43,35 +43,21 @@ public class LocationModeService {
         List<FriendInfo> ambiguousFriends = new ArrayList<>();
         List<FriendInfo> pinnedFriends = new ArrayList<>();
 
-        List<LocationMode> accurateList = locationModeRepository.findAccurateFriendsByUserId(userId);
-        List<LocationMode> ambiguousList = locationModeRepository.findAmbiguousFriendsByUserId(userId);
-        List<LocationMode> pinnedList = locationModeRepository.findPinnedFriendsByUserId(userId);
+        List<LocationMode> locationModes = locationModeRepository.findByUserId(userId);
 
-        for (LocationMode l : accurateList) {
+        for (LocationMode l : locationModes) {
             FriendInfo friendInfo = FriendInfo.builder()
                     .userId(l.getFriend().getId())
                     .userTag(l.getFriend().getUserTag())
                     .imageUrl(l.getFriend().getImageUrl())
                     .build();
-            accurateFriends.add(friendInfo);
-        }
 
-        for (LocationMode l : ambiguousList) {
-            FriendInfo friendInfo = FriendInfo.builder()
-                    .userId(l.getFriend().getId())
-                    .userTag(l.getFriend().getUserTag())
-                    .imageUrl(l.getFriend().getImageUrl())
-                    .build();
-            ambiguousFriends.add(friendInfo);
-        }
-
-        for (LocationMode l : pinnedList) {
-            FriendInfo friendInfo = FriendInfo.builder()
-                    .userId(l.getFriend().getId())
-                    .userTag(l.getFriend().getUserTag())
-                    .imageUrl(l.getFriend().getImageUrl())
-                    .build();
-            pinnedFriends.add(friendInfo);
+            switch (l.getStatus()) {
+                case ACCURATE -> accurateFriends.add(friendInfo);
+                case AMBIGUOUS -> ambiguousFriends.add(friendInfo);
+                case PINNED -> pinnedFriends.add(friendInfo);
+                default -> throw new ApplicationException(ApplicationError.LOCATION_MODE_NOT_FOUND);
+            }
         }
 
         return CurrentLocationModeResponse.builder()
@@ -82,9 +68,10 @@ public class LocationModeService {
     }
 
     public CurrentLocationModeResponse updateMode(Long userId, UpdateLocationModeRequest updateLocationModeRequest) {
-        List<User> accurateFriends = updateLocationModeRequest.getAccurateFriends();
-        List<User> ambiguousFriends = updateLocationModeRequest.getAccurateFriends();
-        List<User> pinnedFriends = updateLocationModeRequest.getAccurateFriends();
+
+        List<Long> accurateFriends = updateLocationModeRequest.getAccurate();
+        List<Long> ambiguousFriends = updateLocationModeRequest.getAmbiguous();
+        List<Long> pinnedFriends = updateLocationModeRequest.getPinned();
 
         setFriends(userId, accurateFriends, LocationModeStatus.ACCURATE);
         setFriends(userId, ambiguousFriends, LocationModeStatus.AMBIGUOUS);
@@ -93,59 +80,52 @@ public class LocationModeService {
         return getLocationMode(userId);
     }
 
-    // 친구 요청 수락 시
-    public void setAccurateFriend(User user, User friend) {
+    // 친구 요청 수락 시 default accurate 모드
+    public void setAccurateFriend(Long userId, Long friendId) {
 
-        LocationMode locationMode = LocationMode.builder()
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
+
+        User friend = userRepository.findById(friendId)
+                .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
+
+        LocationMode userLocationMode = LocationMode.builder()
                 .user(user)
                 .friend(friend)
                 .status(LocationModeStatus.ACCURATE)
                 .build();
 
-        // 내가 지정한 친구의 모드
-        locationModeRepository.save(locationMode);
+        LocationMode friendLocationMode = LocationMode.builder()
+                .user(friend)
+                .friend(user)
+                .status(LocationModeStatus.ACCURATE)
+                .build();
 
-        // 친구가 지정한 나의 모드
-        friend.addAccurateFriends(locationMode);
+        locationModeRepository.save(userLocationMode);
+        locationModeRepository.save(friendLocationMode);
     }
 
-    public void setFriends(Long userId, List<User> friends, LocationModeStatus status) {
+    public void setFriends(Long userId, List<Long> friendIdList, LocationModeStatus status) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
 
-        for (User friend : friends) {
-            LocationMode locationMode = LocationMode.builder()
+        for (Long friendId : friendIdList) {
+
+            User friend = userRepository.findById(friendId)
+                    .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
+
+            LocationMode prevLocationMode = locationModeRepository.findByUserIdAndFriendId(userId, friendId)
+                    .orElseThrow(() -> new ApplicationException(ApplicationError.LOCATION_MODE_NOT_FOUND));
+
+            LocationMode newLocationMode = LocationMode.builder()
                     .user(user)
                     .friend(friend)
                     .status(status)
                     .build();
-            locationModeRepository.save(locationMode);
 
-            LocationMode existingLocationMode = locationModeRepository.findByUserIdAndFriendId(user.getId(), friend.getId())
-                    .orElseThrow(() -> new ApplicationException(ApplicationError.LOCATION_MODE_NOT_FOUND));
-
-            switch(existingLocationMode.getStatus()) {
-                case ACCURATE:
-                    friend.removeAccurateFriends(existingLocationMode);
-                    break;
-                case AMBIGUOUS:
-                    friend.removeAmbiguousFriends(existingLocationMode);
-                    break;
-                default:
-                    friend.removePinnedFriends(existingLocationMode);
-            }
-
-            switch(status) {
-                case ACCURATE:
-                    friend.addAccurateFriends(locationMode);
-                    break;
-                case AMBIGUOUS:
-                    friend.addAmbiguousFriends(locationMode);
-                    break;
-                default:
-                    friend.addPinnedFriends(locationMode);
-            }
+            locationModeRepository.delete(prevLocationMode);
+            locationModeRepository.save(newLocationMode);
         }
     }
 }

@@ -34,7 +34,7 @@ public class LocationModeController {
         return ResponseEntity.ok().body(ApiResponse.success(response));
     }
 
-    @PatchMapping("/v1/mode/")
+    @PatchMapping("/v1/mode")
     public ResponseEntity<ApiResponse<CurrentLocationModeResponse>> updateLocationMode(@UserId Long userId, @RequestBody UpdateLocationModeRequest updateLocationModeRequest) {
 
         CurrentLocationModeResponse response = locationModeService.updateMode(userId, updateLocationModeRequest);
