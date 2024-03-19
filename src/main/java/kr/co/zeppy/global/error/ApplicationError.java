@@ -36,7 +36,9 @@ public enum ApplicationError {
     FRIENDSHIP_ALREADY_ACCEPTED(HttpStatus.NOT_FOUND, "FRIENDSHIP_002", "이미 수락한 요청 입니다."),
     FRIENDSHIP_ALREADY_DECLINE(HttpStatus.NOT_FOUND, "FRIENDSHIP_003", "이미 거절한 요청 입니다."),
 
-    USERNAME_DUPLICATED(HttpStatus.BAD_REQUEST, "COMMON_004", "이미 존재하는 유저네임입니다.");
+    USERNAME_DUPLICATED(HttpStatus.BAD_REQUEST, "COMMON_004", "이미 존재하는 유저네임입니다."),
+
+    LOCATION_MODE_NOT_FOUND(HttpStatus.NOT_FOUND, "MODE_001", "설정된 위치 모드를 찾을 수 없습니다.");
 
 
     private final HttpStatus status;

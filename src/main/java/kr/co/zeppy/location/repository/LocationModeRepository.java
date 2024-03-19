@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface LocationModeRepository extends JpaRepository<LocationMode, Long> {
 
@@ -19,4 +20,7 @@ public interface LocationModeRepository extends JpaRepository<LocationMode, Long
 
     @Query("SELECT l FROM LocationMode l WHERE l.user.id = :userId AND l.status = 'PINNED'")
     List<LocationMode> findPinnedFriendsByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT l FROM LocationMode l WHERE l.user.id = :userId AND l.friend.id = :friendId")
+    Optional<LocationMode> findByUserIdAndFriendId(@Param("userId") Long userId, @Param("userId") Long friendId);
 }

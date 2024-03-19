@@ -136,27 +136,8 @@ public class FriendService {
         if (isAccept) {
             acceptFriendship(friendship);
             friendshipRepository.save(friendship);
-
-            // user는 친구 요청을 수락한 사용자, friend는 친구 요청을 보낸 사용자
-            LocationMode locationModeUser = LocationMode.builder()
-                    .user(user)
-                    .friend(friend)
-                    .status(LocationModeStatus.ACCURATE)
-                    .build();
-
-            LocationMode locationModeFriend = LocationMode.builder()
-                    .user(friend)
-                    .friend(user)
-                    .status(LocationModeStatus.ACCURATE)
-                    .build();
-
-            // 내가 지정한 친구의 모드
-            locationModeRepository.save(locationModeUser);
-            locationModeRepository.save(locationModeFriend);
-
-            // 친구가 지정한 나의 모드
-            user.addAccurateFriends(locationModeFriend);
-            friend.addAccurateFriends(locationModeUser);
+            locationModeService.setAccurateFriend(user, friend);
+            locationModeService.setAccurateFriend(friend, user);
         } else {
             declineFriendship(friendship);
             friendshipRepository.delete(friendship);
