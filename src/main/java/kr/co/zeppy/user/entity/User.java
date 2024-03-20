@@ -71,18 +71,6 @@ public class User extends BaseModel {
 
     private String refreshToken;
 
-    @Builder.Default
-    @OneToMany(mappedBy = "friend", fetch = FetchType.LAZY)
-    private Set<LocationMode> accurateFriends = new HashSet<>(); // 나를 accurate로 지정한 친구들 ?
-
-    @Builder.Default
-    @OneToMany(mappedBy = "friend", fetch = FetchType.LAZY)
-    private Set<LocationMode> ambiguousFriends = new HashSet<>();
-
-    @Builder.Default
-    @OneToMany(mappedBy = "friend", fetch = FetchType.LAZY)
-    private Set<LocationMode> pinnedFriends = new HashSet<>();
-
     public void authorizeUser() {
         this.role = Role.USER;
     }
@@ -121,25 +109,6 @@ public class User extends BaseModel {
 
     public void removeReceivedFriendships(Friendship friendship) {
         this.receivedFriendships.remove(friendship);
-    }
-
-    public void addAccurateFriends(LocationMode locationMode) {
-        this.accurateFriends.add(locationMode);
-    }
-    public void removeAccurateFriends(LocationMode locationMode) {
-        this.accurateFriends.remove(locationMode);
-    }
-    public void addAmbiguousFriends(LocationMode locationMode) {
-        this.ambiguousFriends.add(locationMode);
-    }
-    public void removeAmbiguousFriends(LocationMode locationMode) {
-        this.ambiguousFriends.remove(locationMode);
-    }
-    public void addPinnedFriends(LocationMode locationMode) {
-        this.pinnedFriends.add(locationMode);
-    }
-    public void removePinnedFriends(LocationMode locationMode) {
-        this.pinnedFriends.remove(locationMode);
     }
 
     // 아이디 패스워드 회원가입 시 비밀번호 암호화

@@ -115,17 +115,14 @@ public class LocationModeService {
             User friend = userRepository.findById(friendId)
                     .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
 
-            LocationMode prevLocationMode = locationModeRepository.findByUserIdAndFriendId(userId, friendId)
+            LocationMode locationMode = locationModeRepository.findByUserIdAndFriendId(userId, friendId)
                     .orElseThrow(() -> new ApplicationException(ApplicationError.LOCATION_MODE_NOT_FOUND));
 
-            LocationMode newLocationMode = LocationMode.builder()
-                    .user(user)
-                    .friend(friend)
-                    .status(status)
-                    .build();
+            if (!locationMode.getStatus().equals(status)) {
 
-            locationModeRepository.delete(prevLocationMode);
-            locationModeRepository.save(newLocationMode);
+                locationMode.changeLocationMode(status);
+                locationModeRepository.save(locationMode);
+            }
         }
     }
 }

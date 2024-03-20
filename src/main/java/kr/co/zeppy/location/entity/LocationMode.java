@@ -28,9 +28,5 @@ public class LocationMode {
     @Enumerated(EnumType.STRING)
     private LocationModeStatus status;
 
-    public void changeToAccurate() { this.status = LocationModeStatus.ACCURATE; }
-
-    public void changeToAmbiguous() { this.status = LocationModeStatus.AMBIGUOUS; }
-
-    public void changeToPinned() { this.status = LocationModeStatus.PINNED; }
+    public void changeLocationMode(LocationModeStatus status) { this.status = status; }
 }
