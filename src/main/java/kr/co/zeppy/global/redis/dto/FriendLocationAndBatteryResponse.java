@@ -12,6 +12,8 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class FriendLocationAndBatteryResponse {
-    private String message;
-    private List<FriendLocationAndBattery> data;
+
+    private List<FriendLocationAndBattery> accurate;
+    private List<FriendLocationAndBattery> ambiguous;
+    private List<FriendLocationAndBattery> pinned;
 }

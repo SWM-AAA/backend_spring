@@ -7,6 +7,8 @@ import java.util.List;
 
 import kr.co.zeppy.global.redis.dto.*;
 import kr.co.zeppy.location.dto.UpdateLocationModeRequest;
+import kr.co.zeppy.location.entity.LocationMode;
+import kr.co.zeppy.location.repository.LocationModeRepository;
 import kr.co.zeppy.user.repository.UserRepository;
 import org.springframework.data.redis.core.RedisTemplate;
 import kr.co.zeppy.global.error.ApplicationError;
@@ -32,11 +34,11 @@ public class RedisService {
 
     private final UserRepository userRepository;
     private final FriendshipRepository friendshipRepository;
+    private final LocationModeRepository locationModeRepository;
     private final ObjectMapper objectMapper;
 
     private static final String BATTERY_POSTFIX = "_battery";
     private static final String LOCATION_POSTFIX = "_location";
-    private static final String FRIEND_POSTFIX = "_friend";
 
     public void updateLocationAndBattery(String userId, LocationAndBatteryRequest locationAndBatteryRequest) {
         String key = USER_PREFIX + userId;
@@ -98,6 +100,43 @@ public class RedisService {
     
     // 친구 위치, 배터리 반환
     public FriendLocationAndBatteryResponse getFriendLocationAndBattery(Long userId) {
+
+        List<FriendLocationAndBattery> accurateFriendLocationAndBatteryList = new ArrayList<>();
+        List<FriendLocationAndBattery> ambiguousFriendLocationAndBatteryList = new ArrayList<>();
+        List<FriendLocationAndBattery> pinnedFriendLocationAndBatteryList = new ArrayList<>();
+        List<LocationMode> friendLocationModeList = locationModeRepository.findByFriendId(userId);
+
+        for (LocationMode locationMode : friendLocationModeList) {
+            String key = USER_PREFIX + locationMode.getUser().getId();
+            String jsonValue = redisTemplate.opsForValue().get(key);
+
+            if (jsonValue != null) {
+                try {
+                    FriendLocationAndBattery data = objectMapper.readValue(jsonValue, FriendLocationAndBattery.class);
+                    switch (locationMode.getStatus()) {
+                        case ACCURATE:
+                            accurateFriendLocationAndBatteryList.add(data);
+                            break;
+                        case AMBIGUOUS:
+                            ambiguousFriendLocationAndBatteryList.add(data);
+                            break;
+                        default:
+                            pinnedFriendLocationAndBatteryList.add(data);
+                    }
+                } catch (Exception e) {
+                    log.error("Redis error: ", e);
+                    throw new ApplicationException(ApplicationError.REDIS_SERVER_UNAVAILABLE);
+                }
+            }
+        }
+
+        return FriendLocationAndBatteryResponse.builder()
+                .accurate(accurateFriendLocationAndBatteryList)
+                .ambiguous(ambiguousFriendLocationAndBatteryList)
+                .pinned(pinnedFriendLocationAndBatteryList)
+                .build();
+
+        /*
         List<FriendLocationAndBattery> friendLocationAndBatteryList = new ArrayList<>();
         List<Long> friendIdList = friendshipRepository.findAcceptedFriendIdsByUserId(userId);
 
@@ -118,18 +157,11 @@ public class RedisService {
 
 
         return FriendLocationAndBatteryResponse.builder()
-                .message("success")
-                .data(friendLocationAndBatteryList)
+//                .message("success")
+                .accurate(friendLocationAndBatteryList)
                 .build();
+        */
     }
 
-    public void updateLocationMode(String userId, UpdateLocationModeRequest updateLocationModeRequest) {
-        String key = USER_PREFIX + userId + FRIEND_POSTFIX;
-        try {
-            String jsonValue = objectMapper.writeValueAsString(updateLocationModeRequest);
-            redisTemplate.opsForValue().set(key, jsonValue);
-        } catch (Exception e) {
-            throw new ApplicationException(ApplicationError.REDIS_SERVER_UNAVAILABLE);
-        }
-    }
+
 }

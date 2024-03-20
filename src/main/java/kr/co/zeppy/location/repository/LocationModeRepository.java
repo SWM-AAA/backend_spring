@@ -20,4 +20,16 @@ public interface LocationModeRepository extends JpaRepository<LocationMode, Long
 
     @Query("SELECT l FROM LocationMode l WHERE l.user.id = :userId AND l.friend.id = :friendId")
     Optional<LocationMode> findByUserIdAndFriendId(@Param("userId") Long userId, @Param("friendId") Long friendId);
+
+    @Query("SELECT l.user.id FROM LocationMode l WHERE l.friend.id = :userId")
+    List<Long> findFriendIdsByFriendId(@Param("userId") Long userId);
+
+    @Query("SELECT l.user.id FROM LocationMode l WHERE l.friend.id = :userId and l.status = 'ACCURATE'")
+    List<Long> findAccurateFriendIdsByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT l.user.id FROM LocationMode l WHERE l.friend.id = :userId and l.status = 'AMBIGUOUS'")
+    List<Long> findAmbiguousFriendIdsByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT l.user.id FROM LocationMode l WHERE l.friend.id = :userId and l.status = 'PINNED'")
+    List<Long> findPinnedFriendIdsByUserId(@Param("userId") Long userId);
 }

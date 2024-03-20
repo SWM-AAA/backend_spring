@@ -94,10 +94,11 @@ public class FriendController {
     // todo : testcode 미작성
     // 친구 위치와 배터리 반환하는 함수
     @GetMapping("/v1/users/friend-location-and-battery")
-    public ResponseEntity<FriendLocationAndBatteryResponse> getFriendLocationAndBattery(@UserId Long userId)
+    public ResponseEntity<ApiResponse<FriendLocationAndBatteryResponse>> getFriendLocationAndBattery(@UserId Long userId)
             throws Exception {
 
-        return ResponseEntity.ok().body(redisService.getFriendLocationAndBattery(userId));
+        FriendLocationAndBatteryResponse response = redisService.getFriendLocationAndBattery(userId);
+        return ResponseEntity.ok().body(ApiResponse.success(response));
     }
 
     // annotation api test
