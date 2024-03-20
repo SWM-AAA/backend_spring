@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import kr.co.zeppy.global.redis.dto.*;
+import kr.co.zeppy.location.dto.UpdateLocationModeRequest;
 import kr.co.zeppy.user.repository.UserRepository;
 import org.springframework.data.redis.core.RedisTemplate;
 import kr.co.zeppy.global.error.ApplicationError;
@@ -35,6 +36,7 @@ public class RedisService {
 
     private static final String BATTERY_POSTFIX = "_battery";
     private static final String LOCATION_POSTFIX = "_location";
+    private static final String FRIEND_POSTFIX = "_friend";
 
     public void updateLocationAndBattery(String userId, LocationAndBatteryRequest locationAndBatteryRequest) {
         String key = USER_PREFIX + userId;
@@ -119,5 +121,15 @@ public class RedisService {
                 .message("success")
                 .data(friendLocationAndBatteryList)
                 .build();
+    }
+
+    public void updateLocationMode(String userId, UpdateLocationModeRequest updateLocationModeRequest) {
+        String key = USER_PREFIX + userId + FRIEND_POSTFIX;
+        try {
+            String jsonValue = objectMapper.writeValueAsString(updateLocationModeRequest);
+            redisTemplate.opsForValue().set(key, jsonValue);
+        } catch (Exception e) {
+            throw new ApplicationException(ApplicationError.REDIS_SERVER_UNAVAILABLE);
+        }
     }
 }

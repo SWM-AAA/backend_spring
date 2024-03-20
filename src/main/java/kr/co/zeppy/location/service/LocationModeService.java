@@ -107,13 +107,7 @@ public class LocationModeService {
 
     public void setFriends(Long userId, List<Long> friendIdList, LocationModeStatus status) {
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
-
         for (Long friendId : friendIdList) {
-
-            User friend = userRepository.findById(friendId)
-                    .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
 
             LocationMode locationMode = locationModeRepository.findByUserIdAndFriendId(userId, friendId)
                     .orElseThrow(() -> new ApplicationException(ApplicationError.LOCATION_MODE_NOT_FOUND));
@@ -122,6 +116,30 @@ public class LocationModeService {
 
                 locationMode.changeLocationMode(status);
                 locationModeRepository.save(locationMode);
+
+                List<LocationMode> friendLocationMode = locationModeRepository.findByFriendId(friendId);
+                List<Long> accurateFriends = new ArrayList<>();
+                List<Long> ambiguousFriends = new ArrayList<>();
+                List<Long> pinnedFriends = new ArrayList<>();
+
+                for (LocationMode l : friendLocationMode) {
+                    Long id = l.getFriend().getId();
+
+                    switch (l.getStatus()) {
+                        case ACCURATE -> accurateFriends.add(id);
+                        case AMBIGUOUS -> ambiguousFriends.add(id);
+                        case PINNED -> pinnedFriends.add(id);
+                        default -> throw new ApplicationException(ApplicationError.LOCATION_MODE_NOT_FOUND);
+                    }
+                }
+
+                UpdateLocationModeRequest updateLocationModeRequest = UpdateLocationModeRequest.builder()
+                        .accurate(accurateFriends)
+                        .ambiguous(ambiguousFriends)
+                        .pinned(pinnedFriends)
+                        .build();
+
+                redisService.updateLocationMode(friendId.toString(), updateLocationModeRequest);
             }
         }
     }
