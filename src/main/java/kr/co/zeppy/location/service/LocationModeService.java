@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -38,7 +39,13 @@ public class LocationModeService {
     }
 
     public CurrentLocationModeResponse getLocationMode(Long userId) {
+        List<LocationMode> locationModes = locationModeRepository.findByUserId(userId);
 
+        List<FriendInfo> accurateFriends = getFriendInfoList(locationModes, LocationModeStatus.ACCURATE);
+        List<FriendInfo> ambiguousFriends = getFriendInfoList(locationModes, LocationModeStatus.AMBIGUOUS);
+        List<FriendInfo> pinnedFriends = getFriendInfoList(locationModes, LocationModeStatus.PINNED);
+
+        /*
         List<FriendInfo> accurateFriends = new ArrayList<>();
         List<FriendInfo> ambiguousFriends = new ArrayList<>();
         List<FriendInfo> pinnedFriends = new ArrayList<>();
@@ -59,6 +66,7 @@ public class LocationModeService {
                 default -> throw new ApplicationException(ApplicationError.LOCATION_MODE_NOT_FOUND);
             }
         }
+        */
 
         return CurrentLocationModeResponse.builder()
                 .accurate(accurateFriends)
@@ -118,5 +126,16 @@ public class LocationModeService {
                 locationModeRepository.save(locationMode);
             }
         }
+    }
+
+    public List<FriendInfo> getFriendInfoList(List<LocationMode> locationModes, LocationModeStatus status) {
+        return locationModes.stream()
+                .filter(l -> l.getStatus().equals(status))
+                .map(l -> FriendInfo.builder()
+                        .userId(l.getFriend().getId())
+                        .userTag(l.getFriend().getUserTag())
+                        .imageUrl(l.getFriend().getImageUrl())
+                        .build())
+                .collect(Collectors.toList());
     }
 }
