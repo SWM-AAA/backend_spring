@@ -45,34 +45,22 @@ public class LocationModeService {
         List<FriendInfo> ambiguousFriends = getFriendInfoList(locationModes, LocationModeStatus.AMBIGUOUS);
         List<FriendInfo> pinnedFriends = getFriendInfoList(locationModes, LocationModeStatus.PINNED);
 
-        /*
-        List<FriendInfo> accurateFriends = new ArrayList<>();
-        List<FriendInfo> ambiguousFriends = new ArrayList<>();
-        List<FriendInfo> pinnedFriends = new ArrayList<>();
-
-        List<LocationMode> locationModes = locationModeRepository.findByUserId(userId);
-
-        for (LocationMode l : locationModes) {
-            FriendInfo friendInfo = FriendInfo.builder()
-                    .userId(l.getFriend().getId())
-                    .userTag(l.getFriend().getUserTag())
-                    .imageUrl(l.getFriend().getImageUrl())
-                    .build();
-
-            switch (l.getStatus()) {
-                case ACCURATE -> accurateFriends.add(friendInfo);
-                case AMBIGUOUS -> ambiguousFriends.add(friendInfo);
-                case PINNED -> pinnedFriends.add(friendInfo);
-                default -> throw new ApplicationException(ApplicationError.LOCATION_MODE_NOT_FOUND);
-            }
-        }
-        */
-
         return CurrentLocationModeResponse.builder()
                 .accurate(accurateFriends)
                 .ambiguous(ambiguousFriends)
                 .pinned(pinnedFriends)
                 .build();
+    }
+
+    public List<FriendInfo> getFriendInfoList(List<LocationMode> locationModes, LocationModeStatus status) {
+        return locationModes.stream()
+                .filter(l -> l.getStatus().equals(status))
+                .map(l -> FriendInfo.builder()
+                        .userId(l.getFriend().getId())
+                        .userTag(l.getFriend().getUserTag())
+                        .imageUrl(l.getFriend().getImageUrl())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     public CurrentLocationModeResponse updateMode(Long userId, UpdateLocationModeRequest updateLocationModeRequest) {
@@ -86,6 +74,21 @@ public class LocationModeService {
         setFriends(userId, pinnedFriends, LocationModeStatus.PINNED);
 
         return getLocationMode(userId);
+    }
+
+    public void setFriends(Long userId, List<Long> friendIdList, LocationModeStatus status) {
+
+        for (Long friendId : friendIdList) {
+
+            LocationMode locationMode = locationModeRepository.findByUserIdAndFriendId(userId, friendId)
+                    .orElseThrow(() -> new ApplicationException(ApplicationError.LOCATION_MODE_NOT_FOUND));
+
+            if (!locationMode.getStatus().equals(status)) {
+
+                locationMode.changeLocationMode(status);
+                locationModeRepository.save(locationMode);
+            }
+        }
     }
 
     // 친구 요청 수락 시 default accurate 모드
@@ -111,31 +114,5 @@ public class LocationModeService {
 
         locationModeRepository.save(userLocationMode);
         locationModeRepository.save(friendLocationMode);
-    }
-
-    public void setFriends(Long userId, List<Long> friendIdList, LocationModeStatus status) {
-
-        for (Long friendId : friendIdList) {
-
-            LocationMode locationMode = locationModeRepository.findByUserIdAndFriendId(userId, friendId)
-                    .orElseThrow(() -> new ApplicationException(ApplicationError.LOCATION_MODE_NOT_FOUND));
-
-            if (!locationMode.getStatus().equals(status)) {
-
-                locationMode.changeLocationMode(status);
-                locationModeRepository.save(locationMode);
-            }
-        }
-    }
-
-    public List<FriendInfo> getFriendInfoList(List<LocationMode> locationModes, LocationModeStatus status) {
-        return locationModes.stream()
-                .filter(l -> l.getStatus().equals(status))
-                .map(l -> FriendInfo.builder()
-                        .userId(l.getFriend().getId())
-                        .userTag(l.getFriend().getUserTag())
-                        .imageUrl(l.getFriend().getImageUrl())
-                        .build())
-                .collect(Collectors.toList());
     }
 }

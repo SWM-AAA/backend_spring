@@ -2,6 +2,7 @@ package kr.co.zeppy.location.service;
 
 import kr.co.zeppy.location.dto.CurrentLocationModeResponse;
 import kr.co.zeppy.location.dto.LocationModeTimerResponse;
+import kr.co.zeppy.location.dto.UpdateLocationModeRequest;
 import kr.co.zeppy.location.entity.LocationMode;
 import kr.co.zeppy.location.entity.LocationModeStatus;
 import kr.co.zeppy.location.repository.LocationModeRepository;
@@ -15,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -66,6 +68,7 @@ public class LocationModeServiceTest {
     private LocationMode locationMode_2;
     private LocationMode locationMode_3;
     private List<LocationMode> locationModeList;
+    private UpdateLocationModeRequest updateLocationModeRequest;
 
     @BeforeEach
     public void setup() {
@@ -139,6 +142,12 @@ public class LocationModeServiceTest {
                 .build();
 
         locationModeList = Arrays.asList(locationMode_1, locationMode_2, locationMode_3);
+
+        updateLocationModeRequest = UpdateLocationModeRequest.builder()
+                .accurate(List.of(FRIENDID_4))
+                .ambiguous(List.of(FRIENDID_2))
+                .pinned(List.of(FRIENDID_3))
+                .build();
     }
 
     @Test
@@ -174,5 +183,21 @@ public class LocationModeServiceTest {
                 () -> assertEquals(FRIENDID_3, response.getAmbiguous().get(0).getUserId()),
                 () -> assertEquals(FRIENDID_4, response.getPinned().get(0).getUserId())
         );
+    }
+
+    @Test
+    void updateLocationMode() {
+        // Given
+        when(locationModeRepository.findByUserIdAndFriendId(INIT_USERID, FRIENDID_2)).thenReturn(Optional.ofNullable(locationMode_1));
+        when(locationModeRepository.findByUserIdAndFriendId(INIT_USERID, FRIENDID_3)).thenReturn(Optional.ofNullable(locationMode_2));
+        when(locationModeRepository.findByUserIdAndFriendId(INIT_USERID, FRIENDID_4)).thenReturn(Optional.ofNullable(locationMode_3));
+
+        // When
+        locationModeService.updateMode(INIT_USERID, updateLocationModeRequest);
+
+        // Then
+        assertEquals(LocationModeStatus.AMBIGUOUS, locationMode_1.getStatus());
+        assertEquals(LocationModeStatus.PINNED, locationMode_2.getStatus());
+        assertEquals(LocationModeStatus.ACCURATE, locationMode_3.getStatus());
     }
 }
