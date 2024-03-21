@@ -27,7 +27,7 @@ public class LocationModeController {
         return ResponseEntity.ok().body(ApiResponse.success(response));
     }
 
-    @GetMapping("/v1/mode/friends")
+    @GetMapping("/v1/mode")
     public ResponseEntity<ApiResponse<CurrentLocationModeResponse>> getCurrentLocationMode(@UserId Long userId) {
 
         CurrentLocationModeResponse response = locationModeService.getLocationMode(userId);
