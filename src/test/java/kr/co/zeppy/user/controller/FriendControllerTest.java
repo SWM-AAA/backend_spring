@@ -114,6 +114,7 @@ public class FriendControllerTest extends ApiDocument{
                 .socialType(USER_SOCIAL_TYPE)
                 .socialId(USER_SOCIAL_ID)
                 .refreshToken(USER_REFRESH_TOKEN)
+                .activated(true)
                 .build();
                 
         friend = User.builder()
@@ -125,6 +126,7 @@ public class FriendControllerTest extends ApiDocument{
                 .socialType(FRIEND_SOCIAL_TYPE)
                 .socialId(FRIEND_SOCIAL_ID)
                 .refreshToken(FRIEND_REFRESH_TOKEN)
+                .activated(true)
                 .build();
         
         friendship = Friendship.builder()
@@ -223,6 +225,7 @@ public class FriendControllerTest extends ApiDocument{
                 .socialType(FRIEND_SOCIAL_TYPE)
                 .socialId(FRIEND_SOCIAL_ID)
                 .refreshToken(FRIEND_REFRESH_TOKEN)
+                .activated(true)
                 .build();
 
         when(jwtService.getLongUserIdFromToken("token")).thenReturn(4L);

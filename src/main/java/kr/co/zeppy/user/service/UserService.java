@@ -82,6 +82,7 @@ public class UserService {
             .socialId(randomSocialId)
             .role(Role.GUEST)
             .imageUrl("test")
+            .activated(true)
             .build();
 
         userRepository.save(user);
@@ -112,6 +113,7 @@ public class UserService {
                 .userTag(newUserTag)
                 .imageUrl(userImageUrl)
                 .role(Role.USER)
+                .activated(true)
                 .build();
 
         user.passwordEncode(passwordEncoder);

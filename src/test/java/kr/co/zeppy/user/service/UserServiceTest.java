@@ -141,6 +141,7 @@ public class UserServiceTest {
                 .socialType(USER_SOCIAL_TYPE)
                 .socialId(USER_SOCIAL_ID)
                 .refreshToken(USER_REFRESH_TOKEN)
+                .activated(true)
                 .build();
 
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
@@ -173,6 +174,7 @@ public class UserServiceTest {
                 .socialType(USER_SOCIAL_TYPE)
                 .socialId(USER_SOCIAL_ID)
                 .refreshToken(USER_REFRESH_TOKEN)
+                .activated(true)
                 .build();
 
         when(userRepository.findById(INIT_USERID)).thenReturn(Optional.of(user));
@@ -199,6 +201,7 @@ public class UserServiceTest {
                 .socialType(USER_SOCIAL_TYPE)
                 .socialId(USER_SOCIAL_ID)
                 .refreshToken(USER_REFRESH_TOKEN)
+                .activated(true)
                 .build();
 
         when(jwtService.getLongUserIdFromToken(TOKEN)).thenReturn(INIT_USERID);
@@ -229,6 +232,7 @@ public class UserServiceTest {
                 .socialType(USER_SOCIAL_TYPE)
                 .socialId(USER_SOCIAL_ID)
                 .refreshToken(USER_REFRESH_TOKEN)
+                .activated(true)
                 .build();
 
         when(jwtService.getLongUserIdFromToken(TOKEN)).thenReturn(INIT_USERID);
@@ -256,6 +260,7 @@ public class UserServiceTest {
                 .socialId(USER_SOCIAL_ID)
                 .refreshToken(USER_REFRESH_TOKEN)
                 .activated(Boolean.TRUE)
+                .activated(true)
                 .build();
 
         User user2 = User.builder()
@@ -268,6 +273,7 @@ public class UserServiceTest {
                 .socialId(USER_SOCIAL_ID)
                 .refreshToken(USER_REFRESH_TOKEN)
                 .activated(Boolean.TRUE)
+                .activated(true)
                 .build();
 
         User user3 = User.builder()

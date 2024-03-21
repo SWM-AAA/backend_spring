@@ -64,6 +64,7 @@ public class OAuthAttributes {
                 .nickname(oauth2UserInfo.getNickname())
                 .imageUrl(oauth2UserInfo.getImageUrl())
                 .role(Role.GUEST)
+                .activated(true)
                 .build();
     }
 }

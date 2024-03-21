@@ -1,11 +1,13 @@
 package kr.co.zeppy.user.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import kr.co.zeppy.global.dto.ApiResponse;
+import kr.co.zeppy.location.dto.FriendInfo;
+import kr.co.zeppy.location.entity.LocationMode;
+import kr.co.zeppy.location.entity.LocationModeStatus;
+import kr.co.zeppy.location.repository.LocationModeRepository;
+import kr.co.zeppy.location.service.LocationModeService;
 import kr.co.zeppy.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +36,8 @@ public class FriendService {
     private final JwtService jwtService;
     private final FriendshipRepository friendshipRepository;
     private final UserRepository userRepository;
+    private final LocationModeService locationModeService;
+    private final LocationModeRepository locationModeRepository;
 
 
     // user 친구 추가 기능
@@ -51,6 +55,7 @@ public class FriendService {
                 .user(user)
                 .friend(friend)
                 .status(FriendshipStatus.PENDING)
+                .deleted(false)
                 .build();
         
         user.addSentFriendships(friendship);
@@ -75,7 +80,7 @@ public class FriendService {
                 .orElseThrow(() -> new ApplicationException(ApplicationError.USER_NOT_FOUND));
         
         Set<Friendship> receivedFriendRequests = user.getReceivedFriendships();
-    
+
         List<UserFriendInfoResponse> response = new ArrayList<>();
     
         for (Friendship request : receivedFriendRequests) {
@@ -92,15 +97,15 @@ public class FriendService {
     public List<UserFriendInfoResponse> checkSentFriendRequestToList(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApplicationException(ApplicationError.USER_ID_NOT_FOUND));
-        
+
         Set<Friendship> sentFriendRequests = user.getSentFriendships();
 
         List<UserFriendInfoResponse> friendRequestList = new ArrayList<>();
 
         for (Friendship request : sentFriendRequests) {
             if (request.getStatus() == FriendshipStatus.PENDING) {
-                User reseiver = request.getFriend();
-                friendRequestList.add(UserFriendInfoResponse.from(reseiver));
+                User receiver = request.getFriend();
+                friendRequestList.add(UserFriendInfoResponse.from(receiver));
             }
         }
 
@@ -131,6 +136,7 @@ public class FriendService {
         if (isAccept) {
             acceptFriendship(friendship);
             friendshipRepository.save(friendship);
+            locationModeService.setAccurateFriend(userId, friendId);
         } else {
             declineFriendship(friendship);
             friendshipRepository.delete(friendship);

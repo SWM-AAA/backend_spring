@@ -46,6 +46,7 @@ class FriendshipRepositoryTest {
                 .socialType(SocialType.KAKAO)
                 .socialId("12344")
                 .refreshToken("token0")
+                .activated(true)
                 .build();
 
         User user1 = User.builder()
@@ -56,6 +57,7 @@ class FriendshipRepositoryTest {
                 .socialType(SocialType.GOOGLE)
                 .socialId("54320")
                 .refreshToken("token1")
+                .activated(true)
                 .build();
 
         entityManager.persist(user0);

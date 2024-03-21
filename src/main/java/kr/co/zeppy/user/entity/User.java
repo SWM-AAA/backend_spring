@@ -2,6 +2,8 @@ package kr.co.zeppy.user.entity;
 
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
+import kr.co.zeppy.location.dto.FriendInfo;
+import kr.co.zeppy.location.entity.LocationMode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AccessLevel;
@@ -21,8 +23,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Entity
 @Builder
 @Table(name = "USERS")
-@DynamicInsert
-@DynamicUpdate
 @AllArgsConstructor
 public class User extends BaseModel {
 

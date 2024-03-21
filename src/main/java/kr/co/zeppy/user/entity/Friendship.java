@@ -50,7 +50,6 @@ public class Friendship extends BaseModel {
     @Enumerated(EnumType.STRING)
     private FriendshipStatus status;
 
-    @ColumnDefault("false")
     private Boolean deleted;
 
     public void acceptRequest() {
