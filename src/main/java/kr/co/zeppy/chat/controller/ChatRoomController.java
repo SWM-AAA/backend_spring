@@ -26,4 +26,5 @@ public class ChatRoomController {
 
         return ResponseEntity.ok().body(ApiResponse.success(response));
     }
+
 }
